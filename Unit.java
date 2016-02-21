@@ -1,21 +1,28 @@
 package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.Basic;
+import be.kuleuven.cs.som.annotate.Immutable;
+import be.kuleuven.cs.som.annotate.Raw;
 import ogp.framework.util.ModelException;
+
 /**
- * A class of unit involving a name, initialposition, weight, agility, strength, toughness and the
- * enableDefaultBehavior.
+ * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
+ * default behavior.
  * 
- * @author Bart Jacobs and Jordy Heusdens
+ * @author 	Bart Jacobs and Jordy Heusdens
+ * @invar 	Each Unit can have this name or position
+ * 			|isValidName(getName())
+ * 			|canHaveAsName(this.getPosition())
  * @version 1.0
  *
  */
 public class Unit {
 	
 	/**
+	 * Initialize this new Unit with the next parameters
 	 * 
 	 * @param 	name
-	 * 			The name of the unit
+	 * 			The name of this unit
 	 * @param 	initialPosition
 	 * 			The initial position of the unit, as an array with 3 elements {x,y,z}
 	 * @param 	weight
@@ -28,41 +35,62 @@ public class Unit {
 	 * 			The toughness of the unit
 	 * @param 	enableDefaultBehavior
 	 * 			Whether the default behavior of the unit is enabled
-	 * @post 	Name changes to the new name
-	 * 			|new.getName() == name
+	 * @effect	The name of this new unit is set to the given name
+	 * 			| this.setName(name)
 	 * @post 	Position changes to the initial position
 	 * 			|new.getPosition() == initialposition
 	 * @throws	ModelException
 	 * 			Throws an exception if it isnt't valid
-	 * 			| ! isValidName(name)
-	 * 			| ! isValidPosition(initialposition)
+	 * 			| ! canHaveAsPosition(initialposition)
 	 * 
 	 */
 	public Unit(String name, int[] initialPosition) throws ModelException{
-		if (! isValidName(name) || ! isValidPosition(initialPosition))
+		this.setName(name);
+		if (! canHaveAsPosition(initialPosition))
+			throw new ModelException();
+		this.position = initialPosition;
+	}
+	
+	/**
+	 * Set the Name of this Unit to the given Name.
+	 * 
+	 * @param  name
+	 *         The new Name for this Unit.
+	 * @post   The Name of this new Unit is equal to
+	 *         the given Name.
+	 *       | new.getName() == name
+	 * @throws ModelException
+	 *         The given Name is not a valid Name for any
+	 *         Unit.
+	 *       | ! isValidName(getName())
+	 */
+	@Raw
+	public void setName(String name) throws ModelException {
+		if (! isValidName(name))
 			throw new ModelException(name);
 		this.name = name;
-		this.position = initialPosition;
 	}
 		
 	/**
 	 * 
-	 * Returns the names of the unit.
+	 * Return the name of the unit.
 	 * 
 	 */
-	@Basic
+	@Basic @Raw
 	public String getName(){
 		return this.name;
 	}
 	
 	/**
 	 * 
-	 * The name of the unit
+	 * Variable registering the name of this Unit.
 	 * 
 	 */
 	private String name;
 	
 	 /**
+	  * 
+	  * Check whether this Unit can have the given name as its name.
 	  * 
 	  * @param 	name
 	  * 		The name of the unit.
@@ -91,17 +119,17 @@ public class Unit {
 	
 	/**
 	 * 
-	 * The position of the unit
+	 * Variable registering the position of this Unit.
 	 * 
 	 */
-	private int[] position;
+	private final int[] position;
 	
 	/**
 	 * 
-	 * Returns the position of the unit.
+	 * Returns the position of this unit.
 	 * 
 	 */
-	@Basic
+	@Basic @Raw @Immutable
 	public int[] getPosition(){
 		return this.position;
 	}
@@ -117,10 +145,17 @@ public class Unit {
 	}
 	/**
 	 * 
-	 * @param position
-	 * @return
-	 */
-	public boolean isValidPosition(int[] position){
+	 * Check whether this Unit can have the given position as its position.
+	 * 
+	 * @param 	position
+	 * 			The position of the unit	
+	 * @return	true if the position is valid: the position is less than getMaxSize() and more or equal than 0
+	 * 			| if (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0)
+	 * 			|	then result == true
+	 * 			|	else result == false
+	 */			
+	@Raw
+	public boolean canHaveAsPosition(int[] position){
 		return (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0);
 	}
 	
