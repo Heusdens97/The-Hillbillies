@@ -32,7 +32,8 @@ public class Facade implements IFacade {
 	 */
 	public Unit createUnit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws ModelException {
-		
+		Unit HillBilly = new Unit(name, initialPosition, weight, agility, strength, toughness, enableDefaultBehavior);
+				return HillBilly;
 	}
 
 	/* Position */
@@ -47,7 +48,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public double[] getPosition(Unit unit) throws ModelException{
-		
+		return unit.getPosition();
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public String getName(Unit unit) throws ModelException{
-		
+		return unit.getName();
 	}
 
 	/**
@@ -89,7 +90,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setName(Unit unit, String newName) throws ModelException{
-		
+		unit.setName(newName);
 	}
 
 	/* Attributes */
@@ -104,7 +105,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getWeight(Unit unit) throws ModelException{
-		
+		return unit.getWeight();
 	}
 
 	/**
@@ -118,7 +119,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setWeight(Unit unit, int newValue) throws ModelException{
-		
+		unit.setWeight(newValue, 1, 200);
 	}
 
 	/**
@@ -131,7 +132,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getStrength(Unit unit) throws ModelException{
-		
+		return unit.getStrength();
 	}
 
 	/**
@@ -145,7 +146,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setStrength(Unit unit, int newValue) throws ModelException{
-		
+		unit.setStrength(newValue, 1, 200);
 	}
 
 	/**
@@ -158,7 +159,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getAgility(Unit unit) throws ModelException{
-		
+		return unit.getAgility();
 	}
 
 	/**
@@ -172,7 +173,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setAgility(Unit unit, int newValue) throws ModelException{
-		
+		unit.setAgility(newValue, 1, 200);
 	}
 
 	/**
@@ -185,7 +186,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getToughness(Unit unit) throws ModelException{
-		
+		return unit.getToughness();
 	}
 
 	/**
@@ -200,7 +201,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setToughness(Unit unit, int newValue) throws ModelException{
-		
+		unit.setToughness(newValue, 1, 200);
 	}
 
 	/* Points */
@@ -215,7 +216,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getMaxHitPoints(Unit unit) throws ModelException{
-		
+		return 200*(unit.getWeight()/100)*(unit.getToughness()/100);
 	}
 
 	/**
@@ -228,7 +229,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getCurrentHitPoints(Unit unit) throws ModelException{
-		
+		return unit.getHitpoints();
 	}
 
 	/**
@@ -242,7 +243,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getMaxStaminaPoints(Unit unit) throws ModelException{
-		
+		return 200*(unit.getWeight()/100)*(unit.getToughness()/100);
 	}
 
 	/**
@@ -256,7 +257,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public int getCurrentStaminaPoints(Unit unit) throws ModelException{
-		
+		return unit.getStamina();
 	}
 
 	/* Time */
