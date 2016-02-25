@@ -10,8 +10,8 @@ import ogp.framework.util.ModelException;
  * default behavior.
  * 
  * @author 	Bart Jacobs and Jordy Heusdens
- * @invar 	The name, position, weight, agility, strength, toughness, stamina
- * 			 of each unit must be a valid name, position, weight, agility, strength, toughness, stamina for any unit.
+ * @invar 	The name, position, weight, agility, strength, toughness, stamina, orientation
+ * 			 of each unit must be a valid name, position, weight, agility, strength, toughness, stamina, orientation for any unit.
  * 			|isValidName(getName())
  * 			|canHaveAsPosition(this.getPosition())
  * 			|IsValidWeight(getWeight())
@@ -19,6 +19,8 @@ import ogp.framework.util.ModelException;
  * 			|isValidStrength(getStrength())
  * 			|isValidToughness(getToughness())
  * 			|isValidStamina(getStamina())
+ * 			|isValidorietation(getOrientation())
+ * 
  * @version 1.0
  *
  */
@@ -77,11 +79,12 @@ public class Unit {
 	 *	       	|   else new.getToughness() == random(25,100)
 	 * @post   	The Stamina of this new unit is equal to the given
 	 *         	Stamina.
-	 *       	| new.getstamina() == STAMINA (=200*(weight/100)*(toughness/100))
+	 *       	| new.getstamina() == MAX_STAMINA_AND_HITPOINTS (=200*(weight/100)*(toughness/100))
+	 * @post   	The orientation is equal to math.pi/2
+	 * 			| new.getorientation() == math.pi/2
 	 * @throws	ModelException
 	 * 			Throws an exception if it isnt't valid
 	 * 			| ! canHaveAsPosition(initialposition)
-	 * 
 	 */
 	public Unit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness) throws ModelException{
 		this.setName(name);
@@ -102,6 +105,7 @@ public class Unit {
 		setToughness(toughness, LOWER, UPPER);
 		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
 		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
+		setOrientation(Math.PI/2);
 	}
 	
 	private int UPPER = 100;
@@ -523,4 +527,50 @@ public class Unit {
 	 * Variable registering the hitpoints of this unit.
 	 */
 	private int hitpoints;
+	
+	/**
+	 * Return the orientation of this unit.
+	 */
+	@Basic @Raw
+	public double getOrientation() {
+		return this.orientation;
+	}
+
+	/**
+	 * Check whether the given orientation is a valid orientation for
+	 * any unit.
+	 *  
+	 * @param  	orientation
+	 *         	The orientation to check.
+	 * @return 	true if the orientation is valid: orientation is between 0 and 2*math.pi or equal his bounds.
+	 *       	| if (0 <= orientation < 2*math.pi)
+	 *       	| 	then result == true
+	 *       	| 	else result == false 
+	*/
+	public static boolean isValidOrientation(double orientation) {
+		return ((orientation >= 0) && (orientation < 2*Math.PI));
+	}
+
+	/**
+	 * Set the orientation of this unit to the given orientation.
+	 * 
+	 * @param  	orientation
+	 *         	The new orientation for this unit.
+	 * @post   	If the given orientation is a valid orientation for any unit,
+	 *         	the orientation of this new unit is equal to the given
+	 *         	orientation.
+	 *       	| if (isValidorientation(orientation))
+	 *       	|   then new.getorientation() == orientation
+	 */
+	@Raw
+	public void setOrientation(double orientation) {
+		if (isValidOrientation(orientation))
+			this.orientation = orientation;
+	}
+
+	/**
+	 * Variable registering the orientation of this unit.
+	 */
+	private double orientation;
+
 }
