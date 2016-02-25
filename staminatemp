@@ -1,0 +1,44 @@
+@Basic @Raw
+public int getStamina() {
+	return this.stamina;
+}
+
+/**
+ * Check whether the given stamina is a valid stamina for
+ * any unit.
+ *  
+ * @param  stamina
+ *         The stamina to check.
+ * @return 
+ *       | if (200*weight/100*toughness/100 > stamina > 1)
+ *       | then result == true
+ *       | else 
+ *       |		result == false
+*/
+public boolean isValidStamina(int stamina) {
+	return (stamina > 1 && stamina < 200*getWeight()/100*getToughness()/100);
+}
+
+/**
+ * Set the stamina of this unit to the given stamina.
+ * 
+ * @param  stamina
+ *         The new stamina for this unit.
+ * @pre    The given stamina must be a valid stamina for any
+ *         unit.
+ *       | isValidStamina(stamina)
+ * @post   The stamina of this unit is equal to the given
+ *         stamina.
+ *       | new.getStamina() == stamina
+ */
+@Raw
+public void setStamina(int stamina) {
+	assert isValidStamina(stamina);
+	this.stamina = stamina;
+}
+
+/**
+ * Variable registering the stamina of this unit.
+ */
+private int stamina;
+}
