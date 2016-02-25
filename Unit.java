@@ -10,13 +10,15 @@ import ogp.framework.util.ModelException;
  * default behavior.
  * 
  * @author 	Bart Jacobs and Jordy Heusdens
- * @invar 	Each Unit can have his name or position
+ * @invar 	The name, position, weight, agility, strength, toughness, stamina
+ * 			 of each unit must be a valid name, position, weight, agility, strength, toughness, stamina for any unit.
  * 			|isValidName(getName())
- * 			|canHaveAsName(this.getPosition())
+ * 			|canHaveAsPosition(this.getPosition())
  * 			|IsValidWeight(getWeight())
  * 			|isValidAgility(getAgility())
  * 			|isValidStrength(getStrength())
  * 			|isValidToughness(getToughness())
+ * 			|isValidStamina(getStamina())
  * @version 1.0
  *
  */
@@ -39,7 +41,9 @@ public class Unit {
 	 * 			The toughness of the unit
 	 * @param 	enableDefaultBehavior
 	 * 			Whether the default behavior of the unit is enabled
-	 * @effect	The name of this new unit is set to the given name
+	 * @pre		The given Stamina must be a valid Stamina for any unit.
+	 *       	| isValidstamina(Stamina)
+	 * @effect	The name of this new unit is set to the given name	
 	 * 			| this.setName(name)
 	 * @post 	Position changes to the initial position
 	 * 			|new.getPosition() == initialposition
@@ -71,6 +75,9 @@ public class Unit {
 	 *      	| if (isValidToughness(toughness))
 	 *   	    |   then new.getToughness() == toughness
 	 *	       	|   else new.getToughness() == random(25,100)
+	 * @post   	The Stamina of this new unit is equal to the given
+	 *         	Stamina.
+	 *       	| new.getstamina() == STAMINA (=200*(weight/100)*(toughness/100))
 	 * @throws	ModelException
 	 * 			Throws an exception if it isnt't valid
 	 * 			| ! canHaveAsPosition(initialposition)
@@ -81,32 +88,38 @@ public class Unit {
 		if (! canHaveAsPosition(initialPosition))
 			throw new ModelException();
 		this.position = initialPosition;
-		if (! isValidWeight(weight, 25,100))
+		if (! isValidWeight(weight, LOWER,UPPER))
 			weight = (strength + agility)/2; 
-		setWeight(weight, 25, 100);
-		if (! isValidAgility(agility,25,100))
-			agility = (int)(Math.random() * (100 - 25)) + 25;
-		setAgility(agility, 25, 100);
-		if (! isValidStrength(strength,25,100))
-			strength = (int)(Math.random() * (100 - 25)) + 25;
-		setStrength(strength, 25, 100);
-		if (! isValidToughness(toughness,25,100))
-			toughness = (int)(Math.random() * (100 - 25)) + 25;
-		setToughness(toughness, 25, 100);
+		setWeight(weight, LOWER, UPPER);
+		if (! isValidAgility(agility,LOWER,UPPER))
+			agility = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+		setAgility(agility, LOWER, UPPER);
+		if (! isValidStrength(strength,LOWER,UPPER))
+			strength = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+		setStrength(strength, LOWER, UPPER);
+		if (! isValidToughness(toughness,LOWER,UPPER))
+			toughness = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+		setToughness(toughness, LOWER, UPPER);
+		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
+		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
 	}
+	
+	private int UPPER = 100;
+	private int LOWER = 25;
+	private int MAX_STAMINA_AND_HITPOINTS = 200*(this.weight/100)*(this.toughness/100);
 	
 	/**
 	 * Set the Name of this Unit to the given Name.
 	 * 
-	 * @param  name
-	 *         The new Name for this Unit.
-	 * @post   The Name of this new Unit is equal to
-	 *         the given Name.
-	 *       | new.getName() == name
-	 * @throws ModelException
-	 *         The given Name is not a valid Name for any
-	 *         Unit.
-	 *       | ! isValidName(getName())
+	 * @param  	name
+	 *         	The new Name for this Unit.
+	 * @post   	The Name of this new Unit is equal to
+	 *         	the given Name.
+	 *       	| new.getName() == name
+	 * @throws 	ModelException
+	 *         	The given Name is not a valid Name for any
+	 *         	Unit.
+	 *       	| ! isValidName(getName())
 	 */
 	@Raw
 	public void setName(String name) throws ModelException {
@@ -418,4 +431,96 @@ public class Unit {
 	 */
 	private int toughness;
 	
+	/**
+	 * Return the stamina of this unit.
+	 */
+	@Basic @Raw
+	public int getStamina() {
+		return this.stamina;
+	}
+
+	/**
+	 * Check whether the given stamina is a valid stamina for
+	 * any unit.
+	 *  
+	 * @param  	stamina
+	 *         	The stamina to check.
+	 * @return 	true if the stamina is valid: stamina is between MAX_STAMINA_AND_HITPOINTS and 0 or equal his bounds
+	 *       	| if (MAX_STAMINA_AND_HITPOINTS) >= stamina >= 0)
+	 *       	| 	then result == true
+	 *       	| 	else result == false
+	*/
+	public boolean isValidStamina(int stamina) {
+		return (stamina >= 0 && stamina <= (MAX_STAMINA_AND_HITPOINTS));
+	}
+
+	/**
+	 * Set the stamina of this unit to the given stamina.
+	 * 
+	 * @param  	stamina
+	 *         	The new stamina for this unit.
+	 * @pre    	The given stamina must be a valid stamina for any
+	 *         	unit.
+	 *       	| isValidStamina(stamina)
+	 * @post   	The stamina of this unit is equal to the given
+	 *         	stamina.
+	 *       	| new.getStamina() == stamina
+	 */
+	@Raw
+	public void setStamina(int stamina) {
+		assert isValidStamina(stamina);
+		this.stamina = stamina;
+	}
+
+	/**
+	 * Variable registering the stamina of this unit.
+	 */
+	private int stamina;
+	
+
+	/**
+	 * Return the hitpoints of this unit.
+	 */
+	@Basic @Raw
+	public int getHitpoints() {
+		return this.hitpoints;
+	}
+	
+	/**
+	 * Check whether the given hitpoints is a valid hitpoints for
+	 * any unit.
+	 *  
+	 * @param 	hitpoints
+	 *         	The hitpoints to check.
+	 * @return 	true if the hitpoints is valid: hitpoints is between MAX_STAMINA_AND_HITPOINTS and 0 or equal his bounds
+	 *       	| if (MAX_STAMINA_AND_HITPOINTS) >= hitpoints >= 0)
+	 *       	| 	then result == true
+	 *       	| 	else result == false
+	*/
+	public boolean isValidHitpoints(int hitpoints) {
+		return (hitpoints >= 0 && hitpoints <= (MAX_STAMINA_AND_HITPOINTS));
+	}
+	
+	/**
+	 * Set the hitpoints of this unit to the given hitpoints.
+	 * 
+	 * @param  	hitpoints
+	 *         	The new hitpoints for this unit.
+	 * @pre    	The given hitpoints must be a valid hitpoints for any
+	 *         	unit.
+	 *       	| isValidHitpoints(hitpoints)
+	 * @post   	The hitpoints of this unit is equal to the given
+	 *         	hitpoints.
+	 *       	| new.getHitpoints() == hitpoints
+	 */
+	@Raw
+	public void setHitpoints(int hitpoints) {
+		assert isValidHitpoints(hitpoints);
+		this.hitpoints = hitpoints;
+	}
+	
+	/**
+	 * Variable registering the hitpoints of this unit.
+	 */
+	private int hitpoints;
 }
