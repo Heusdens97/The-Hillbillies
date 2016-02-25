@@ -1,0 +1,45 @@
+
+/**
+ * Return the toughness of this unit.
+ */
+@Basic @Raw
+public int getToughness() {
+	return this.toughness;
+}
+
+/**
+ * Check whether the given toughness is a valid toughness for
+ * any unit.
+ *  
+ * @param  toughness
+ *         The toughness to check.
+ * @return 
+ *       | result == 
+*/
+public static boolean isValidToughness(int toughness) {
+	if (toughness < 1 || toughness > 200)
+		return false;
+	return true;
+}
+
+/**
+ * Set the toughness of this unit to the given toughness.
+ * 
+ * @param  toughness
+ *         The new toughness for this unit.
+ * @post   If the given toughness is a valid toughness for any unit,
+ *         the toughness of this new unit is equal to the given
+ *         toughness.
+ *       | if (isValidToughness(toughness))
+ *       |   then new.getToughness() == toughness
+ */
+@Raw
+public void setToughness(int toughness) {
+	if (isValidToughness(toughness))
+		this.toughness = toughness;
+}
+
+/**
+ * Variable registering the toughness of this unit.
+ */
+private int toughness;
