@@ -1,0 +1,97 @@
+/**
+ * Return the agility of this unit.
+ */
+@Basic @Raw
+public int getAgility() {
+	return this.agility;
+}
+
+/**
+ * Check whether the given agility is a valid agility for
+ * any unit.
+ *  
+ * @param  agility
+ *         The agility to check.
+ * @return 
+ *       | result == 
+*/
+public static boolean isValidAgility(int agility) {
+	if (agility < 1 || agility > 200)
+		return false;
+	return true;
+}
+
+/**
+ * Set the agility of this unit to the given agility.
+ * 
+ * @param  agility
+ *         The new agility for this unit.
+ * @post   If the given agility is a valid agility for any unit,
+ *         the agility of this new unit is equal to the given
+ *         agility.
+ *       | if (isValidAgility(agility))
+ *       |   then new.getAgility() == agility
+ */
+@Raw
+public void setAgility(int agility) {
+	if (isValidAgility(agility))
+		this.agility = agility;
+}
+
+/**
+ * Variable registering the agility of this unit.
+ */
+private int agility;
+
+/**
+ * @invar  The strength of each unit must be a valid strength for any
+ *         unit.
+ *       | isValidStrength(getStrength())
+ */
+
+
+
+/**
+ * Return the strength of this unit.
+ */
+@Basic @Raw
+public int getStrength() {
+	return this.strength;
+}
+
+/**
+ * Check whether the given strength is a valid strength for
+ * any unit.
+ *  
+ * @param  strength
+ *         The strength to check.
+ * @return 
+ *       | result == 
+*/
+public static boolean isValidStrength(int strength) {
+	if (strength < 1 || strength > 200)
+		return false;
+	return true;
+}
+
+/**
+ * Set the strength of this unit to the given strength.
+ * 
+ * @param  strength
+ *         The new strength for this unit.
+ * @post   If the given strength is a valid strength for any unit,
+ *         the strength of this new unit is equal to the given
+ *         strength.
+ *       | if (isValidStrength(strength))
+ *       |   then new.getStrength() == strength
+ */
+@Raw
+public void setStrength(int strength) {
+	if (isValidStrength(strength))
+		this.strength = strength;
+}
+
+/**
+ * Variable registering the strength of this unit.
+ */
+private int strength;
