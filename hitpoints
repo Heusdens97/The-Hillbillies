@@ -1,0 +1,48 @@
+
+/**
+ * Return the hitpoints of this unit.
+ */
+@Basic @Raw
+public int getHitpoints() {
+	return this.hitpoints;
+}
+
+/**
+ * Check whether the given hitpoints is a valid hitpoints for
+ * any unit.
+ *  
+ * @param  hitpoints
+ *         The hitpoints to check.
+ * @return 
+ *       | if (200*weight/100*toughness/100 >= hitpoints >= 1)
+ *       | then result == true
+ *       | else 
+ *       |		result == false
+*/
+public boolean isValidHitpoints(int hitpoints) {
+	return (hitpoints >= 1 && hitpoints <= (200*(getWeight()/100)*(getToughness()/100)));
+}
+
+/**
+ * Set the hitpoints of this unit to the given hitpoints.
+ * 
+ * @param  hitpoints
+ *         The new hitpoints for this unit.
+ * @pre    The given hitpoints must be a valid hitpoints for any
+ *         unit.
+ *       | isValidHitpoints(hitpoints)
+ * @post   The hitpoints of this unit is equal to the given
+ *         hitpoints.
+ *       | new.getHitpoints() == hitpoints
+ */
+@Raw
+public void setHitpoints(int hitpoints) {
+	assert isValidHitpoints(hitpoints);
+	this.hitpoints = hitpoints;
+}
+
+/**
+ * Variable registering the hitpoints of this unit.
+ */
+private int hitpoints;
+}
