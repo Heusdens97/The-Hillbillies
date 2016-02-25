@@ -95,13 +95,13 @@ public class Unit {
 			weight = (strength + agility)/2; 
 		setWeight(weight, LOWER, UPPER);
 		if (! isValidAgility(agility,LOWER,UPPER))
-			agility = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+			agility = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setAgility(agility, LOWER, UPPER);
 		if (! isValidStrength(strength,LOWER,UPPER))
-			strength = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+			strength = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setStrength(strength, LOWER, UPPER);
 		if (! isValidToughness(toughness,LOWER,UPPER))
-			toughness = (int)(Math.random() * (UPPER - LOWER)) + LOWER;
+			toughness = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setToughness(toughness, LOWER, UPPER);
 		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
 		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
