@@ -19,7 +19,7 @@ import ogp.framework.util.ModelException;
  * 			|isValidStrength(getStrength())
  * 			|isValidToughness(getToughness())
  * 			|isValidStamina(getStamina())
- * 			|isValidorietation(getOrientation())
+ * 			|isValidOrietation(getOrientation())
  * 
  * @version 1.0
  *
@@ -88,26 +88,18 @@ public class Unit {
 	 */
 	public Unit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness) throws ModelException{
 		this.setName(name);
-		if (! canHaveAsPosition(initialPosition))
+		double[] position = {initialPosition[0]+0.5,initialPosition[1]+0.5,initialPosition[2]+0.5};
+		if (! canHaveAsPosition(position))
 			throw new ModelException();
-		this.position = initialPosition;
-		if (! isValidWeight(weight, LOWER,UPPER))
-			weight = (strength + agility)/2; 
+		this.position = position;
 		setWeight(weight, LOWER, UPPER);
-		if (! isValidAgility(agility,LOWER,UPPER))
-			agility = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setAgility(agility, LOWER, UPPER);
-		if (! isValidStrength(strength,LOWER,UPPER))
-			strength = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setStrength(strength, LOWER, UPPER);
-		if (! isValidToughness(toughness,LOWER,UPPER))
-			toughness = (int)(Math.random() * (UPPER+1 - LOWER)) + LOWER;
 		setToughness(toughness, LOWER, UPPER);
 		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
 		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
 		setOrientation(Math.PI/2);
 	}
-	
 	private int UPPER = 100;
 	private int LOWER = 25;
 	private int MAX_STAMINA_AND_HITPOINTS = 200*(this.weight/100)*(this.toughness/100);
@@ -183,7 +175,7 @@ public class Unit {
 	 * Variable registering the position of this Unit.
 	 * 
 	 */
-	private final int[] position;
+	private final double[] position;
 	
 	/**
 	 * 
@@ -191,19 +183,19 @@ public class Unit {
 	 * 
 	 */
 	@Basic @Raw @Immutable
-	public int[] getPosition(){
+	public double[] getPosition(){
 		return this.position;
 	}
 	
 	/**
-	 * 
-	 * Return the maximal sizes of the world.
+	 * Return the maximal size of the game world.
 	 * 
 	 */
 	@Basic
 	public static int getMaxSize(){
 		return 50;
 	}
+	
 	/**
 	 * 
 	 * Check whether this Unit can have the given position as its position.
@@ -216,7 +208,7 @@ public class Unit {
 	 * 			|	else result == false
 	 */			
 	@Raw
-	public boolean canHaveAsPosition(int[] position){
+	public boolean canHaveAsPosition(double[] position){
 		return (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0);
 	}
 	/**
@@ -270,8 +262,15 @@ public class Unit {
 	 */
 	@Raw
 	public void setWeight(int weight, int begin, int end) {
-		if (isValidWeight(weight, begin, end))
-			this.weight = weight;
+		if (!isValidWeight(weight, begin, end))
+			if (weight > end)
+				weight = ((weight-begin) % (end - begin+1))+begin;		
+			else if (weight < begin || weight < (this.getStrength()+this.getAgility())/2)
+				if (this.getWeight() == 0)
+					weight = begin;
+				else
+					weight = this.getWeight();
+		this.weight = weight;
 	}
 	
 	/**
@@ -318,8 +317,15 @@ public class Unit {
 	 */
 	@Raw
 	public void setAgility(int agility, int begin, int end) {
-		if (isValidAgility(agility, begin, end))
-			this.agility = agility;
+		if (!isValidAgility(agility, begin, end))
+			if (agility > end)
+				agility = ((agility-begin) % (end - begin+1))+begin;		
+			else if (agility < begin)
+				if (this.getAgility() == 0)
+					agility = begin;
+				else
+					agility = this.getAgility();
+		this.agility = agility;
 	}
 
 	/**
@@ -372,8 +378,15 @@ public class Unit {
 	 */
 	@Raw
 	public void setStrength(int strength, int begin, int end) {
-		if (isValidStrength(strength, begin, end))
-			this.strength = strength;
+		if (!isValidStrength(strength, begin, end))
+			if (strength > end)
+				strength = ((strength-begin) % (end - begin+1))+begin;		
+			else if (strength < begin)
+				if (this.getStrength() == 0)
+					strength = begin;
+				else
+					strength = this.getStrength();
+		this.strength = strength;
 	}
 
 	/**
@@ -426,8 +439,15 @@ public class Unit {
 	 */
 	@Raw
 	public void setToughness(int toughness, int begin, int end) {
-		if (isValidToughness(toughness, begin, end))
-			this.toughness = toughness;
+		if (!isValidToughness(toughness, begin, end))
+			if (toughness > end)
+				toughness = ((toughness-begin) % (end - begin+1))+begin;		
+			else if (toughness < begin)
+				if (this.getToughness() == 0)
+					toughness = begin;
+				else
+					toughness = this.getToughness();
+		this.toughness = toughness;
 	}
 	
 	/**
@@ -564,8 +584,12 @@ public class Unit {
 	 */
 	@Raw
 	public void setOrientation(double orientation) {
-		if (isValidOrientation(orientation))
-			this.orientation = orientation;
+		if (!isValidOrientation(orientation))
+			if (orientation > 2*Math.PI)
+				orientation = ((orientation) % (2*Math.PI - 0));		
+			else if (orientation < 0)
+				orientation = 0;
+		this.orientation = orientation;
 	}
 
 	/**
