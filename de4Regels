@@ -1,0 +1,6 @@
+	public void advanceTime(double dt){
+		while ((dt > 0) && (dt < 0.2)){
+			this.position = this.getPosition();
+			dt -= 0.1;
+		}
+	}
