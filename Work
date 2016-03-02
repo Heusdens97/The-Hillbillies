@@ -1,0 +1,15 @@
+	private boolean working;
+	
+	
+	public boolean isWorking(){
+		return this.working;
+	}
+	public void work(){
+		float worktime = 500 / this.getStrength();
+		while(worktime > 0){
+			working = true;
+			advancetime(t);
+		}
+		working = false;
+		
+	}
