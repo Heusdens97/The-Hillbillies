@@ -1,15 +1,28 @@
 	private boolean working;
 	
-	
 	public boolean isWorking(){
 		return this.working;
 	}
+	private double initial_work_time = 500 / this.getStrength();
 	public void work(){
-		float worktime = 500 / this.getStrength();
+		double worktime = initial_work_time;
 		while(worktime > 0){
-			working = true;
-			advancetime(t);
+			this.working = true;
+			advancetime(t, worktime, 0, 0);
+			if (this.interrupt)
+				break;
 		}
-		working = false;
+		this.working = false;
+		this.interrupt = false;
 		
 	}
+
+	private boolean interrupt;
+	
+
+	public void advancetime(double dt, double worktime,double sprinttime,double resttime){
+		if ((dt > 0) && (dt < 0.2)){
+			if (isWorking()){
+				worktime -= dt;
+				if(isMoving() || isResting())
+					this.interrupt = true;
