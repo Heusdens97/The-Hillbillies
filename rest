@@ -1,0 +1,41 @@
+ADVANCETIME
+  timetillrest -= dt;
+		if (timetillrest <= 0){
+			rest();
+		}
+		if (isResting()){
+			if (this.getHitpoints() != this.GetMaxStaminaAndHitPoints()){
+				this.setHitpoints(this.getHitpoints() + 1);
+			}
+			else if(this.getStamina() != this.GetMaxStaminaAndHitPoints()){
+				this.setStamina(this.getStamina() + 1);
+			}
+			else{
+				this.resting = false;
+			}
+		if (isResting() && isFighting()){
+			this.resting = false;
+		}
+		
+APART			
+	private boolean interrupt;
+	
+	public void rest() throws ModelException{
+		this.resting = true;
+		timetillrest = 180;
+		while (isResting()){
+			advanceTime(t);
+		}
+		
+	}
+	private boolean resting;
+	public boolean isResting(){
+		return resting;	
+	}
+	
+GLOBAL
+  private double initial_timetillrest = 180;
+	private double timetillrest;
+	
+UNIT
+  this.timetillrest = this.initial_timetillrest;
