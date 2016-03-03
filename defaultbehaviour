@@ -1,0 +1,28 @@
+	public void startDefaultBehaviour(){
+		defaultBehaviour = true;
+	}
+	public void stopDefaultBehaviour(){
+		defaultBehaviour = false;
+	}
+	
+	public boolean isdefaultBehaviourEnabled(){
+		return defaultBehaviour;
+	}
+
+	
+	public void setdefaultBehaviourEnabled( boolean value) throws ModelException{
+		defaultBehaviour = value;
+		if (value){
+			Random rand = new Random();
+			int randomNumber = rand.nextInt() % 3;
+			switch (randomNumber){
+				case 0:
+					rest();
+					break;
+				case 1:
+					work();
+					break;
+				case 2:
+					//movetorandomposition
+					break;
+			}
