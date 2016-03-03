@@ -2,6 +2,7 @@ package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.ModelException;
+import java.util.*;
 
 /**
  * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
@@ -77,14 +78,14 @@ public class Unit {
 	 *	       	|   else new.getToughness() == random(25,100)
 	 * @post   	The Stamina of this new unit is equal to the given
 	 *         	Stamina.
-	 *       	| new.getstamina() == MAX_STAMINA_AND_HITPOINTS (=200*(weight/100)*(toughness/100))
+	 *       	| new.getstamina() == GetMaxStaminaAndHitPoints() (=200*(weight/100)*(toughness/100))
 	 * @post   	The orientation is equal to math.pi/2
 	 * 			| new.getorientation() == math.pi/2
 	 * @throws	ModelException
 	 * 			Throws an exception if it isnt't valid
 	 * 			| ! canHaveAsPosition(initialposition)
 	 */
-	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness) throws ModelException{
+	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior) throws ModelException{
 		this.setName(name);
 		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
 		if (! canHaveAsPosition(position))
@@ -94,14 +95,15 @@ public class Unit {
 		setAgility(agility, LOWER, UPPER);
 		setStrength(strength, LOWER, UPPER);
 		setToughness(toughness, LOWER, UPPER);
-		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
-		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
+		this.setStamina(this.getMaxStaminaAndHitPoints());
+		this.setHitpoints(this.getMaxStaminaAndHitPoints());
 		setOrientation(Math.PI/2);
+		this.timetillrest = this.initial_timetillrest;
+		setDefaultBehaviourEnabled(enableDefaultBehavior);
 		
 	}
 	private int UPPER = 100;
 	private int LOWER = 25;
-	private int MAX_STAMINA_AND_HITPOINTS = 200*(this.weight/100)*(this.toughness/100);
 	
 	/**
 	 * Set the Name of this Unit to the given Name.
@@ -180,7 +182,7 @@ public class Unit {
 	 * Returns the position of this unit.
 	 * 
 	 */
-	@Basic @Raw @Immutable
+	@Basic @Raw
 	public double[] getPosition(){
 		return this.position;
 	}
@@ -467,13 +469,13 @@ public class Unit {
 	 *  
 	 * @param  	stamina
 	 *         	The stamina to check.
-	 * @return 	true if the stamina is valid: stamina is between MAX_STAMINA_AND_HITPOINTS and 0 or equal his bounds
-	 *       	| if (MAX_STAMINA_AND_HITPOINTS) >= stamina >= 0)
+	 * @return 	true if the stamina is valid: stamina is between GetMaxStaminaAndHitPoints() and 0 or equal his bounds
+	 *       	| if (GetMaxStaminaAndHitPoints()) >= stamina >= 0)
 	 *       	| 	then result == true
 	 *       	| 	else result == false
 	*/
 	public boolean isValidStamina(int stamina) {
-		return (stamina >= 0 && stamina <= (MAX_STAMINA_AND_HITPOINTS));
+		return (stamina >= 0 && stamina <= (this.getMaxStaminaAndHitPoints()));
 	}
 
 	/**
@@ -514,13 +516,13 @@ public class Unit {
 	 *  
 	 * @param 	hitpoints
 	 *         	The hitpoints to check.
-	 * @return 	true if the hitpoints is valid: hitpoints is between MAX_STAMINA_AND_HITPOINTS and 0 or equal his bounds
-	 *       	| if (MAX_STAMINA_AND_HITPOINTS) >= hitpoints >= 0)
+	 * @return 	true if the hitpoints is valid: hitpoints is between GetMaxStaminaAndHitPoints() and 0 or equal his bounds
+	 *       	| if (GetMaxStaminaAndHitPoints()) >= hitpoints >= 0)
 	 *       	| 	then result == true
 	 *       	| 	else result == false
 	*/
 	public boolean isValidHitpoints(int hitpoints) {
-		return (hitpoints >= 0 && hitpoints <= (MAX_STAMINA_AND_HITPOINTS));
+		return (hitpoints >= 0 && hitpoints <= (this.getMaxStaminaAndHitPoints()));
 	}
 	
 	/**
@@ -605,6 +607,24 @@ public class Unit {
 		if (!isValidTime(dt))
 			throw new ModelException();
 		else {
+			timetillrest -= dt;
+			if (timetillrest <= 0){
+				rest();
+			}
+			if (isResting()){
+				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
+					this.setHitpoints(this.getHitpoints() + 1); //niet juist
+				}
+				else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
+					this.setStamina(this.getStamina() + 1); // niet juist
+				}
+				else{
+					this.resting = false;
+				}
+			}
+			if (isResting() && isAttacking()){
+				this.resting = false;
+			}
 			if (this.getStamina() == 0 && isSprinting())
 				stopSprinting();
 			if (isWorking())
@@ -647,9 +667,9 @@ public class Unit {
 	public void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
 		if ((isMoving()) && (this.getDestiny() != null)){
-			if (this.getPosition()[2]- this.getDestiny()[2] == -1)
+			if ((int)(this.getPosition()[2]- this.getDestiny()[2]) == -1)
 				speed = (1/(double)2)*speed;
-			else if (this.getPosition()[2]-this.getDestiny()[2] == 1)
+			else if ((int)(this.getPosition()[2]-this.getDestiny()[2]) == 1)
 				speed = (1.2)*speed;
 			if (isSprinting())
 				startSprinting();
@@ -693,9 +713,9 @@ public class Unit {
 		setDestiny(Adjacent);
 		startMoving();
 		if (canHaveAsPosition(Adjacent)){
-			while ((this.getPosition()[0] != Adjacent[0])&&(this.getPosition()[1] != Adjacent[1])&&(this.getPosition()[2] != Adjacent[2])){
+			while ((this.getPosition()[0] != Adjacent[0])||(this.getPosition()[1] != Adjacent[1])||(this.getPosition()[2] != Adjacent[2])){
 				advanceTime(t);
-				if ((this.getPosition()[0]> Adjacent[0])&&(this.getPosition()[1]> Adjacent[1])&&(this.getPosition()[2]> Adjacent[2])){
+				if ((this.getPosition()[0]>= Adjacent[0])&&(this.getPosition()[1]>= Adjacent[1])&&(this.getPosition()[2]>= Adjacent[2])){
 					this.position = Adjacent; //waarom haakjes?
 				}
 			}
@@ -753,11 +773,95 @@ public class Unit {
 	
 	private boolean interrupt;
 	
+	public int getMaxStaminaAndHitPoints(){
+		return (int)(200*(this.getWeight()/(double)100)*(this.getToughness()/(double)100));
+	}
+	
+	public int[] getCubeCoordinate() throws ModelException{
+		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};
+	}
+	public void fight(Unit attacker, Unit defender) throws ModelException{
+		attack(defender);
+		defend(attacker);
+		
+	}
+	public void attack(Unit defender) throws ModelException{ //controleren getposition = defenderposition, java doet raar
+		if ((this.getPosition() == defender.getPosition())||(Neighbouring(defender))){
+			this.attacking = true;
+		}
+			
+	}
+	
+	public void defend(Unit attacker) throws ModelException{
+		if ((this.getPosition() == attacker.getPosition())||(Neighbouring(attacker))){
+			
+		}
+			
+	}
+	
+	public boolean Neighbouring(Unit other){
+		double[] me = {this.getPosition()[0], this.getPosition()[1],this.getPosition()[2]};
+		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
+		if ((((int)(me[0]-different[0]) == 1)||(((int)me[0]-different[0]) == -1))&&((((int)me[1]-different[1]) == -1)||(((int)me[1]-different[1]) == -1))&&((((int)me[2]-different[2]) == -1)||(((int)me[2]-different[2]) == -1)))
+			return true;	
+		return false;
+	}
+	
+	private double initial_timetillrest = 180;
+	private double timetillrest;
+	
+	public void rest() throws ModelException{
+		this.resting = true;
+		this.timetillrest = 180;
+		while (isResting()){
+			advanceTime(t);
+		}
+		
+	}
+	private boolean resting;
+	public boolean isResting(){
+		return this.resting;	
+	}
+	
+	public boolean isAttacking(){
+		return this.attacking;
+	}
+	
+	public boolean attacking;
+	
+	public void startDefaultBehaviour(){
+		this.defaultBehaviour = true;
+	}
+	public void stopDefaultBehaviour(){
+		this.defaultBehaviour = false;
+	}
+	
+	public boolean isDefaultBehaviourEnabled(){
+		return this.defaultBehaviour;
+	}
 
-	
-	
-	
-	
+	public void setDefaultBehaviourEnabled(boolean value) throws ModelException{
+		this.defaultBehaviour = value;
+		if (value){
+			Random rand = new Random();
+			int randomNumber = rand.nextInt(3);
+			switch (randomNumber){
+				case 0:
+					rest();
+					break;
+				case 1:
+					work();
+					break;
+				case 2:
+					int randomx = rand.nextInt(getMaxSize() - 1);
+				    int randomy = rand.nextInt(getMaxSize() - 1);
+				    int randomz = rand.nextInt(getMaxSize() - 1);
+				    int[] randompos = {randomx, randomy, randomz};
+				    moveTo(randompos);
+				    break;
+			}
+		}
+	}
 	
 	
 }
