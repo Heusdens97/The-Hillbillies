@@ -1,8 +1,6 @@
 package hillbillies.model;
 
-import be.kuleuven.cs.som.annotate.Basic;
-import be.kuleuven.cs.som.annotate.Immutable;
-import be.kuleuven.cs.som.annotate.Raw;
+import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.ModelException;
 
 /**
@@ -31,7 +29,7 @@ public class Unit {
 	 * 
 	 * @param 	name
 	 * 			The name of this unit
-	 * @param 	initialPosition
+	 * @param 	initialposition
 	 * 			The initial position of the unit, as an array with 3 elements {x,y,z}
 	 * @param 	weight
 	 * 			The weight of the unit
@@ -86,9 +84,9 @@ public class Unit {
 	 * 			Throws an exception if it isnt't valid
 	 * 			| ! canHaveAsPosition(initialposition)
 	 */
-	public Unit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness) throws ModelException{
+	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness) throws ModelException{
 		this.setName(name);
-		double[] position = {initialPosition[0]+0.5,initialPosition[1]+0.5,initialPosition[2]+0.5};
+		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
 		if (! canHaveAsPosition(position))
 			throw new ModelException();
 		this.position = position;
@@ -99,6 +97,7 @@ public class Unit {
 		this.setStamina(MAX_STAMINA_AND_HITPOINTS);
 		this.setHitpoints(MAX_STAMINA_AND_HITPOINTS);
 		setOrientation(Math.PI/2);
+		
 	}
 	private int UPPER = 100;
 	private int LOWER = 25;
@@ -164,7 +163,6 @@ public class Unit {
 			return false;
 		if (!Character.isUpperCase(name.codePointAt(0)))
 			return false;
-		// vraag: mag eerste letter " zijn?
 		if (!name.matches("[\"|\'|A-Z|a-z|\\s]*"))
 			return false;
 		return true;		
@@ -175,7 +173,7 @@ public class Unit {
 	 * Variable registering the position of this Unit.
 	 * 
 	 */
-	private final double[] position;
+	private double[] position;
 	
 	/**
 	 * 
@@ -596,5 +594,155 @@ public class Unit {
 	 * Variable registering the orientation of this unit.
 	 */
 	private double orientation;
+	
+	private boolean defaultBehaviour;
+	private boolean sprinting;
+	private double[] destiny;
+	
+	private double speed;
+	
+	public void advanceTime(double dt){
+		if (this.getStamina() == 0 && isSprinting())
+			stopSprinting();
+		if (isWorking())
+			this.worktime = this.worktime - 0.2;
+		if (isMoving()){
+			//efficienter!!
+			//setSpeed();
+			double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+			double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+			double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
+			this.position = New;
+			this.orientation = Math.atan2(v[1],v[0]);
+		}
+	}
+	public boolean isMoving(){
+//		double []now = this.getPosition();
+//		advanceTime(t);
+//		if (now == this.getPosition())
+//				return false;
+//		return true;
+		return this.moving;
+	}
+	
+	private boolean moving;
+	
+	public void startMoving(){
+		this.moving = true;
+	}
+	
+	public void stopMoving(){
+		this.moving = false;
+	}
+	
+	public void setSpeed(){
+	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
+		if ((isMoving()) && (this.getDestiny() != null)){
+			if (this.getPosition()[2]- this.getDestiny()[2] == -1)
+				speed = (1/(double)2)*speed;
+			else if (this.getPosition()[2]-this.getDestiny()[2] == 1)
+				speed = (1.2)*speed;
+			if (isSprinting())
+				startSprinting();
+			//else
+			//speed = speed
+		}
+		this.speed = speed;
+	}
+	
+	public double getSpeed(){
+		setSpeed();
+		return this.speed;
+	}
+	
+	public boolean isSprinting(){
+		return this.sprinting;
+	}
+	
+	public double[] getDestiny(){
+		return this.destiny;
+	}
+	
+	public void setDestiny(double[] position){
+		if (canHaveAsPosition(position))
+			this.destiny = position;
+	}
+	
+	public void startSprinting(){
+		if ((isMoving())&& (this.getStamina() > 0))
+			this.speed = 2*1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));;
+			this.sprinting = true;
+	}
+	
+	public void stopSprinting(){
+		this.sprinting = false;
+		setSpeed();
+	}
+	
+	public void moveToAdjacent(int dx, int dy, int dz){
+		double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
+		setDestiny(Adjacent);
+		startMoving();
+		if (canHaveAsPosition(Adjacent)){
+			while ((this.getPosition()[0] != Adjacent[0])&&(this.getPosition()[1] != Adjacent[1])&&(this.getPosition()[2] != Adjacent[2])){
+				advanceTime(t);
+				if ((this.getPosition()[0]> Adjacent[0])&&(this.getPosition()[1]> Adjacent[1])&&(this.getPosition()[2]> Adjacent[2])){
+					this.position = Adjacent; //waarom haakjes?
+				}
+			}
+		}
+	}
+	
+	private double t = 0.2;
+	
+	public void moveTo(int[] cube){
+		double[] Position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+		//setDestiny(position);
+		int dx,dy,dz;
+		while ((this.getPosition()[0] != Position[0])&&(this.getPosition()[1] != Position[1])&&(this.getPosition()[2] != Position[2])){
+			if (this.getPosition()[0] == Position[0])
+				dx = 0;
+			else if (this.getPosition()[0] < Position[0])
+				dx = 1;
+			else
+				dx = -1;
+			if (this.getPosition()[1] == Position[1])
+				dy = 0;
+			else if (this.getPosition()[1] < Position[1])
+				dy = 1;
+			else
+				dy = -1;
+			if (this.getPosition()[2] == Position[0])
+				dz = 0;
+			else if (this.getPosition()[2] < Position[0])
+				dz = 1;
+			else
+				dz = -1;
+			moveToAdjacent(dx, dy, dz);
+		}	
+		this.position = Position;
+	}
+	
+	private boolean working;
+	
+	public boolean isWorking(){
+		return this.working;
+	}
+	public void work(){
+		this.worktime = 500 / (double)this.getStrength();
+		while(this.worktime > 0){
+			this.working = true;
+			advanceTime(t);
+		}
+		this.working = false;
+	}
+	
+	private double worktime;
 
+	
+	
+	
+	
+	
+	
 }
