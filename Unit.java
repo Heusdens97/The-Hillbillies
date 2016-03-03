@@ -601,21 +601,26 @@ public class Unit {
 	
 	private double speed;
 	
-	public void advanceTime(double dt){
-		if (this.getStamina() == 0 && isSprinting())
-			stopSprinting();
-		if (isWorking())
-			this.worktime = this.worktime - 0.2;
-		if (isMoving()){
-			//efficienter!!
-			//setSpeed();
-			double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
-			double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
-			double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-			this.position = New;
-			this.orientation = Math.atan2(v[1],v[0]);
+	public void advanceTime(double dt) throws ModelException{
+		if (!isValidTime(dt))
+			throw new ModelException();
+		else {
+			if (this.getStamina() == 0 && isSprinting())
+				stopSprinting();
+			if (isWorking())
+				this.worktime = this.worktime - dt;
+			if (isMoving()){
+				//efficienter!!
+				//setSpeed();
+				double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+				double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+				double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
+				this.position = New;
+				this.orientation = Math.atan2(v[1],v[0]);
+			}
 		}
 	}
+	
 	public boolean isMoving(){
 //		double []now = this.getPosition();
 //		advanceTime(t);
@@ -623,6 +628,10 @@ public class Unit {
 //				return false;
 //		return true;
 		return this.moving;
+	}
+	
+	public boolean isValidTime(double dt){
+		return ((dt >= 0) && (dt < 0.2));
 	}
 	
 	private boolean moving;
@@ -679,7 +688,7 @@ public class Unit {
 		setSpeed();
 	}
 	
-	public void moveToAdjacent(int dx, int dy, int dz){
+	public void moveToAdjacent(int dx, int dy, int dz) throws ModelException{
 		double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 		setDestiny(Adjacent);
 		startMoving();
@@ -693,9 +702,9 @@ public class Unit {
 		}
 	}
 	
-	private double t = 0.2;
+	private double t = 0.1;
 	
-	public void moveTo(int[] cube){
+	public void moveTo(int[] cube) throws ModelException{
 		double[] Position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
 		//setDestiny(position);
 		int dx,dy,dz;
@@ -728,16 +737,22 @@ public class Unit {
 	public boolean isWorking(){
 		return this.working;
 	}
-	public void work(){
+	public void work() throws ModelException{
 		this.worktime = 500 / (double)this.getStrength();
 		while(this.worktime > 0){
 			this.working = true;
 			advanceTime(t);
+			if (this.interrupt)
+				break;
 		}
 		this.working = false;
+		this.interrupt = false;
 	}
 	
 	private double worktime;
+	
+	private boolean interrupt;
+	
 
 	
 	
