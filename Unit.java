@@ -2,6 +2,8 @@ package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.ModelException;
+
+import java.math.*;
 import java.util.*;
 
 /**
@@ -607,7 +609,7 @@ public class Unit {
 		if (!isValidTime(dt))
 			throw new ModelException();
 		else {
-			timetillrest -= dt;
+			round(timetillrest -= dt,2);
 			if (timetillrest <= 0){
 				rest();
 			}
@@ -629,15 +631,13 @@ public class Unit {
 				stopSprinting();
 			if (isWorking())
 				this.worktime = this.worktime - dt;
-			if (isMoving()){
-				//efficienter!!
-				//setSpeed();
-				double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
-				double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
-				double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-				this.position = New;
-				this.orientation = Math.atan2(v[1],v[0]);
-			}
+			startMoving();
+			double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+			double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+			double[] New = {round(this.getPosition()[0] + v[0]*dt,2),round(this.getPosition()[1] + v[1]*dt,2),round(this.getPosition()[2] + v[2]*dt,2)};
+			this.position = New;
+			this.orientation = Math.atan2(v[1],v[0]);
+			stopMoving();
 		}
 	}
 	
@@ -711,14 +711,14 @@ public class Unit {
 	public void moveToAdjacent(int dx, int dy, int dz) throws ModelException{
 		double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 		setDestiny(Adjacent);
-		startMoving();
 		if (canHaveAsPosition(Adjacent)){
-			while ((this.getPosition()[0] != Adjacent[0])||(this.getPosition()[1] != Adjacent[1])||(this.getPosition()[2] != Adjacent[2])){
+			while ((round(this.getPosition()[0],1) != Adjacent[0])||(round(this.getPosition()[1],1) != Adjacent[1])||(round(this.getPosition()[2],1) != Adjacent[2])){
 				advanceTime(t);
-				if ((this.getPosition()[0]>= Adjacent[0])&&(this.getPosition()[1]>= Adjacent[1])&&(this.getPosition()[2]>= Adjacent[2])){
-					this.position = Adjacent; //waarom haakjes?
-				}
+//				if ((Math.abs(round(this.getPosition()[0],1) - Adjacent[0]) == 0.1)&&(Math.abs(round(this.getPosition()[1],1) - Adjacent[1]) == 0.1) && (Math.abs(round(this.getPosition()[2],1) - Adjacent[2]) == 0.1)){
+//					this.position = Adjacent;
+//				}
 			}
+			this.position = Adjacent;
 		}
 	}
 	
@@ -861,6 +861,14 @@ public class Unit {
 				    break;
 			}
 		}
+	}
+	
+	public static double round(double value, int places) {
+	    if (places < 0) throw new IllegalArgumentException();
+
+	    BigDecimal bd = new BigDecimal(value);
+	    bd = bd.setScale(places, RoundingMode.HALF_UP);
+	    return bd.doubleValue();
 	}
 	
 	
