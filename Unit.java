@@ -631,13 +631,13 @@ public class Unit {
 				stopSprinting();
 			if (isWorking())
 				this.worktime = this.worktime - dt;
-			startMoving();
-			double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
-			double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
-			double[] New = {round(this.getPosition()[0] + v[0]*dt,2),round(this.getPosition()[1] + v[1]*dt,2),round(this.getPosition()[2] + v[2]*dt,2)};
-			this.position = New;
-			this.orientation = Math.atan2(v[1],v[0]);
-			stopMoving();
+			if (isMoving()){
+				double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+				double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+				double[] New = {round(this.getPosition()[0] + v[0]*dt,2),round(this.getPosition()[1] + v[1]*dt,2),round(this.getPosition()[2] + v[2]*dt,2)};
+				this.position = New;
+				this.orientation = Math.atan2(v[1],v[0]);
+			}
 		}
 	}
 	
@@ -713,12 +713,14 @@ public class Unit {
 		setDestiny(Adjacent);
 		if (canHaveAsPosition(Adjacent)){
 			while ((round(this.getPosition()[0],1) != Adjacent[0])||(round(this.getPosition()[1],1) != Adjacent[1])||(round(this.getPosition()[2],1) != Adjacent[2])){
+				startMoving();
 				advanceTime(t);
 //				if ((Math.abs(round(this.getPosition()[0],1) - Adjacent[0]) == 0.1)&&(Math.abs(round(this.getPosition()[1],1) - Adjacent[1]) == 0.1) && (Math.abs(round(this.getPosition()[2],1) - Adjacent[2]) == 0.1)){
 //					this.position = Adjacent;
 //				}
 			}
 			this.position = Adjacent;
+			stopMoving();
 		}
 	}
 	
@@ -729,6 +731,7 @@ public class Unit {
 		//setDestiny(position);
 		int dx,dy,dz;
 		while ((this.getPosition()[0] != Position[0])&&(this.getPosition()[1] != Position[1])&&(this.getPosition()[2] != Position[2])){
+			startMoving();
 			if (this.getPosition()[0] == Position[0])
 				dx = 0;
 			else if (this.getPosition()[0] < Position[0])
@@ -750,6 +753,7 @@ public class Unit {
 			moveToAdjacent(dx, dy, dz);
 		}	
 		this.position = Position;
+		stopMoving();
 	}
 	
 	private boolean working;
