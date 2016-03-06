@@ -568,12 +568,12 @@ public class Unit {
 	 * @param  	orientation
 	 *         	The orientation to check.
 	 * @return 	true if the orientation is valid: orientation is between 0 and 2*math.pi or equal his bounds.
-	 *       	| if (0 <= orientation < 2*math.pi)
+	 *       	| if (-math.pi <= orientation < math.pi)
 	 *       	| 	then result == true
 	 *       	| 	else result == false 
 	*/
 	public static boolean isValidOrientation(double orientation) {
-		return ((orientation >= 0) && (orientation < 2*Math.PI));
+		return ((orientation >= -Math.PI) && (orientation <= Math.PI));
 	}
 
 	/**
@@ -590,10 +590,10 @@ public class Unit {
 	@Raw
 	public void setOrientation(double orientation) {
 		if (!isValidOrientation(orientation))
-			if (orientation > 2*Math.PI)
-				orientation = ((orientation) % (2*Math.PI - 0));		
-			else if (orientation < 0)
-				orientation = 0;
+			if (orientation > Math.PI)
+				orientation = ((orientation) % (-Math.PI-Math.PI));
+			else if (orientation < -Math.PI)
+				orientation = -Math.PI;	
 		this.orientation = orientation;
 	}
 
@@ -611,7 +611,7 @@ public class Unit {
 	public void advanceTime(double dt){
 		try {
 			if (!isValidTime(dt))
-				throw new ModelException();
+				System.out.println("not valid time");
 			else {
 				this.timetillrest -= dt;
 				if (this.timetillrest <= 0){
@@ -650,7 +650,6 @@ public class Unit {
 						if (isSprinting()){
 							this.stamina_double = this.stamina_double- (dt/(double)0.1);
 							setStamina((int)this.stamina_double);
-							System.out.println(this.stamina_double);
 						}
 					}
 					if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
@@ -693,14 +692,19 @@ public class Unit {
 		return this.moving;
 	}
 	
-	public boolean isValidTime(double dt){
-		return ((dt >= 0) && (dt < 0.2));
+	public boolean isValidTime(double dt) throws ModelException{
+		if ((dt >= 0) && (dt < 0.2))
+			return true;
+		else
+			throw new ModelException();
+			
 	}
 	
 	private boolean moving;
 	
 	public void startMoving(){
 		this.moving = true;
+		this.resting = false;
 	}
 	
 	public void stopMoving(){
