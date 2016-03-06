@@ -99,6 +99,8 @@ public class Unit {
 		setStrength(strength, LOWER, UPPER);
 		setToughness(toughness, LOWER, UPPER);
 		this.setStamina(this.getMaxStaminaAndHitPoints());
+		this.stamina_double = getMaxStaminaAndHitPoints();
+		this.hitpoints_double = getMaxStaminaAndHitPoints();
 		this.setHitpoints(this.getMaxStaminaAndHitPoints());
 		setOrientation(Math.PI/2);
 		this.timetillrest = this.initial_timetillrest;
@@ -617,12 +619,13 @@ public class Unit {
 				}
 				if (isResting()){
 					if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
-						this.setHitpoints((int)(this.getHitpoints() + dt * (this.getToughness())/((double)(200)*0.2)));
+						this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
+						this.setHitpoints((int)(this.hitpoints_double));
 					}
 					else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
-						this.setStamina((int)(this.getStamina() + dt * (this.getToughness())/((double)(100)*0.2)));
+						this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
+						this.setStamina((int)(this.stamina_double));
 					}
-					//zelfde probleem als sprinting
 					else{
 						this.resting = false;
 					}
@@ -634,7 +637,7 @@ public class Unit {
 					stopSprinting();
 				if (isWorking())
 					this.worktime = this.worktime - dt;
-				setSpeed();
+				
 				if ((this.getPosition() != null)&&(this.getDestiny()!=null)){
 					if ((this.getPosition() != this.getDestiny())){
 						//int[] cube = {(int)this.getDestiny()[0],(int)this.getDestiny()[1],(int)this.getDestiny()[2]};
@@ -643,11 +646,15 @@ public class Unit {
 						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
 						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
 						this.position = New;
-						this.orientation = Math.atan2(v[1],v[0]);
+						setOrientation(Math.atan2(v[1],v[0]));
 						if (isSprinting()){
-							setStamina((int)(this.getStamina()- dt/(double)0.1));
-							//stamina is ne int, dus -0.0001 wordt direct -1 gedaan...
+							this.stamina_double = this.stamina_double- (dt/(double)0.1);
+							setStamina((int)this.stamina_double);
+							System.out.println(this.stamina_double);
 						}
+					}
+					if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
+						setSpeed();
 					}
 					if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
 						stopMoving();
@@ -673,6 +680,9 @@ public class Unit {
 		}
 		
 	}
+	
+	private double stamina_double;
+	private double hitpoints_double;
 	
 	public boolean isMoving(){
 //		double []now = this.getPosition();
