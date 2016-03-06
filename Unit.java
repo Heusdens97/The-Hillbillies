@@ -1,7 +1,6 @@
 package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
-import javafx.scene.shape.MoveTo;
 import ogp.framework.util.ModelException;
 
 import java.math.*;
@@ -99,13 +98,12 @@ public class Unit {
 		setStrength(strength, LOWER, UPPER);
 		setToughness(toughness, LOWER, UPPER);
 		this.setStamina(this.getMaxStaminaAndHitPoints());
-		this.stamina_double = getMaxStaminaAndHitPoints();
-		this.hitpoints_double = getMaxStaminaAndHitPoints();
+		this.stamina_double = this.getMaxStaminaAndHitPoints();
+		this.hitpoints_double = this.getMaxStaminaAndHitPoints();
 		this.setHitpoints(this.getMaxStaminaAndHitPoints());
 		setOrientation(Math.PI/2);
 		this.timetillrest = this.initial_timetillrest;
 		setDefaultBehaviourEnabled(enableDefaultBehavior);
-		
 	}
 	private int UPPER = 100;
 	private int LOWER = 25;
@@ -613,14 +611,24 @@ public class Unit {
 	private double speed;
 	
 	public void advanceTime(double dt){
-		try {
-			if (!isValidTime(dt))
-				System.out.println("not valid time");
-			else {
-				
+		try{
+			if (!isValidTime(dt)){
+				System.out.println("ongeldige time");
+			} else {
 				this.timetillrest -= dt;
 				if (this.timetillrest <= 0){
 					rest();
+				}
+				if (isAttacking()){
+					this.fighttime -= dt;
+					if (this.fighttime >0){
+						fight(this.defender);
+					}
+					else if (this.fighttime <= 0){
+						this.attacking = false;
+						this.defender = null;
+						this.fighttime = 1;
+					}
 				}
 				if (isResting()){
 					if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
@@ -640,9 +648,6 @@ public class Unit {
 				}
 				if (this.getStamina() == 0 && isSprinting())
 					stopSprinting();
-				if (isWorking())
-					this.worktime = this.worktime - dt;
-				
 				if ((this.getPosition() != null)&&(this.getDestiny()!=null)){
 					if ((this.getPosition() != this.getDestiny())){
 						//int[] cube = {(int)this.getDestiny()[0],(int)this.getDestiny()[1],(int)this.getDestiny()[2]};
@@ -662,27 +667,20 @@ public class Unit {
 					}
 					if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
 						stopMoving();
-						this.position = this.getDestiny();
-//						if (((this.getDestiny()[0]-(int)this.getDestiny()[0])!=0.5)||((this.getDestiny()[1]-(int)this.getDestiny()[1])!=0.5)||((this.getDestiny()[1]-(int)this.getDestiny()[1])!=0.5)){
-//							this.getPosition()[0] = (int)this.getDestiny()[0] + 0.5;
-//							this.getPosition()[1] = (int)this.getDestiny()[1] + 0.5;
-//							this.getPosition()[2] = (int)this.getDestiny()[2] + 0.5;
-//						}
-							
+						this.position = this.getDestiny();	
 					}
 				}
 				if (isDefaultBehaviourEnabled())
 					setDefaultBehaviourEnabled(true);
-				if (isWorking())
+				if (isWorking()){
 					work();
 					this.worktime -= dt;
-				
+				}
 			}
 		} catch (ModelException e) {
 			dt = 0.1;
 			e.printStackTrace();
 		}
-		
 	}
 	
 	private double stamina_double;
@@ -814,18 +812,17 @@ public class Unit {
 		return this.working;
 	}
 	public void work() throws ModelException{ 
-		if(this.worktime > 0){
+		if (!isWorking()){
+			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
-			if (this.interrupt)
-				this.worktime = 0;
+		}else{
+			if (this.worktime <=0)
+				this.working = false;
 		}
-		this.working = false;
-		this.interrupt = false;
 	}
 	
-	private double worktime = 500 / (double)this.getStrength();
+	private double worktime;
 	
-	private boolean interrupt = false;
 	
 	public int getMaxStaminaAndHitPoints(){
 		return (int)(200*(this.getWeight()/(double)100)*(this.getToughness()/(double)100));
@@ -834,34 +831,85 @@ public class Unit {
 	public int[] getCubeCoordinate() throws ModelException{
 		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};
 	}
-	public void fight(Unit defender) throws ModelException{
-		attack(defender); 
-		defend(this);
-		
-	}
-	public void attack(Unit defender) throws ModelException{ //this attacks the defender
-		if ((this.getPosition() == defender.getPosition())||(isNeighbour(defender))){
+	
+	private Unit defender;
+	private double fighttime;
+	
+	public void fight(Unit defender) throws ModelException{ 
+		if (!isAttacking())
 			this.attacking = true;
+			this.defender = defender;
+		if ((defender != null)&&(defender != this)){
+			attack(this,defender); 
+			defend(defender,this);
+			this.setOrientation((Math.atan2((defender.getPosition()[1]-this.getPosition()[1]),(defender.getPosition()[0]-this.getPosition()[0]))));
+			defender.setOrientation((Math.atan2((this.getPosition()[1]-defender.getPosition()[1]),(this.getPosition()[0]-defender.getPosition()[0]))));
+		}		
+	}
+	public void attack(Unit attacker,Unit defender) throws ModelException{
+		if (((attacker.getPosition() == defender.getPosition())||(isNeighbour(attacker,defender)))){
+			attacker.attacking = true;
 		}
-			
 	}
 	
-	public void defend(Unit attacker) throws ModelException{ // this defends himself relative to the attacker
-		if ((this.getPosition() == attacker.getPosition())||(isNeighbour(attacker))){
-			this.attacking = false;
-			//dodging
-			double probability_dodge = (0.20)*((this.agility)/((double)attacker.agility));
-			if(new Random().nextDouble() <= probability_dodge)
-				dodge();
-			
+	public void defend(Unit defender,Unit attacker) throws ModelException{
+		if ((defender.getPosition() == attacker.getPosition())||(isNeighbour(attacker,defender))){
+			defender.attacking = false;
+			defender.defender = attacker;
+			double probability_dodge = (0.90)*((defender.getAgility())/((double)attacker.getAgility()));
+			double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
+			if (new Random().nextDouble() <= probability_dodge){
+				dodge(defender,attacker);
+				System.out.println("dodged");
+			} else if (new Random().nextDouble() <= probability_block){
+				System.out.println("blocked");
+			} else {
+				defender.hitpoints_double = defender.hitpoints_double - (attacker.getStrength()/(double)10);
+				defender.setHitpoints((int)(defender.hitpoints_double));
+				System.out.println("hit");
+			}
 		}
-			
-	}
+	}	
 	
-	public boolean isNeighbour(Unit other){
-		double[] me = {this.getPosition()[0], this.getPosition()[1],this.getPosition()[2]};
+	public void dodge(Unit defender,Unit attacker) throws ModelException{
+		int random_x = 0;
+		int random_y = 0;
+		Random rand = new Random();
+		int randomNumber = rand.nextInt(8);
+		switch (randomNumber){
+			case 0:
+				random_x=1;
+				random_y=-1;
+			case 1:
+				random_x=0;
+				random_y=-1;
+			case 2:
+				random_x=-1;
+				random_y=-1;
+			case 3:
+				random_x=-1;
+				random_y=0;
+			case 4:
+				random_x=1;
+				random_y=0;
+			case 5:
+				random_x=-1;
+				random_y=1;
+			case 6:
+				random_x=0;
+				random_y=1;
+			case 7:
+				random_x=1;
+				random_y=1;	
+		}
+		
+	    defender.moveToAdjacent(random_x, random_y, 0);
+	}
+
+	public boolean isNeighbour(Unit me, Unit other){
+		double[] mine = {me.getPosition()[0], me.getPosition()[1],me.getPosition()[2]};
 		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
-		if ((Math.abs((int)me[0]-(int)different[0]) == 1)&&(Math.abs((int)me[1]-(int)different[1]) == 1)&&(Math.abs((int)me[2]-(int)different[2]) == 1))
+		if ((Math.abs((int)mine[0]-(int)different[0]) == 1)||(Math.abs((int)mine[1]-(int)different[1]) == 1)||(Math.abs((int)mine[2]-(int)different[2]) == 1))
 			return true;
 		return false;
 	}
@@ -870,9 +918,10 @@ public class Unit {
 	private double timetillrest;
 	
 	public void rest() throws ModelException{
-		this.resting = true;
-		this.timetillrest = 180;
-		
+		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
+			this.resting = true;
+			this.timetillrest = initial_timetillrest;
+		}
 	}
 	private boolean resting;
 	public boolean isResting(){
@@ -906,27 +955,29 @@ public class Unit {
 					startSprinting();
 				else if (randomMove == 1)
 					stopSprinting();
-			}	
-			int randomNumber = rand.nextInt(3);
-			switch (randomNumber){
-				case 0:
-					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
-						rest();
+			}
+			else if (!isWorking()&& !isResting()){
+				int randomNumber = rand.nextInt(3);
+				switch (randomNumber){
+					case 0:
+						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
+							rest();
+							break;
+						}
+					case 1:
+						work();
 						break;
-					}
-				case 1:
-					work();
-					break;
-				case 2:
-					int randomx = rand.nextInt(getMaxSize() - 1);
-				    int randomy = rand.nextInt(getMaxSize() - 1);
-				    int randomz = rand.nextInt(getMaxSize() - 1);
-				    int[] randompos = {randomx, randomy, randomz};
-				    moveTo(randompos);
-				    break;
+					case 2:
+						int randomx = rand.nextInt(getMaxSize() - 1);
+						int randomy = rand.nextInt(getMaxSize() - 1);
+						int randomz = rand.nextInt(getMaxSize() - 1);
+						int[] randompos = {randomx, randomy, randomz};
+						moveTo(randompos);
+						break;
+			}
 			}
 		}
-	}
+	}	
 
 	public static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
@@ -935,6 +986,5 @@ public class Unit {
 	    bd = bd.setScale(places, RoundingMode.HALF_UP);
 	    return bd.doubleValue();
 	}
-	
-	
+		
 }
