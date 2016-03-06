@@ -93,7 +93,7 @@ public class Unit {
 		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
 		if (! isValidPosition(position))
 			throw new ModelException();
-		setPositon(position);
+		setPosition(position);
 		setWeight(weight, LOWER, UPPER);
 		setAgility(agility, LOWER, UPPER);
 		setStrength(strength, LOWER, UPPER);
@@ -192,7 +192,7 @@ public class Unit {
 		return this.position;
 	}
 	
-	public void setPositon(double[] position){
+	public void setPosition(double[] position){
 		this.position = position;
 	}
 	
@@ -650,7 +650,7 @@ public class Unit {
 						double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
 						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
 						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-						setPositon(New);
+						setPosition(New);
 						setOrientation(Math.atan2(v[1],v[0]));
 						if (isSprinting()){
 							this.stamina_double = this.stamina_double- (dt/(double)0.1);
@@ -805,7 +805,7 @@ public class Unit {
 				dz = -1;
 			moveToAdjacent(dx, dy, dz);
 		}	
-		setPositon(Position);
+		setPosition(Position);
 	}
 	
 	private boolean working;
@@ -834,30 +834,35 @@ public class Unit {
 	public int[] getCubeCoordinate() throws ModelException{
 		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};
 	}
-	public void fight(Unit attacker, Unit defender) throws ModelException{
-		attack(defender);
-		defend(attacker);
+	public void fight(Unit defender) throws ModelException{
+		attack(defender); 
+		defend(this);
 		
 	}
-	public void attack(Unit defender) throws ModelException{ //controleren getposition = defenderposition, java doet raar
-		if ((this.getPosition() == defender.getPosition())||(Neighbouring(defender))){
+	public void attack(Unit defender) throws ModelException{ //this attacks the defender
+		if ((this.getPosition() == defender.getPosition())||(isNeighbour(defender))){
 			this.attacking = true;
 		}
 			
 	}
 	
-	public void defend(Unit attacker) throws ModelException{
-		if ((this.getPosition() == attacker.getPosition())||(Neighbouring(attacker))){
+	public void defend(Unit attacker) throws ModelException{ // this defends himself relative to the attacker
+		if ((this.getPosition() == attacker.getPosition())||(isNeighbour(attacker))){
+			this.attacking = false;
+			//dodging
+			double probability_dodge = (0.20)*((this.agility)/((double)attacker.agility));
+			if(new Random().nextDouble() <= probability_dodge)
+				dodge();
 			
 		}
 			
 	}
 	
-	public boolean Neighbouring(Unit other){
+	public boolean isNeighbour(Unit other){
 		double[] me = {this.getPosition()[0], this.getPosition()[1],this.getPosition()[2]};
 		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
-		if (((((int)me[0]-(int)different[0]) == 1)||(((int)me[0]-(int)different[0]) == -1))&&((((int)me[1]-(int)different[1]) == -1)||(((int)me[1]-(int)different[1]) == -1))&&((((int)me[2]-(int)different[2]) == -1)||(((int)me[2]-(int)different[2]) == -1)))
-			return true;	//abs waarde, niet helemaal juist
+		if ((Math.abs((int)me[0]-(int)different[0]) == 1)&&(Math.abs((int)me[1]-(int)different[1]) == 1)&&(Math.abs((int)me[2]-(int)different[2]) == 1))
+			return true;
 		return false;
 	}
 	
@@ -895,11 +900,20 @@ public class Unit {
 		this.defaultBehaviour = value;
 		if (value){
 			Random rand = new Random();
+			if(isMoving()){
+				int randomMove = rand.nextInt(2);
+				if (randomMove == 0)
+					startSprinting();
+				else if (randomMove == 1)
+					stopSprinting();
+			}	
 			int randomNumber = rand.nextInt(3);
 			switch (randomNumber){
 				case 0:
-					rest();
-					break;
+					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
+						rest();
+						break;
+					}
 				case 1:
 					work();
 					break;
@@ -913,7 +927,7 @@ public class Unit {
 			}
 		}
 	}
-	
+
 	public static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
 
