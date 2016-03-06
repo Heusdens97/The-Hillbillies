@@ -744,6 +744,7 @@ public class Unit {
 		return this.destiny;
 	}
 	
+	
 	public void setDestiny(double[] position){
 		if (isValidPosition(position))
 			this.destiny = position;
