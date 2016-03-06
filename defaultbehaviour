@@ -1,28 +1,29 @@
-	public void startDefaultBehaviour(){
-		defaultBehaviour = true;
-	}
-	public void stopDefaultBehaviour(){
-		defaultBehaviour = false;
-	}
-	
-	public boolean isdefaultBehaviourEnabled(){
-		return defaultBehaviour;
-	}
-
-	
-	public void setdefaultBehaviourEnabled( boolean value) throws ModelException{
-		defaultBehaviour = value;
+	public void setDefaultBehaviourEnabled(boolean value) throws ModelException{
+		this.defaultBehaviour = value;
 		if (value){
 			Random rand = new Random();
-			int randomNumber = rand.nextInt() % 3;
+			if(isMoving()){
+				int randomMove = rand.nextInt(2);
+				if (randomMove == 1)
+					startSprinting();			
+			}	
+			int randomNumber = rand.nextInt(3);
 			switch (randomNumber){
 				case 0:
-					rest();
-					break;
+					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints()){
+						rest();
+						break;
+					}
 				case 1:
 					work();
 					break;
 				case 2:
-					//movetorandomposition
-					break;
+					int randomx = rand.nextInt(getMaxSize() - 1);
+				    int randomy = rand.nextInt(getMaxSize() - 1);
+				    int randomz = rand.nextInt(getMaxSize() - 1);
+				    int[] randompos = {randomx, randomy, randomz};
+				    moveTo(randompos);
+				    break;
 			}
+		}
+	}
