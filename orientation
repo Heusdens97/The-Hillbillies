@@ -1,0 +1,35 @@
+	/**
+	 * Check whether the given orientation is a valid orientation for
+	 * any unit.
+	 *  
+	 * @param  	orientation
+	 *         	The orientation to check.
+	 * @return 	true if the orientation is valid: orientation is between 0 and 2*math.pi or equal his bounds.
+	 *       	| if (-math.pi <= orientation < math.pi)
+	 *       	| 	then result == true
+	 *       	| 	else result == false 
+	*/
+	public static boolean isValidOrientation(double orientation) {
+		return ((orientation >= -Math.PI) && (orientation < Math.PI));
+	}
+
+	/**
+	 * Set the orientation of this unit to the given orientation.
+	 * 
+	 * @param  	orientation
+	 *         	The new orientation for this unit.
+	 * @post   	If the given orientation is a valid orientation for any unit,
+	 *         	the orientation of this new unit is equal to the given
+	 *         	orientation.
+	 *       	| if (isValidorientation(orientation))
+	 *       	|   then new.getorientation() == orientation
+	 */
+	@Raw
+	public void setOrientation(double orientation) {
+		if (!isValidOrientation(orientation))
+			if (orientation > Math.PI)
+				orientation = ((orientation) % (Math.PI+1))-Math.PI;
+			else if (orientation < -Math.PI)
+				orientation = -Math.PI;	
+		this.orientation = orientation;
+	}
