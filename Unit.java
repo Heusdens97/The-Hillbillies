@@ -89,6 +89,7 @@ public class Unit {
 	 */
 	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior) throws ModelException{
 		this.setName(name);
+		finaldest = initialposition;
 		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
 		if (! isValidPosition(position))
 			throw new ModelException();
@@ -104,6 +105,7 @@ public class Unit {
 		setOrientation(Math.PI/2);
 		this.timetillrest = this.initial_timetillrest;
 		setDefaultBehaviourEnabled(enableDefaultBehavior);
+		arrowKeys = true;
 	}
 	private int UPPER = 100;
 	private int LOWER = 25;
@@ -604,11 +606,26 @@ public class Unit {
 	 */
 	private double orientation;
 	
+	/**
+	 * Variable registering the defaultBehaviour of this unit.
+	 */
 	private boolean defaultBehaviour;
+	
+	/**
+	 * Variable registering the sprinting of this unit.
+	 */
 	private boolean sprinting;
+	
+	/**
+	 * Variable registering the destiny of this unit.
+	 */
 	private double[] destiny;
 	
+	/**
+	 * Variable registering the speed of this unit.
+	 */
 	private double speed;
+	
 	
 	public void advanceTime(double dt){
 		try{
@@ -619,17 +636,14 @@ public class Unit {
 				if (this.timetillrest <= 0){
 					rest();
 				}
-				if (isAttacking()){
-					this.fighttime -= dt;
-					if (this.fighttime >0){
-						fight(this.defender);
-					}
-					else if (this.fighttime <= 0){
-						this.attacking = false;
-						this.defender = null;
-						this.fighttime = 1;
-					}
+				this.fighttime -= dt;
+				if (this.fighttime <= 0){
+					this.attacking = false;
+					this.defender = null;
+					this.fighttime = 1;
 				}
+				if (isAttacking())
+					this.resting = false;
 				if (isResting()){
 					if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
 						this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
@@ -646,9 +660,14 @@ public class Unit {
 				if ((isResting()) && (isAttacking())){
 					this.resting = false;
 				}
+				if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) && (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))){
+				     moveTo(finaldest);
+				     }
+				    else
+				     arrowKeys = true;
 				if (this.getStamina() == 0 && isSprinting())
 					stopSprinting();
-				if ((this.getPosition() != null)&&(this.getDestiny()!=null)){
+				if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
 					if ((this.getPosition() != this.getDestiny())){
 						//int[] cube = {(int)this.getDestiny()[0],(int)this.getDestiny()[1],(int)this.getDestiny()[2]};
 						//moveTo(cube);
@@ -658,7 +677,7 @@ public class Unit {
 						setPosition(New);
 						setOrientation(Math.atan2(v[1],v[0]));
 						if (isSprinting()){
-							this.stamina_double = this.stamina_double- (dt/(double)0.1);
+							this.stamina_double = this.stamina_double - (dt/(double)0.1);
 							setStamina((int)this.stamina_double);
 						}
 					}
@@ -669,6 +688,11 @@ public class Unit {
 						stopMoving();
 						this.position = this.getDestiny();	
 					}
+				}
+				if (arrowKeys){
+					finaldest[0] = (int)this.getPosition()[0];
+					finaldest[1] = (int)this.getPosition()[1];
+					finaldest[2] = (int)this.getPosition()[2];
 				}
 				if (isDefaultBehaviourEnabled())
 					setDefaultBehaviourEnabled(true);
@@ -683,9 +707,24 @@ public class Unit {
 		}
 	}
 	
+	/**
+	 * Variable registering the stamina of this unit in double.
+	 */
 	private double stamina_double;
-	private double hitpoints_double;
 	
+	/**
+	 * Variable registering the hitpoints of this unit in double.
+	 */
+	private double hitpoints_double;
+
+	/**
+	 * Check whether the given Unit is moving.
+	 * 
+	 * @return 	true if the unit is moving.
+	 *       	| if (this.moving)
+	 * 			|	then result == true
+	 * 			|	else result == false
+	*/
 	public boolean isMoving(){
 //		double []now = this.getPosition();
 //		advanceTime(t);
@@ -694,26 +733,62 @@ public class Unit {
 //		return true;
 		return this.moving;
 	}
-	
+	/**
+	 * Check whether the given time is a valid time for
+	 * any unit.
+	 *  
+	 * @param  	dt
+	 *         	The time to check.
+	 * @return 	true if the time is valid: time equal or bigger than 0 and less than 0,2.
+	 *       	| if (0 <= dt < 0.2)
+	 *       	| 	then result == true
+	 *       	| 	else result == false 
+	*/
 	public boolean isValidTime(double dt) throws ModelException{
-		if ((dt >= 0) && (dt < 0.2))
-			return true;
-		else
-			throw new ModelException();
+		return ((dt >= 0) && (dt < 0.2));
 			
 	}
-	
+	/**
+	 * Variable registering whether the unit is moving.
+	 */
 	private boolean moving;
 	
+	/**
+	 * The unit start to move, the boolean value changes.
+	 *  
+	 * @post 	moving has to change to true and resting has to change to false
+	 * 			|this.moving = true;
+	 * 			|this.resting = false; 
+	*/
 	public void startMoving(){
 		this.moving = true;
 		this.resting = false;	
 	}
-	
+	/**
+	 * The unit halts.
+	 *  
+	 * @post 	moving has to change to false.
+	 * 			|this.moving = false;
+	 * 			
+	*/
 	public void stopMoving(){
 		this.moving = false;
 	}
 	
+	/**
+	 * Set the speed of this unit
+	 * 
+	 *
+	 * @post   	if the unit is sprinting
+	 * 			| speed = 2*speed
+	 * @post	if the unit is declining
+	 * 			| speed = 1/2 speed
+	 * @post	if the unit is rising
+	 * 			| speed = 1.2 speed
+	 * @post 	if the unit is not moving
+	 * 			|speed = 0
+	 */
+	@Raw
 	public void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
 		if ((isMoving()) && (this.getDestiny() != null)){
@@ -731,59 +806,120 @@ public class Unit {
 			speed = 0*speed;
 		this.speed = speed;
 	}
-	
+	/**
+	 * Return the speed of this unit.
+	 */
+	@Basic @Raw
 	public double getSpeed(){
 		return this.speed;
 	}
 	
+	/**
+	 * Return whether the unit is sprinting.
+	 */
 	public boolean isSprinting(){
 		return this.sprinting;
 	}
 	
+	/**
+	 * Return the destiny of this unit.
+	 */
+	@Basic @Raw
 	public double[] getDestiny(){
 		return this.destiny;
 	}
 	
-	
+	/**
+	 * Set the destiny of this unit to the position witch is given.
+	 * 
+	 * @param  	position
+	 * 			| the destiny of the unit
+	 *
+	 * @post   	if it's a valid position, it will be the destiny
+	 * 			| if (isValidPosition(position)
+	 * 			|	then this.destiny = position
+	 * 			|	
+	 */
+	@Raw
 	public void setDestiny(double[] position){
 		if (isValidPosition(position))
 			this.destiny = position;
 	}
-	
+	/**
+	 * The unit starts to sprint.
+	 *  
+	 * @post 	sprinting has to change to true and speed will change.
+	 * 			|if ((isMoving) && (this.getStamina > 0))
+	 * 			|	speed = 2*speed
+	 * 			|	this.printing = true;
+	*/
 	public void startSprinting(){
 		if ((isMoving())&& (this.getStamina() > 0))
 			this.speed = 2*1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));;
 			this.sprinting = true;
 	}
-	
+	/**
+	 * The unit stops sprinting and the new speed will be calculated.
+	 *  
+	 * @post 	sprinting has to change to false.
+	 * 			|this.sprinting = false
+	 * 			| setSpeed();
+	*/
 	public void stopSprinting(){
 		this.sprinting = false;
 		setSpeed();
 	}
-	
+	/**
+	 * 
+	 * The unit moves to the adjacent position
+	 * 
+	 * @param 	dx
+	 * 			position will be the position + dx
+	 * @param 	dy
+	 * 			position will be the position + dy
+	 * @param 	dz
+	 * 			position will be the position + dz
+	 * @throws 	ModelException
+	 * 			if it's not a valid position.
+	 */
 	public void moveToAdjacent(int dx, int dy, int dz) throws ModelException{
 		while (!isMoving()){
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 			setDestiny(Adjacent);
 			startMoving();
 		}
-//		if (canHaveAsPosition(Adjacent)){
-//			while ((round(this.getPosition()[0],1) != Adjacent[0])||(round(this.getPosition()[1],1) != Adjacent[1])||(round(this.getPosition()[2],1) != Adjacent[2])){
-//				advanceTime(t);
-////				if ((Math.abs(round(this.getPosition()[0],1) - Adjacent[0]) == 0.1)&&(Math.abs(round(this.getPosition()[1],1) - Adjacent[1]) == 0.1) && (Math.abs(round(this.getPosition()[2],1) - Adjacent[2]) == 0.1)){
-////					this.position = Adjacent;
-////				}
-//			}
-//			this.position = Adjacent;
-//		}
 	}
 	
+	/**
+	 * Variable registering the final destination of this unit.
+	 */
+	private int[] finaldest;
 	
+	/**
+	 * Variable registering the state of the arrowKeys.
+	 */
+	private Boolean arrowKeys;
+	
+	/**
+	 * 
+	 * The unit moves to the cube.
+	 * 
+	 * @param 	cube
+	 * 			the new position of the unit.
+	 * @throws 	ModelException
+	 * 			if it's not a valid position.
+	 */
 	public void moveTo(int[] cube) throws ModelException{
-		double[] Position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
-		setDestiny(position);
+		this.working = false;
+		this.arrowKeys = false;
+		double[] Position = {0,0,0};
+		Position[0] = (double)(cube[0])+0.5;
+		Position[1] = (double)(cube[1])+0.5;
+		Position[2] = (double)(cube[2])+0.5;
+
+		this.finaldest = cube;
 		int dx,dy,dz;
-		while ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
+		if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
 			if (this.getPosition()[0] == Position[0])
 				dx = 0;
 			else if (this.getPosition()[0] < Position[0])
@@ -796,22 +932,32 @@ public class Unit {
 				dy = 1;
 			else
 				dy = -1;
-			if (this.getPosition()[2] == Position[0])
+			if (this.getPosition()[2] == Position[2])
 				dz = 0;
-			else if (this.getPosition()[2] < Position[0])
+			else if (this.getPosition()[2] < Position[2])
 				dz = 1;
 			else
 				dz = -1;
-			moveToAdjacent(dx, dy, dz);
+			moveToAdjacent(dx, dy, 0);
 		}	
-		setPosition(Position);
-	}
-	
+		
+	}	
+	/**
+	 * Variable registering whether the unit is working.
+	 */
 	private boolean working;
-	
+	/**
+	 * 
+	 * returns whether the unit is working.
+	 * 
+	 */
 	public boolean isWorking(){
 		return this.working;
 	}
+	/**
+	 * 
+	 * the unit starts working.
+	 */
 	public void work() throws ModelException{ 
 		if (!isWorking()){
 			this.worktime = (500/(double)this.getStrength());
@@ -821,57 +967,100 @@ public class Unit {
 				this.working = false;
 		}
 	}
-	
+	/**
+	 * Variable registering the worktime of this unit.
+	 */
 	private double worktime;
-	
-	
+	/**
+	 * 
+	 * returns the max stamina and hitpoints.
+	 */
+	@Basic @Raw
 	public int getMaxStaminaAndHitPoints(){
 		return (int)(200*(this.getWeight()/(double)100)*(this.getToughness()/(double)100));
 	}
 	
+	/**
+	 * 
+	 * returns the cubecoordinates.
+	 */
+	@Basic @Raw
 	public int[] getCubeCoordinate() throws ModelException{
 		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};
 	}
 	
+	/**
+	 * Variable registering the defender of this unit.
+	 */
 	private Unit defender;
-	private double fighttime;
 	
+	/**
+	 * Variable registering the fighttime of this unit.
+	 */
+	private double fighttime;
+	/**
+	 * 
+	 * the unit start to fight.
+	 * 
+	 * @param 	defender
+	 * 			the defending unit
+	 */
 	public void fight(Unit defender) throws ModelException{ 
 		if (!isAttacking())
-			this.attacking = true;
-			this.defender = defender;
-		if ((defender != null)&&(defender != this)){
+			this.fighttime = 1;
+		if ((defender != null)&&(defender != this)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this,defender)))){
 			attack(this,defender); 
 			defend(defender,this);
 			this.setOrientation((Math.atan2((defender.getPosition()[1]-this.getPosition()[1]),(defender.getPosition()[0]-this.getPosition()[0]))));
 			defender.setOrientation((Math.atan2((this.getPosition()[1]-defender.getPosition()[1]),(this.getPosition()[0]-defender.getPosition()[0]))));
 		}		
 	}
+	/**
+	 * 
+	 * attacker attacks the defender
+	 * 
+	 * @param	attacker
+	 * 			the attacker
+	 * @param	defender
+	 * 			the defender
+	 */
 	public void attack(Unit attacker,Unit defender) throws ModelException{
-		if (((attacker.getPosition() == defender.getPosition())||(isNeighbour(attacker,defender)))){
-			attacker.attacking = true;
-		}
+		attacker.attacking = true;	
 	}
-	
+	/**
+	 * 
+	 * defender defends relative to the attacker.
+	 * 
+	 * @param	attacker
+	 * 			the attacker
+	 * @param	defender
+	 * 			the defender
+	 */
 	public void defend(Unit defender,Unit attacker) throws ModelException{
-		if ((defender.getPosition() == attacker.getPosition())||(isNeighbour(attacker,defender))){
-			defender.attacking = false;
-			defender.defender = attacker;
-			double probability_dodge = (0.90)*((defender.getAgility())/((double)attacker.getAgility()));
-			double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
-			if (new Random().nextDouble() <= probability_dodge){
-				dodge(defender,attacker);
-				System.out.println("dodged");
-			} else if (new Random().nextDouble() <= probability_block){
-				System.out.println("blocked");
-			} else {
-				defender.hitpoints_double = defender.hitpoints_double - (attacker.getStrength()/(double)10);
-				defender.setHitpoints((int)(defender.hitpoints_double));
-				System.out.println("hit");
-			}
+		defender.attacking = false;
+		defender.defender = attacker;
+		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
+		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
+		if (new Random().nextDouble() <= probability_dodge){
+			dodge(defender,attacker);
+			System.out.println("dodged");
+		} else if (new Random().nextDouble() <= probability_block){
+			System.out.println("blocked");
+		} else {
+			defender.hitpoints_double = defender.hitpoints_double - (attacker.getStrength()/(double)10);
+			defender.setHitpoints((int)(defender.hitpoints_double));
+			System.out.println("hit");
 		}
 	}	
-	
+	/**
+	 * 
+	 * defender dodges the attacker
+	 * 
+	 * @param	attacker
+	 * 			the attacker
+	 * @param	defender
+	 * 			the defender
+	 */
 	public void dodge(Unit defender,Unit attacker) throws ModelException{
 		int random_x = 0;
 		int random_y = 0;
@@ -881,32 +1070,47 @@ public class Unit {
 			case 0:
 				random_x=1;
 				random_y=-1;
+				break;
 			case 1:
 				random_x=0;
 				random_y=-1;
+				break;
 			case 2:
 				random_x=-1;
 				random_y=-1;
+				break;
 			case 3:
 				random_x=-1;
 				random_y=0;
+				break;
 			case 4:
 				random_x=1;
 				random_y=0;
+				break;
 			case 5:
 				random_x=-1;
 				random_y=1;
+				break;
 			case 6:
 				random_x=0;
 				random_y=1;
+				break;
 			case 7:
 				random_x=1;
 				random_y=1;	
+				break;
 		}
-		
 	    defender.moveToAdjacent(random_x, random_y, 0);
 	}
-
+	/**
+	 * 
+	 * returns whetehr the unit me is a neighbour of other.
+	 * 
+	 * @param	me
+	 * 			a unit
+	 * @param	other
+	 * 			a unit
+	 */
 	public boolean isNeighbour(Unit me, Unit other){
 		double[] mine = {me.getPosition()[0], me.getPosition()[1],me.getPosition()[2]};
 		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
@@ -914,38 +1118,72 @@ public class Unit {
 			return true;
 		return false;
 	}
-	
+	/**
+	 * Variable registering the initial time till rest of this unit.
+	 */
 	private double initial_timetillrest = 180;
+	/**
+	 * Variable registering the time till rest of this unit.
+	 */
 	private double timetillrest;
-	
+	/**
+	 * 
+	 * the unit starts resting.
+	 * 
+	 */
 	public void rest() throws ModelException{
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
 			this.resting = true;
 			this.timetillrest = initial_timetillrest;
 		}
 	}
+	
+	/**
+	 * Variable registering whether the unit is resting.
+	 */
 	private boolean resting;
 	public boolean isResting(){
 		return this.resting;	
 	}
-	
+	/**
+	 * 
+	 * returns whether the unit is attacking.
+	 */
 	public boolean isAttacking(){
 		return this.attacking;
 	}
-	
+	/**
+	 * Variable registering whether the unit is attacking.
+	 */
 	public boolean attacking;
-	
+	/**
+	 * 
+	 * start defaultbehaviour
+	 */
 	public void startDefaultBehaviour(){
 		this.defaultBehaviour = true;
 	}
+	/**
+	 * 
+	 * start defaultbehaviour
+	 */
 	public void stopDefaultBehaviour(){
 		this.defaultBehaviour = false;
 	}
-	
+	/**
+	 * 
+	 * returns the defaultbehaviour
+	 */
 	public boolean isDefaultBehaviourEnabled(){
 		return this.defaultBehaviour;
 	}
-
+	/**
+	 * Set the defaultbehaviour of the unit on the value.
+	 * 
+	 * @param  	 value
+	 * 			the value of defaultbehaviour
+	 *	
+	 */
 	public void setDefaultBehaviourEnabled(boolean value) throws ModelException{
 		this.defaultBehaviour = value;
 		if (value){
