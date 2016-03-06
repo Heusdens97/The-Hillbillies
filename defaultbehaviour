@@ -4,13 +4,15 @@
 			Random rand = new Random();
 			if(isMoving()){
 				int randomMove = rand.nextInt(2);
-				if (randomMove == 1)
-					startSprinting();			
+				if (randomMove == 0)
+					startSprinting();
+				else if (randomMove == 1)
+					stopSprinting();
 			}	
 			int randomNumber = rand.nextInt(3);
 			switch (randomNumber){
 				case 0:
-					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints()){
+					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
 						rest();
 						break;
 					}
