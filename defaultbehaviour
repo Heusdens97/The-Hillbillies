@@ -8,24 +8,26 @@
 					startSprinting();
 				else if (randomMove == 1)
 					stopSprinting();
-			}	
-			int randomNumber = rand.nextInt(3);
-			switch (randomNumber){
-				case 0:
-					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
-						rest();
+			}
+			else if (!isWorking()&& !isResting()){
+				int randomNumber = rand.nextInt(3);
+				switch (randomNumber){
+					case 0:
+						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints()){
+							rest();
+							break;
+						}
+					case 1:
+						work();
 						break;
-					}
-				case 1:
-					work();
-					break;
-				case 2:
-					int randomx = rand.nextInt(getMaxSize() - 1);
-				    int randomy = rand.nextInt(getMaxSize() - 1);
-				    int randomz = rand.nextInt(getMaxSize() - 1);
-				    int[] randompos = {randomx, randomy, randomz};
-				    moveTo(randompos);
-				    break;
+					case 2:
+						int randomx = rand.nextInt(getMaxSize() - 1);
+						int randomy = rand.nextInt(getMaxSize() - 1);
+						int randomz = rand.nextInt(getMaxSize() - 1);
+						int[] randompos = {randomx, randomy, randomz};
+						moveTo(randompos);
+						break;
+			}
 			}
 		}
 	}
