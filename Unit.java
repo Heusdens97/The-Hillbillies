@@ -91,9 +91,9 @@ public class Unit {
 	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior) throws ModelException{
 		this.setName(name);
 		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
-		if (! canHaveAsPosition(position))
+		if (! isValidPosition(position))
 			throw new ModelException();
-		this.position = position;
+		setPositon(position);
 		setWeight(weight, LOWER, UPPER);
 		setAgility(agility, LOWER, UPPER);
 		setStrength(strength, LOWER, UPPER);
@@ -192,6 +192,10 @@ public class Unit {
 		return this.position;
 	}
 	
+	public void setPositon(double[] position){
+		this.position = position;
+	}
+	
 	/**
 	 * Return the maximal size of the game world.
 	 * 
@@ -213,7 +217,7 @@ public class Unit {
 	 * 			|	else result == false
 	 */			
 	@Raw
-	public boolean canHaveAsPosition(double[] position){
+	public boolean isValidPosition(double[] position){
 		return (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0);
 	}
 	/**
@@ -613,6 +617,7 @@ public class Unit {
 			if (!isValidTime(dt))
 				System.out.println("not valid time");
 			else {
+				
 				this.timetillrest -= dt;
 				if (this.timetillrest <= 0){
 					rest();
@@ -645,7 +650,7 @@ public class Unit {
 						double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
 						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
 						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-						this.position = New;
+						setPositon(New);
 						setOrientation(Math.atan2(v[1],v[0]));
 						if (isSprinting()){
 							this.stamina_double = this.stamina_double- (dt/(double)0.1);
@@ -704,7 +709,7 @@ public class Unit {
 	
 	public void startMoving(){
 		this.moving = true;
-		this.resting = false;
+		this.resting = false;	
 	}
 	
 	public void stopMoving(){
@@ -742,7 +747,7 @@ public class Unit {
 	}
 	
 	public void setDestiny(double[] position){
-		if (canHaveAsPosition(position))
+		if (isValidPosition(position))
 			this.destiny = position;
 	}
 	
@@ -800,7 +805,7 @@ public class Unit {
 				dz = -1;
 			moveToAdjacent(dx, dy, dz);
 		}	
-		this.position = Position;
+		setPositon(Position);
 	}
 	
 	private boolean working;
