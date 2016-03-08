@@ -10,6 +10,7 @@ import java.util.*;
  * TO DO: 	invar apart
  * 			position class
  * 			default behaviour
+ * 			middenste knop bewegen;
  * 			documentatie
  * 			tests
  * 			upper and lower veranderen
@@ -679,7 +680,7 @@ public class Unit {
 				if (this.getStamina() == 0 && isSprinting())
 					stopSprinting();
 				if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
-					if ((this.getPosition() != this.getDestiny())){
+					if (!Arrays.equals(this.getPosition(), this.getDestiny())){
 						double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
 						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
 						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
@@ -705,7 +706,6 @@ public class Unit {
 				}
 				if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))
 					setDefaultBehaviourEnabled(true);
-					//laatste dingen mogenlijk wegdoen (finaldest)
 				if (isWorking()){
 					work();
 					this.worktime -= dt;
@@ -1196,14 +1196,7 @@ public class Unit {
 		this.defaultBehaviour = value;
 		if (value){
 			Random rand = new Random();
-			if(isMoving()){
-				int randomMove = rand.nextInt(2);
-				if (randomMove == 0)
-					startSprinting();
-				else if ((randomMove == 1)&&(isSprinting()))
-					stopSprinting();
-			}
-			else if ((!isWorking())&& (!isResting())&&(!isMoving())){
+			if ((!isWorking())&& (!isResting())&&(!isMoving())){
 				int randomNumber = rand.nextInt(3);
 				switch (randomNumber){
 					case 0:
@@ -1211,11 +1204,35 @@ public class Unit {
 							rest();
 							System.out.println("rest");
 							break;
+						}else{
+							Random rand2 = new Random();
+							int randomNumber_2 = rand2.nextInt(2);
+							switch(randomNumber_2){
+								case 0:
+									work();
+									System.out.println("work,case 0");
+									break;
+								case 1:
+									int randomx = rand.nextInt(getMaxSize() - 1);
+									int randomy = rand.nextInt(getMaxSize() - 1);
+									int randomz = rand.nextInt(getMaxSize() - 1);
+									int[] randompos = {randomx, randomy, randomz};
+									moveTo(randompos);
+									int randomMove = rand.nextInt(2);
+									if (randomMove == 0){
+										startSprinting();
+										System.out.println("start sprinten, case 0");
+									} else{
+										System.out.println("gewoon verder wandelen,case 0");
+									}
+									System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
+									break;
+							}
+							break;
 						}
-						// hier nog ne random voor als hem ni kan rusten, gaat standaard na work ==> kans op work stijgt
 					case 1:
 						work();
-						System.out.println("work");
+						System.out.println("work,case 1");
 						break;
 					case 2:
 						int randomx = rand.nextInt(getMaxSize() - 1);
@@ -1223,6 +1240,13 @@ public class Unit {
 						int randomz = rand.nextInt(getMaxSize() - 1);
 						int[] randompos = {randomx, randomy, randomz};
 						moveTo(randompos);
+						int randomMove = rand.nextInt(2);
+						if (randomMove == 0){
+							startSprinting();
+							System.out.println("start sprinten, case 2");
+						}else {
+							System.out.println("gewoon verder wandelen, case 2");
+						}
 						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
 						break;
 						//moving staat niet altijd aan als hem movet, waardoor hem soms blijft moven, tijdelijk oplossing 
