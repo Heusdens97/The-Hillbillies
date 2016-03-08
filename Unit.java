@@ -1,11 +1,22 @@
 package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
-import ogp.framework.util.ModelException;
+import ogp.framework.util.*;
 
 import java.math.*;
 import java.util.*;
 
+/**
+ * TO DO: 	invar apart
+ * 			position class
+ * 			default behaviour
+ * 			documentatie
+ * 			tests
+ * 			upper and lower veranderen
+ * 			sommige methods veranderen in private
+ * 			fuzyyyyyyy
+ * 			initialposition veranderen voor mensen met kwade bedoelingen..
+ */
 /**
  * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
  * default behavior.
@@ -129,7 +140,6 @@ public class Unit {
 			throw new ModelException(name);
 		this.name = name;
 	}
-		
 	/**
 	 * 
 	 * Return the name of the unit.
@@ -636,7 +646,8 @@ public class Unit {
 				if (this.timetillrest <= 0){
 					rest();
 				}
-				this.fighttime -= dt;
+				if (isAttacking())
+					this.fighttime -= dt;
 				if (this.fighttime <= 0){
 					this.attacking = false;
 					this.defender = null;
@@ -644,7 +655,7 @@ public class Unit {
 				}
 				if (isAttacking())
 					this.resting = false;
-				if (isResting()){
+				if ((isResting())&&(!isWorking())){
 					if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
 						this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
 						this.setHitpoints((int)(this.hitpoints_double));
@@ -660,17 +671,15 @@ public class Unit {
 				if ((isResting()) && (isAttacking())){
 					this.resting = false;
 				}
-				if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) && (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))){
+				if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
 				     moveTo(finaldest);
-				     }
-				    else
-				     arrowKeys = true;
+				}else{
+					arrowKeys = true;
+				}
 				if (this.getStamina() == 0 && isSprinting())
 					stopSprinting();
 				if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
 					if ((this.getPosition() != this.getDestiny())){
-						//int[] cube = {(int)this.getDestiny()[0],(int)this.getDestiny()[1],(int)this.getDestiny()[2]};
-						//moveTo(cube);
 						double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
 						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
 						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
@@ -694,8 +703,9 @@ public class Unit {
 					finaldest[1] = (int)this.getPosition()[1];
 					finaldest[2] = (int)this.getPosition()[2];
 				}
-				if (isDefaultBehaviourEnabled())
+				if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))
 					setDefaultBehaviourEnabled(true);
+					//laatste dingen mogenlijk wegdoen (finaldest)
 				if (isWorking()){
 					work();
 					this.worktime -= dt;
@@ -706,7 +716,7 @@ public class Unit {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Variable registering the stamina of this unit in double.
 	 */
@@ -726,11 +736,6 @@ public class Unit {
 	 * 			|	else result == false
 	*/
 	public boolean isMoving(){
-//		double []now = this.getPosition();
-//		advanceTime(t);
-//		if (now == this.getPosition())
-//				return false;
-//		return true;
 		return this.moving;
 	}
 	/**
@@ -792,12 +797,12 @@ public class Unit {
 	public void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
 		if ((isMoving()) && (this.getDestiny() != null)){
-			if (isSprinting())
-				speed = 2*speed;
-			else if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) == -1)
+			if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) == -1)
 				speed = (1/(double)2)*speed;
 			else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) == 1)
 				speed = (1.2)*speed;
+			if (isSprinting())
+				speed = 2*speed;
 			
 			//else
 			//speed = speed
@@ -855,7 +860,7 @@ public class Unit {
 	*/
 	public void startSprinting(){
 		if ((isMoving())&& (this.getStamina() > 0))
-			this.speed = 2*1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));;
+			this.speed = 2*this.speed;
 			this.sprinting = true;
 	}
 	/**
@@ -883,7 +888,7 @@ public class Unit {
 	 * 			if it's not a valid position.
 	 */
 	public void moveToAdjacent(int dx, int dy, int dz) throws ModelException{
-		while (!isMoving()){
+		if (!isMoving()){
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 			setDestiny(Adjacent);
 			startMoving();
@@ -938,7 +943,7 @@ public class Unit {
 				dz = 1;
 			else
 				dz = -1;
-			moveToAdjacent(dx, dy, 0);
+			moveToAdjacent(dx, dy, dz);
 		}	
 		
 	}	
@@ -959,6 +964,7 @@ public class Unit {
 	 * the unit starts working.
 	 */
 	public void work() throws ModelException{ 
+		this.resting = false; //wegdoen om hem te laten onthouden om te rusten
 		if (!isWorking()){
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
@@ -1006,6 +1012,7 @@ public class Unit {
 	 * 			the defending unit
 	 */
 	public void fight(Unit defender) throws ModelException{ 
+		this.working = false;
 		if (!isAttacking())
 			this.fighttime = 1;
 		if ((defender != null)&&(defender != this)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this,defender)))){
@@ -1134,6 +1141,7 @@ public class Unit {
 	public void rest() throws ModelException{
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
 			this.resting = true;
+			this.working = false;
 			this.timetillrest = initial_timetillrest;
 		}
 	}
@@ -1192,19 +1200,22 @@ public class Unit {
 				int randomMove = rand.nextInt(2);
 				if (randomMove == 0)
 					startSprinting();
-				else if (randomMove == 1)
+				else if ((randomMove == 1)&&(isSprinting()))
 					stopSprinting();
 			}
-			else if (!isWorking()&& !isResting()){
+			else if ((!isWorking())&& (!isResting())&&(!isMoving())){
 				int randomNumber = rand.nextInt(3);
 				switch (randomNumber){
 					case 0:
 						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
 							rest();
+							System.out.println("rest");
 							break;
 						}
+						// hier nog ne random voor als hem ni kan rusten, gaat standaard na work ==> kans op work stijgt
 					case 1:
 						work();
+						System.out.println("work");
 						break;
 					case 2:
 						int randomx = rand.nextInt(getMaxSize() - 1);
@@ -1212,8 +1223,11 @@ public class Unit {
 						int randomz = rand.nextInt(getMaxSize() - 1);
 						int[] randompos = {randomx, randomy, randomz};
 						moveTo(randompos);
+						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
 						break;
-			}
+						//moving staat niet altijd aan als hem movet, waardoor hem soms blijft moven, tijdelijk oplossing 
+							
+				}
 			}
 		}
 	}	
