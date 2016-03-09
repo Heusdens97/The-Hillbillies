@@ -7,16 +7,16 @@ import java.math.*;
 import java.util.*;
 
 /**
- * TO DO: 	invar apart
- * 			position class
- * 			default behaviour
- * 			middenste knop bewegen;
- * 			documentatie
- * 			tests
- * 			upper and lower veranderen
- * 			sommige methods veranderen in private
- * 			fuzyyyyyyy
- * 			initialposition veranderen voor mensen met kwade bedoelingen..
+ * TO DO: 	- invar apart
+ * 			- position class (opdelen in classes dus)
+ * 			- default behaviour nakijken
+ * 			- documentatie aanvullen
+ * 			- tests schrijven
+ * 			- upper and lower veranderen
+ * 			- sommige methodes veranderen in private
+ * 			- fuzyyyyyyy toevoegen
+ * 			- initialposition veranderen voor mensen met kwade bedoelingen..
+ * 			- setname veranderen
  */
 /**
  * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
@@ -26,7 +26,7 @@ import java.util.*;
  * @invar 	The name, position, weight, agility, strength, toughness, stamina, orientation
  * 			 of each unit must be a valid name, position, weight, agility, strength, toughness, stamina, orientation for any unit.
  * 			|isValidName(getName())
- * 			|canHaveAsPosition(this.getPosition())
+ * 			|isValidPosition(this.getPosition())
  * 			|IsValidWeight(getWeight())
  * 			|isValidAgility(getAgility())
  * 			|isValidStrength(getStrength())
@@ -891,7 +891,8 @@ public class Unit {
 		if (!isMoving()){
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 			setDestiny(Adjacent);
-			startMoving();
+			if (isValidPosition(Adjacent))
+				startMoving();
 		}
 	}
 	
@@ -915,37 +916,37 @@ public class Unit {
 	 * 			if it's not a valid position.
 	 */
 	public void moveTo(int[] cube) throws ModelException{
-		this.working = false;
-		this.arrowKeys = false;
 		double[] Position = {0,0,0};
 		Position[0] = (double)(cube[0])+0.5;
 		Position[1] = (double)(cube[1])+0.5;
 		Position[2] = (double)(cube[2])+0.5;
-
-		this.finaldest = cube;
-		int dx,dy,dz;
-		if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
-			if (this.getPosition()[0] == Position[0])
-				dx = 0;
-			else if (this.getPosition()[0] < Position[0])
-				dx = 1;
-			else
-				dx = -1;
-			if (this.getPosition()[1] == Position[1])
-				dy = 0;
-			else if (this.getPosition()[1] < Position[1])
-				dy = 1;
-			else
-				dy = -1;
-			if (this.getPosition()[2] == Position[2])
-				dz = 0;
-			else if (this.getPosition()[2] < Position[2])
-				dz = 1;
-			else
-				dz = -1;
-			moveToAdjacent(dx, dy, dz);
-		}	
-		
+		if (isValidPosition(Position)){
+			this.working = false;
+			this.arrowKeys = false;
+			this.finaldest = cube;
+			int dx,dy,dz;
+			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
+				if (this.getPosition()[0] == Position[0])
+					dx = 0;
+				else if (this.getPosition()[0] < Position[0])
+					dx = 1;
+				else
+					dx = -1;
+				if (this.getPosition()[1] == Position[1])
+					dy = 0;
+				else if (this.getPosition()[1] < Position[1])
+					dy = 1;
+				else
+					dy = -1;
+				if (this.getPosition()[2] == Position[2])
+					dz = 0;
+				else if (this.getPosition()[2] < Position[2])
+					dz = 1;
+				else
+					dz = -1;
+				moveToAdjacent(dx, dy, dz);
+			}	
+		}
 	}	
 	/**
 	 * Variable registering whether the unit is working.
@@ -1249,7 +1250,6 @@ public class Unit {
 						}
 						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
 						break;
-						//moving staat niet altijd aan als hem movet, waardoor hem soms blijft moven, tijdelijk oplossing 
 							
 				}
 			}

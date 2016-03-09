@@ -436,7 +436,7 @@ public class Facade implements IFacade {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void fight(Unit attacker, Unit defender) throws ModelException{
-		fight(attacker, defender);
+		attacker.fight(defender);
 	}
 
 	/**
