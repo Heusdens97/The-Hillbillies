@@ -1,0 +1,25 @@
+/**
+ * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
+ * default behavior.
+ * 
+ * @author 	Bart Jacobs and Jordy Heusdens
+ * @invar 	The name of each unit must be a valid name for any unit.
+ * 			|isValidName(getName())
+ * @invar	The position of each unit must be a valid position for any unit.
+ * 			|isValidPosition(this.getPosition())
+ * @invar	The weight of each unit must be a valid weight for any unit.
+ * 			|IsValidWeight(getWeight())
+ * @invar	The agility of each unit must be a valid agility for any unit.
+ * 			|isValidAgility(getAgility())
+ * @invar	The strength of each unit must be a valid strength for any unit.
+ * 			|isValidStrength(getStrength())
+ * @invar	The toughness of each unit must be a valid toughness for any unit.
+ * 			|isValidToughness(getToughness())
+ * @invar	The stamina of each unit must be a valid stamina for any unit.
+ * 			|isValidStamina(getStamina())
+ * @invar	The orientation of each unit must be a valid orientation for any unit.
+ * 			|isValidOrietation(getOrientation())
+ * 
+ * @version 1.0
+ *
+ */
