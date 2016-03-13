@@ -2,37 +2,42 @@ package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
-
+import hillbillies.model.World;
 import java.math.*;
 import java.util.*;
 
 /**
- * TO DO: 	- invar apart
- * 			- position class (opdelen in classes dus)
- * 			- default behaviour nakijken
+ * TO DO: 	- opdelen in classes?
  * 			- documentatie aanvullen
  * 			- tests schrijven
- * 			- upper and lower veranderen
- * 			- sommige methodes veranderen in private
- * 			- fuzyyyyyyy toevoegen
- * 			- initialposition veranderen voor mensen met kwade bedoelingen..
- * 			- setname veranderen
+ * 			- "spaghetti" code verwijderen
  */
+
 /**
  * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
  * default behavior.
  * 
- * @author 	Bart Jacobs and Jordy Heusdens
- * @invar 	The name, position, weight, agility, strength, toughness, stamina, orientation
- * 			 of each unit must be a valid name, position, weight, agility, strength, toughness, stamina, orientation for any unit.
+ * @author	Bart Jacobs and Jordy Heusdens
+ * @invar 	The name of each unit must be a valid name for any unit.
  * 			|isValidName(getName())
+ * @invar	The position of each unit must be a valid position for any unit.
  * 			|isValidPosition(this.getPosition())
+ * @invar	The weight of each unit must be a valid weight for any unit.
  * 			|IsValidWeight(getWeight())
+ * @invar	The agility of each unit must be a valid agility for any unit.
  * 			|isValidAgility(getAgility())
+ * @invar	The strength of each unit must be a valid strength for any unit.
  * 			|isValidStrength(getStrength())
+ * @invar	The toughness of each unit must be a valid toughness for any unit.
  * 			|isValidToughness(getToughness())
+ * @invar	The stamina of each unit must be a valid stamina for any unit.
  * 			|isValidStamina(getStamina())
+ * @invar 	The hitpoints of each unit must be a valid hitpoints for any unit.
+ * 			|isValidHitpoints(getHitpoints()
+ * @invar	The orientation of each unit must be a valid orientation for any unit.
  * 			|isValidOrietation(getOrientation())
+ * @invar	The time of each unit must be a valid time for any unit.
+ * 			|isValidTime(dt)
  * 
  * @version 1.0
  *
@@ -175,15 +180,8 @@ public class Unit {
 	  *   		| 	result == true
 	  * 
 	  */
-	public boolean isValidName(String name){
-		// mogelijkheid extra parameter voor aanpasbaarheid
-		if (name.length() < 2) 
-			return false;
-		if (!Character.isUpperCase(name.codePointAt(0)))
-			return false;
-		if (!name.matches("[\"|\'|A-Z|a-z|\\s]*"))
-			return false;
-		return true;		
+	private boolean isValidName(String name){
+		return ((name.length() >= 2)&& (Character.isUpperCase(name.codePointAt(0)))&& (name.matches("[\"|\'|A-Z|a-z|\\s]*")));	
 	}
 	
 	/**
@@ -203,7 +201,7 @@ public class Unit {
 		return this.position;
 	}
 	
-	public void setPosition(double[] position){
+	private void setPosition(double[] position){
 		this.position = position;
 	}
 	
@@ -213,7 +211,7 @@ public class Unit {
 	 */
 	@Basic
 	public static int getMaxSize(){
-		return 50;
+		return Math.max(World.getX(), Math.max(World.getY(),World.getZ()));
 	}
 	
 	/**
@@ -228,8 +226,8 @@ public class Unit {
 	 * 			|	else result == false
 	 */			
 	@Raw
-	public boolean isValidPosition(double[] position){
-		return (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0);
+	private boolean isValidPosition(double[] position){
+		return (position[0]< getMaxSize() && position[0] >= 0.5) && (position[1]< getMaxSize() && position[1] >= 0.5) && (position[2]< getMaxSize() && position[2] >= 0.5);
 	}
 	/**
 	 * 
@@ -261,7 +259,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	public boolean isValidWeight(int weight, int begin, int end) {
+	private boolean isValidWeight(int weight, int begin, int end) {
 		return((weight >= begin) && (weight <= end) && ((this.getStrength()+this.getAgility())/2 <= weight));	
 	}
 	
@@ -316,7 +314,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	public static boolean isValidAgility(int agility, int begin, int end) {
+	private static boolean isValidAgility(int agility, int begin, int end) {
 		return ((agility >= begin) && (agility <= end)); 
 	}
 
@@ -377,7 +375,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	public static boolean isValidStrength(int strength, int begin, int end) {
+	private static boolean isValidStrength(int strength, int begin, int end) {
 		return ((strength >= begin) && (strength <= end)); 
 	}
 
@@ -438,7 +436,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	public static boolean isValidToughness(int toughness, int begin, int end) {
+	private static boolean isValidToughness(int toughness, int begin, int end) {
 		return ((toughness >= begin) && (toughness <= end)); 
 	}
 	
@@ -494,7 +492,7 @@ public class Unit {
 	 *       	| 	then result == true
 	 *       	| 	else result == false
 	*/
-	public boolean isValidStamina(int stamina) {
+	private boolean isValidStamina(int stamina) {
 		return (stamina >= 0 && stamina <= (this.getMaxStaminaAndHitPoints()));
 	}
 
@@ -511,7 +509,7 @@ public class Unit {
 	 *       	| new.getStamina() == stamina
 	 */
 	@Raw
-	public void setStamina(int stamina) {
+	private void setStamina(int stamina) {
 		assert isValidStamina(stamina);
 		this.stamina = stamina;
 	}
@@ -541,7 +539,7 @@ public class Unit {
 	 *       	| 	then result == true
 	 *       	| 	else result == false
 	*/
-	public boolean isValidHitpoints(int hitpoints) {
+	private boolean isValidHitpoints(int hitpoints) {
 		return (hitpoints >= 0 && hitpoints <= (this.getMaxStaminaAndHitPoints()));
 	}
 	
@@ -558,7 +556,7 @@ public class Unit {
 	 *       	| new.getHitpoints() == hitpoints
 	 */
 	@Raw
-	public void setHitpoints(int hitpoints) {
+	private void setHitpoints(int hitpoints) {
 		assert isValidHitpoints(hitpoints);
 		this.hitpoints = hitpoints;
 	}
@@ -587,7 +585,7 @@ public class Unit {
 	 *       	| 	then result == true
 	 *       	| 	else result == false 
 	*/
-	public static boolean isValidOrientation(double orientation) {
+	private boolean isValidOrientation(double orientation) {
 		return ((orientation >= -Math.PI) && (orientation <= Math.PI));
 	}
 
@@ -603,7 +601,7 @@ public class Unit {
 	 *       	|   then new.getorientation() == orientation
 	 */
 	@Raw
-	public void setOrientation(double orientation) {
+	private void setOrientation(double orientation) {
 		if (!isValidOrientation(orientation))
 			if (orientation > Math.PI)
 				orientation = ((orientation) % (-Math.PI-Math.PI));
@@ -638,82 +636,77 @@ public class Unit {
 	private double speed;
 	
 	
-	public void advanceTime(double dt){
-		try{
-			if (!isValidTime(dt)){
-				System.out.println("ongeldige time");
-			} else {
-				this.timetillrest -= dt;
-				if (this.timetillrest <= 0){
-					rest();
+	public void advanceTime(double dt) throws ModelException{
+		if (!isValidTime(dt)){
+			throw new ModelException();
+		} else {
+			this.timetillrest -= dt;
+			if (this.timetillrest <= 0){
+				rest();
+			}
+			if (isAttacking())
+				this.fighttime -= dt;
+			if (this.fighttime <= 0){
+				this.attacking = false;
+				this.defender = null;
+				this.fighttime = 1;
+			}
+			if (isAttacking())
+				this.resting = false;
+			if ((isResting())&&(!isWorking())){
+				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
+					this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
+					this.setHitpoints((int)(this.hitpoints_double));
 				}
-				if (isAttacking())
-					this.fighttime -= dt;
-				if (this.fighttime <= 0){
-					this.attacking = false;
-					this.defender = null;
-					this.fighttime = 1;
+				else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
+					this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
+					this.setStamina((int)(this.stamina_double));
 				}
-				if (isAttacking())
+				else{
 					this.resting = false;
-				if ((isResting())&&(!isWorking())){
-					if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
-						this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
-						this.setHitpoints((int)(this.hitpoints_double));
-					}
-					else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
-						this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
-						this.setStamina((int)(this.stamina_double));
-					}
-					else{
-						this.resting = false;
-					}
-				}
-				if ((isResting()) && (isAttacking())){
-					this.resting = false;
-				}
-				if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
-				     moveTo(finaldest);
-				}else{
-					arrowKeys = true;
-				}
-				if (this.getStamina() == 0 && isSprinting())
-					stopSprinting();
-				if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
-					if (!Arrays.equals(this.getPosition(), this.getDestiny())){
-						double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
-						double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
-						double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-						setPosition(New);
-						setOrientation(Math.atan2(v[1],v[0]));
-						if (isSprinting()){
-							this.stamina_double = this.stamina_double - (dt/(double)0.1);
-							setStamina((int)this.stamina_double);
-						}
-					}
-					if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
-						setSpeed();
-					}
-					if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
-						stopMoving();
-						this.position = this.getDestiny();	
-					}
-				}
-				if (arrowKeys){
-					finaldest[0] = (int)this.getPosition()[0];
-					finaldest[1] = (int)this.getPosition()[1];
-					finaldest[2] = (int)this.getPosition()[2];
-				}
-				if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))
-					setDefaultBehaviourEnabled(true);
-				if (isWorking()){
-					work();
-					this.worktime -= dt;
 				}
 			}
-		} catch (ModelException e) {
-			dt = 0.1;
-			e.printStackTrace();
+			if ((isResting()) && (isAttacking())){
+				this.resting = false;
+			}
+			if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
+			     moveTo(finaldest);
+			}else{
+				arrowKeys = true;
+			}
+			if (this.getStamina() == 0 && isSprinting())
+				stopSprinting();
+			if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
+				if (!Arrays.equals(this.getPosition(), this.getDestiny())){
+					double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+					double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+					double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
+					setPosition(New);
+					setOrientation(Math.atan2(v[1],v[0]));
+					if (isSprinting()){
+						this.stamina_double = this.stamina_double - (dt/(double)0.1);
+						setStamina((int)this.stamina_double);
+					}
+				}
+				if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
+					setSpeed();
+				}
+				if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
+					stopMoving();
+					this.position = this.getDestiny();	
+				}
+			}
+			if (arrowKeys){
+				finaldest[0] = (int)this.getPosition()[0];
+				finaldest[1] = (int)this.getPosition()[1];
+				finaldest[2] = (int)this.getPosition()[2];
+			}
+			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))
+				setDefaultBehaviourEnabled(true);
+			if (isWorking()){
+				work();
+				this.worktime -= dt;
+			}
 		}
 	}
 
@@ -749,7 +742,7 @@ public class Unit {
 	 *       	| 	then result == true
 	 *       	| 	else result == false 
 	*/
-	public boolean isValidTime(double dt) throws ModelException{
+	private boolean isValidTime(double dt) throws ModelException{
 		return ((dt >= 0) && (dt < 0.2));
 			
 	}
@@ -765,7 +758,7 @@ public class Unit {
 	 * 			|this.moving = true;
 	 * 			|this.resting = false; 
 	*/
-	public void startMoving(){
+	private void startMoving(){
 		this.moving = true;
 		this.resting = false;	
 	}
@@ -776,7 +769,7 @@ public class Unit {
 	 * 			|this.moving = false;
 	 * 			
 	*/
-	public void stopMoving(){
+	private void stopMoving(){
 		this.moving = false;
 	}
 	
@@ -794,12 +787,12 @@ public class Unit {
 	 * 			|speed = 0
 	 */
 	@Raw
-	public void setSpeed(){
+	private void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
 		if ((isMoving()) && (this.getDestiny() != null)){
-			if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) == -1)
+			if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) < 0) //verandert in part 2!
 				speed = (1/(double)2)*speed;
-			else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) == 1)
+			else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) > 0)
 				speed = (1.2)*speed;
 			if (isSprinting())
 				speed = 2*speed;
@@ -830,7 +823,7 @@ public class Unit {
 	 * Return the destiny of this unit.
 	 */
 	@Basic @Raw
-	public double[] getDestiny(){
+	private double[] getDestiny(){
 		return this.destiny;
 	}
 	
@@ -846,7 +839,7 @@ public class Unit {
 	 * 			|	
 	 */
 	@Raw
-	public void setDestiny(double[] position){
+	private void setDestiny(double[] position){
 		if (isValidPosition(position))
 			this.destiny = position;
 	}
@@ -891,8 +884,10 @@ public class Unit {
 		if (!isMoving()){
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 			setDestiny(Adjacent);
-			if (isValidPosition(Adjacent))
+			if (isValidPosition(Adjacent)){
 				startMoving();
+				setSpeed();
+			}
 		}
 	}
 	
@@ -965,7 +960,8 @@ public class Unit {
 	 * the unit starts working.
 	 */
 	public void work() throws ModelException{ 
-		this.resting = false; //wegdoen om hem te laten onthouden om te rusten
+		this.resting = false;
+		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
 		if (!isWorking()){
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
@@ -1032,7 +1028,7 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	public void attack(Unit attacker,Unit defender) throws ModelException{
+	private void attack(Unit attacker,Unit defender) throws ModelException{
 		attacker.attacking = true;	
 	}
 	/**
@@ -1044,9 +1040,9 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	public void defend(Unit defender,Unit attacker) throws ModelException{
+	private void defend(Unit defender,Unit attacker) throws ModelException{
 		defender.attacking = false;
-		defender.defender = attacker;
+		defender.defender = attacker; // of defender idk
 		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
 		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
 		if (new Random().nextDouble() <= probability_dodge){
@@ -1069,7 +1065,7 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	public void dodge(Unit defender,Unit attacker) throws ModelException{
+	private void dodge(Unit defender,Unit attacker) throws ModelException{
 		int random_x = 0;
 		int random_y = 0;
 		Random rand = new Random();
@@ -1119,7 +1115,7 @@ public class Unit {
 	 * @param	other
 	 * 			a unit
 	 */
-	public boolean isNeighbour(Unit me, Unit other){
+	private boolean isNeighbour(Unit me, Unit other){
 		double[] mine = {me.getPosition()[0], me.getPosition()[1],me.getPosition()[2]};
 		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
 		if ((Math.abs((int)mine[0]-(int)different[0]) == 1)||(Math.abs((int)mine[1]-(int)different[1]) == 1)||(Math.abs((int)mine[2]-(int)different[2]) == 1))
@@ -1141,6 +1137,7 @@ public class Unit {
 	 */
 	public void rest() throws ModelException{
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
+			this.sprinting = false;
 			this.resting = true;
 			this.working = false;
 			this.timetillrest = initial_timetillrest;
@@ -1151,6 +1148,7 @@ public class Unit {
 	 * Variable registering whether the unit is resting.
 	 */
 	private boolean resting;
+	
 	public boolean isResting(){
 		return this.resting;	
 	}
@@ -1164,19 +1162,77 @@ public class Unit {
 	/**
 	 * Variable registering whether the unit is attacking.
 	 */
-	public boolean attacking;
+	private boolean attacking;
 	/**
 	 * 
 	 * start defaultbehaviour
+	 * @throws ModelException 
 	 */
-	public void startDefaultBehaviour(){
+	private void startDefaultBehaviour() throws ModelException{
 		this.defaultBehaviour = true;
+		Random rand = new Random();
+		if ((!isWorking())&& (!isResting())&&(!isMoving())){
+			int randomNumber = rand.nextInt(3);
+			switch (randomNumber){
+				case 0:
+					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
+						rest();
+						System.out.println("rest");
+						break;
+					}else{
+						Random rand2 = new Random();
+						int randomNumber_2 = rand2.nextInt(2);
+						switch(randomNumber_2){
+							case 0:
+								work();
+								System.out.println("work,case 0");
+								break;
+							case 1:
+								int randomx = rand.nextInt(getMaxSize() - 1);
+								int randomy = rand.nextInt(getMaxSize() - 1);
+								int randomz = rand.nextInt(getMaxSize() - 1);
+								int[] randompos = {randomx, randomy, randomz};
+								moveTo(randompos);
+								int randomMove = rand.nextInt(2);
+								if (randomMove == 0){
+									startSprinting();
+									System.out.println("start sprinten, case 0");
+								} else{
+									System.out.println("gewoon verder wandelen,case 0");
+								}
+								System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
+								break;
+						}
+						break;
+					}
+				case 1:
+					work();
+					System.out.println("work,case 1");
+					break;
+				case 2:
+					int randomx = rand.nextInt(getMaxSize());
+					int randomy = rand.nextInt(getMaxSize());
+					int randomz = rand.nextInt(getMaxSize());
+					int[] randompos = {randomx, randomy, randomz};
+					moveTo(randompos);
+					int randomMove = rand.nextInt(2);
+					if (randomMove == 0){
+						startSprinting();
+						System.out.println("start sprinten, case 2");
+					}else {
+						System.out.println("gewoon verder wandelen, case 2");
+					}
+					System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
+					break;
+						
+			}
+		}
 	}
 	/**
 	 * 
 	 * start defaultbehaviour
 	 */
-	public void stopDefaultBehaviour(){
+	private void stopDefaultBehaviour(){
 		this.defaultBehaviour = false;
 	}
 	/**
@@ -1196,72 +1252,17 @@ public class Unit {
 	public void setDefaultBehaviourEnabled(boolean value) throws ModelException{
 		this.defaultBehaviour = value;
 		if (value){
-			Random rand = new Random();
-			if ((!isWorking())&& (!isResting())&&(!isMoving())){
-				int randomNumber = rand.nextInt(3);
-				switch (randomNumber){
-					case 0:
-						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
-							rest();
-							System.out.println("rest");
-							break;
-						}else{
-							Random rand2 = new Random();
-							int randomNumber_2 = rand2.nextInt(2);
-							switch(randomNumber_2){
-								case 0:
-									work();
-									System.out.println("work,case 0");
-									break;
-								case 1:
-									int randomx = rand.nextInt(getMaxSize() - 1);
-									int randomy = rand.nextInt(getMaxSize() - 1);
-									int randomz = rand.nextInt(getMaxSize() - 1);
-									int[] randompos = {randomx, randomy, randomz};
-									moveTo(randompos);
-									int randomMove = rand.nextInt(2);
-									if (randomMove == 0){
-										startSprinting();
-										System.out.println("start sprinten, case 0");
-									} else{
-										System.out.println("gewoon verder wandelen,case 0");
-									}
-									System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
-									break;
-							}
-							break;
-						}
-					case 1:
-						work();
-						System.out.println("work,case 1");
-						break;
-					case 2:
-						int randomx = rand.nextInt(getMaxSize() - 1);
-						int randomy = rand.nextInt(getMaxSize() - 1);
-						int randomz = rand.nextInt(getMaxSize() - 1);
-						int[] randompos = {randomx, randomy, randomz};
-						moveTo(randompos);
-						int randomMove = rand.nextInt(2);
-						if (randomMove == 0){
-							startSprinting();
-							System.out.println("start sprinten, case 2");
-						}else {
-							System.out.println("gewoon verder wandelen, case 2");
-						}
-						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
-						break;
-							
-				}
-			}
+			startDefaultBehaviour();
+		}else{
+			stopDefaultBehaviour();
 		}
-	}	
-
-	public static double round(double value, int places) {
+	}
+	
+	private static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
 
 	    BigDecimal bd = new BigDecimal(value);
 	    bd = bd.setScale(places, RoundingMode.HALF_UP);
 	    return bd.doubleValue();
 	}
-		
 }
