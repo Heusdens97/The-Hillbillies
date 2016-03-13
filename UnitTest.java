@@ -2,6 +2,7 @@ package hillbillies.tests.unit;
 
 import static org.junit.Assert.*;
 import static hillbillies.tests.util.PositionAsserts.assertDoublePositionEquals;
+import static hillbillies.tests.util.PositionAsserts.assertIntegerPositionEquals;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,7 +39,7 @@ public class UnitTest {
 	}
 	
 	@Test(expected = ModelException.class)
-	public void constructor_IllegalName() throws ModelException {
+	public void constructor_IllegalSetName() throws ModelException {
 		new Unit("B@rt", new int[] { 1, 2, 3 },50,50,50,50,false);
 	}
 	
@@ -102,17 +103,133 @@ public class UnitTest {
 		assertTrue(25 <= Strength.getStrength() && Strength.getStrength() <= 100);
 	}
 	
+	@Test
+	public void constructor_LegalToughness() throws ModelException {
+		Unit Toughness_25 = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,25,false);
+		assertEquals(25,Toughness_25.getToughness());
+		Unit Toughness_100 = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,100,false);
+		assertEquals(100,Toughness_100.getToughness());
+	}
+	
+	@Test
+	public void constructor_IllegalToughness() throws ModelException{
+		int toughness = 150;
+		Unit Toughness = new Unit("Test",new int[] { 0, 0, 0 } ,50, toughness,50,50,false);
+		assertTrue(25 <= Toughness.getToughness() && Toughness.getToughness() <= 100);
+	}
+	
+	@Test
+	public void constructor_LegalOrientation() throws ModelException{
+		Unit name = new Unit("TestUnit",new int[] { 6, 1, 12 }, 77,33,90,60,false);
+		assertEquals(Math.PI/2,name.getOrientation(),1e-10);
+	}
+	
 	
 	@Test
 	public void constructor_LegalMoveToAdjacent() throws ModelException {
-		Unit MoveTo = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,50,false);
-		MoveTo.moveToAdjacent(1, 0, 1);
-		double speed = MoveTo.getSpeed();
+		Unit MoveToA = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,50,false);
+		MoveToA.moveToAdjacent(1, 0, 1);
+		assertEquals(0.75,MoveToA.getSpeed(),1e-2);
+		double speed = MoveToA.getSpeed();
 		double distance = Math.sqrt(2);
 		double time = distance / speed;
+		advanceTimeFor(MoveToA, time, 0.05);
+		assertDoublePositionEquals(1.5,0.5,1.5,MoveToA.getPosition());
+	}
+	
+	@Test
+	public void constructor_IllegalMoveToAdjacent() throws ModelException {
+		Unit MoveToA = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,50,false);
+		MoveToA.moveToAdjacent(-1, 0, 0);
+		double distance = Math.sqrt(Math.pow((-1-0),2)+Math.pow((0-0),2)+Math.pow((0-0),2));
+		double time = distance;
+		advanceTimeFor(MoveToA, time, 0.05);
+		assertDoublePositionEquals(0.5,0.5,0.5,MoveToA.getPosition());
+	}
+	
+	@Test
+	public void constructor_LegalMoveTo() throws ModelException {
+		Unit MoveTo = new Unit("Test",new int[] { 0, 0, 0 },50,50,50,50,false);
+		MoveTo.moveTo(new int[] { 25, 25, 25 });
+		assertTrue(MoveTo.isMoving());
+		MoveTo.startSprinting();
+		assertTrue(MoveTo.isSprinting());
+		double speed = MoveTo.getSpeed();
+		double distance = Math.sqrt(Math.pow((49-0),2)+Math.pow((49-0),2)+Math.pow((49-0),2));
+		double time = distance / speed;
 		advanceTimeFor(MoveTo, time, 0.05);
-		assertDoublePositionEquals(1.5,0.5,1.5,MoveTo.getPosition());
-		
+		assertDoublePositionEquals(25.5,25.5,25.5,MoveTo.getPosition());
+	}
+	
+	@Test
+	public void constructor_IllegalMoveTo() throws ModelException {
+		Unit MoveTo = new Unit("Test",new int[] { 3, 1, 5 },50,50,50,50,false);
+		MoveTo.moveTo(new int[] { -1, 50, 0 });
+		double distance = Math.sqrt(Math.pow((-1-3),2)+Math.pow((1-50),2)+Math.pow((0-5),2));
+		double time = distance;
+		advanceTimeFor(MoveTo, time, 0.05);
+		assertDoublePositionEquals(3.5,1.5,5.5,MoveTo.getPosition());
+	}
+	
+	@Test
+	public void constructor_LegalWork() throws ModelException {
+		Unit work = new Unit("Test",new int[] { 3, 1, 5 },50,50,50,50,false);
+		work.work();
+		double time = 500/(double)work.getStrength();
+		assertTrue(work.isWorking());
+		advanceTimeFor(work, time, 0.05);
+		assertFalse(work.isWorking());
+	}
+	
+	@Test
+	public void constructor_getCubeCoordinates() throws ModelException {
+		Unit cube = new Unit("Test",new int[] { 10, 12, 33 },50,50,50,50,false);
+		assertIntegerPositionEquals(10,12,33,cube.getCubeCoordinate());
+	}
+	
+	@Test
+	public void constructor_Fight() throws ModelException {
+		Unit attacker = new Unit("Attack",new int[] { 3, 1, 0 },50,50,50,50,false);
+		Unit defender = new Unit("Defend",new int[] { 3, 2, 0 },50,50,50,50,false);
+		attacker.fight(defender);
+		assertTrue(attacker.isAttacking());
+		assertTrue((50 == defender.getHitpoints()) || (45 == defender.getHitpoints()));
+		assertTrue((attacker.getPosition() == defender.getPosition()) || (attacker.getPosition() != defender.getPosition()));
+		advanceTimeFor(attacker, 1, 0.05);
+		advanceTimeFor(defender, 1, 0.05);
+		assertFalse(attacker.isAttacking());
+	}
+	
+	@Test
+	public void constructor_rest() throws ModelException {
+		Unit rest = new Unit("Rest",new int[] { 0,0, 0 },50,50,50,50,false);
+		rest.moveTo(new int[]{5,2,7});
+		rest.startSprinting();
+		double speed = rest.getSpeed();
+		double distance = Math.sqrt(Math.pow((10-0),2)+Math.pow((2-0),2)+Math.pow((12-0),2));
+		double time = distance / speed;
+		advanceTimeFor(rest, time, 0.05);
+		assertDoublePositionEquals(5.5,2.5,7.5,rest.getPosition());
+		rest.rest();
+		assertTrue(rest.isResting());
+		advanceTimeFor(rest, 50/((1/(double)2)/(1/(double)5)), 0.05);
+		assertEquals(rest.getMaxStaminaAndHitPoints(),rest.getStamina());
+		assertFalse(rest.isResting());
+	}
+	
+	@Test
+	public void constructor_DefaultBehaviourEnabled() throws ModelException {
+		Unit defaultbehaviour = new Unit("Test",new int[] { 0,0, 0 },50,50,50,50,false);
+		defaultbehaviour.setDefaultBehaviourEnabled(true);
+		assertTrue(defaultbehaviour.isDefaultBehaviourEnabled());
+		assertTrue(defaultbehaviour.isMoving()||defaultbehaviour.isResting()||defaultbehaviour.isWorking());	
+	}
+	
+	@Test
+	public void constructor_DefaultBehaviourDisabled() throws ModelException {
+		Unit defaultbehaviour = new Unit("Test",new int[] { 0,0, 0 },50,50,50,50,false);
+		defaultbehaviour.setDefaultBehaviourEnabled(false);
+		assertFalse(defaultbehaviour.isDefaultBehaviourEnabled());
 	}
 	
 	private static void advanceTimeFor(Unit unit, double time, double step) throws ModelException {
