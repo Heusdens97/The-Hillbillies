@@ -1,0 +1,95 @@
+package hillbillies.model;
+
+import java.util.*;
+
+
+import ogp.framework.util.ModelException;
+
+public class Faction {
+
+	public Faction(Unit unit, String name){
+		name = getFactionName(unit);
+		
+			
+	}
+
+
+	public void addUnit(Unit unit) throws ModelException{
+		if (isFull())
+		   throw new ModelException("World is full");
+		this.members.add(unit);
+		 }
+		 
+	private boolean isFull(){
+		  return this.maxMembersWorld == this.members.size();
+		 }
+		 
+	public Set<Unit> getUnits(){
+		return this.members;
+		 }
+		 
+	private final int maxMembersWorld = 100;
+	private Set<Unit> members = new HashSet<Unit>(maxMembersWorld);
+	
+	public void addToFaction(Unit unit){
+		int SizeAppalachia = Appalachia.size();
+		int SizeAustinville = Austinville.size();
+		int SizeNewJersey = NewJersey.size();
+		int SizeOzark = Ozark.size();
+		int SizeSimpsons = Simpsons.size();
+		int[] GrootteFactions = {SizeAppalachia,SizeAustinville,SizeNewJersey,SizeOzark,SizeSimpsons};
+		int Smallest = getMinValue(GrootteFactions);
+		if (Smallest == SizeAppalachia){
+			Appalachia.add(unit);
+			setFaction(unit, "Appalachia");}
+		else if(Smallest == SizeAustinville){
+			Austinville.add(unit);
+			setFaction(unit, "Austinville");}
+		else if(Smallest == SizeNewJersey){
+			NewJersey.add(unit);
+			setFaction(unit, "NewJersey");}
+		else if(Smallest == SizeOzark){
+			Ozark.add(unit);
+			setFaction(unit, "Ozark");}
+		else{
+			Simpsons.add(unit);
+			setFaction(unit, "Simpsons");
+			}
+	}
+	public String unitsFaction;
+	public void setFaction(Unit unit, String factionName){
+		unitsFaction = factionName;
+		
+	}
+	public String getFactionName(Unit unit){
+		return unitsFaction;
+	}
+
+	
+	public Faction getFaction(Unit unit){
+		return new Faction(unit, getFactionName(unit),Set<Unit> getFactionName(unit) );
+	}
+
+	public Set<Unit> getFactionSet(Unit unit){
+		return 
+	}
+	
+	private int getMinValue(int[] array){
+		  int min = array[0];
+		  for (int i = 1; i < array.length;i++){
+		   if(array[i]<min)
+		    array[i] = min;
+		  }
+		  return min;
+		 }
+	 private final int maxAantal = 5;
+	 private final int maxSizeFactions = 50;
+	 
+	 private final Set<Unit> Appalachia = new HashSet<Unit>(maxSizeFactions);
+	 private final Set<Unit> Austinville = new HashSet<Unit>(maxSizeFactions);
+	 private final Set<Unit> NewJersey = new HashSet<Unit>(maxSizeFactions);
+	 private final Set<Unit> Ozark = new HashSet<Unit>(maxSizeFactions);
+	 private final Set<Unit> Simpsons = new HashSet<Unit>(maxSizeFactions);
+	 
+	
+}
