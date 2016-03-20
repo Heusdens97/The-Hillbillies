@@ -1,0 +1,20 @@
+	public void addToFaction(Unit unit){
+		int SizeAppalachia = Appalachia.size();
+		int SizeAustinville = Austinville.size();
+		int SizeNewJersey = NewJersey.size();
+		int SizeOzark = Ozark.size();
+		int SizeSimpsons = Simpsons.size();
+		int[] GrootteFactions = {SizeAppalachia,SizeAustinville,SizeNewJersey,SizeOzark,SizeSimpsons};
+		int Smallest = getMinValue(GrootteFactions);
+		if (Smallest == SizeAppalachia){
+			Appalachia.add(unit);}
+		else if(Smallest == SizeAustinville){
+			Austinville.add(unit);}
+		else if(Smallest == SizeNewJersey){
+			NewJersey.add(unit);}
+		else if(Smallest == SizeOzark){
+			Ozark.add(unit);}
+		else{
+			Simpsons.add(unit);
+			
+		}
