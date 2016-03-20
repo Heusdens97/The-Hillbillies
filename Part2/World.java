@@ -16,7 +16,7 @@ import java.util.*;
  * @version 1.0
  *
  */
-public class World {
+public class World { //abstract
 	
 	/**
 	 * 
@@ -26,9 +26,9 @@ public class World {
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) throws ModelException{
 		this.world = terrainTypes;
-		World.x = terrainTypes.length;
-		World.y = terrainTypes[0].length;
-		World.z = terrainTypes[0][0].length;
+		this.x = terrainTypes.length;
+		this.y = terrainTypes[0].length;
+		this.z = terrainTypes[0][0].length;
 	}
 	private int[][][] world;
 	
@@ -56,6 +56,7 @@ public class World {
 	 * 
 	 * @return
 	 */
+	@Basic @Raw
 	public static int getX() {
 		return World.x;
 	}
@@ -64,6 +65,7 @@ public class World {
 	 * 
 	 * @return
 	 */
+	@Basic @Raw
 	public static int getY() {
 		return World.y;
 	}
@@ -72,6 +74,7 @@ public class World {
 	 * 
 	 * @return
 	 */
+	@Basic @Raw
 	public static int getZ() {
 		return World.z;
 	}
@@ -98,6 +101,7 @@ public class World {
 	 * @param z
 	 * @return
 	 */
+	@Basic @Raw
 	public int getCubeType(int x, int y, int z){
 		return this.world[x][y][z];
 	}
@@ -109,14 +113,22 @@ public class World {
 	public Unit randomUnit(boolean enabledefaultbehaviour) throws ModelException{
 		Random rand = new Random();
 		String name = "HillBilly"; //random naam?
-		int randomx = rand.nextInt(World.getX());
-		int randomy = rand.nextInt(World.getY());
-		int randomz = rand.nextInt(World.getZ());
+		int randomx = rand.nextInt(this.getX());
+		int randomy = rand.nextInt(this.getY());
+		int randomz = rand.nextInt(this.getZ());
+		
 		if (randomz != 0){
-			while ((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)||(this.world[randomx][randomy][randomz-1]==TYPE_TREE)) {
-				randomz = rand.nextInt(World.getZ());
+			while ((this.world[randomx][randomy][randomz]!=TYPE_AIR)&&(this.world[randomx][randomy][randomz]!=TYPE_WORKSHOP)){
+				randomz = rand.nextInt(this.getZ());
+				if (randomz == 0){break;}
+				else{
+					while (((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)&&(this.world[randomx][randomy][randomz-1]!=TYPE_TREE))){
+						randomz = rand.nextInt((this.getZ()-1 -1) + 1) + 1;
+					}
+				}
 			}
 		}
+		
 		int[] position = {randomx,randomy,randomz};
 		int weight = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int agility = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
@@ -124,6 +136,10 @@ public class World {
 		int toughness = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		//Add to faction
 		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour);
+	}
+	
+	public void addUnit(Unit unit){
+		
 	}
 	
 	private int UPPER = 100;
