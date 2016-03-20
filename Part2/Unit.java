@@ -6,6 +6,7 @@ import ogp.framework.util.*;
 import hillbillies.model.World;
 import java.math.*;
 import java.util.*;
+import hillbillies.model.Faction;
 
 /**
  * TO DO: 	- opdelen in classes?
@@ -123,7 +124,9 @@ public class Unit {
 		this.timetillrest = this.initial_timetillrest;
 		setDefaultBehaviourEnabled(enableDefaultBehavior);
 		arrowKeys = true;
+		Faction.addToFaction(this);
 	}
+	
 	private int UPPER = 100;
 	private int LOWER = 25;
 	
@@ -210,7 +213,7 @@ public class Unit {
 	 * 
 	 */
 	@Basic
-	public int getMaxSize(){
+	public static int getMaxSize(){
 		return Math.max(World.getX(), Math.max(World.getY(),World.getZ()));
 	}
 	

@@ -7,6 +7,7 @@ import hillbillies.model.Unit;
 
 import java.util.*;
 
+
 /**
  * 
  * 
@@ -16,7 +17,7 @@ import java.util.*;
  * @version 1.0
  *
  */
-public class World { //abstract
+public class World {
 	
 	/**
 	 * 
@@ -26,9 +27,9 @@ public class World { //abstract
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) throws ModelException{
 		this.world = terrainTypes;
-		this.x = terrainTypes.length;
-		this.y = terrainTypes[0].length;
-		this.z = terrainTypes[0][0].length;
+		World.x = terrainTypes.length;
+		World.y = terrainTypes[0].length;
+		World.z = terrainTypes[0][0].length;
 	}
 	private int[][][] world;
 	
@@ -113,17 +114,21 @@ public class World { //abstract
 	public Unit randomUnit(boolean enabledefaultbehaviour) throws ModelException{
 		Random rand = new Random();
 		String name = "HillBilly"; //random naam?
-		int randomx = rand.nextInt(this.getX());
-		int randomy = rand.nextInt(this.getY());
-		int randomz = rand.nextInt(this.getZ());
+		int randomx = rand.nextInt(World.getX());
+		int randomy = rand.nextInt(World.getY());
+		int randomz = rand.nextInt(World.getZ());
 		
 		if (randomz != 0){
 			while ((this.world[randomx][randomy][randomz]!=TYPE_AIR)&&(this.world[randomx][randomy][randomz]!=TYPE_WORKSHOP)){
-				randomz = rand.nextInt(this.getZ());
+				randomx = rand.nextInt(World.getX());
+				randomy = rand.nextInt(World.getY());
+				randomz = rand.nextInt(World.getZ());
 				if (randomz == 0){break;}
 				else{
 					while (((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)&&(this.world[randomx][randomy][randomz-1]!=TYPE_TREE))){
-						randomz = rand.nextInt((this.getZ()-1 -1) + 1) + 1;
+						randomx = rand.nextInt(World.getX());
+						randomy = rand.nextInt(World.getY());
+						randomz = rand.nextInt(((World.getZ()-1) -1) + 1) + 1; //UPPER = 49; LOWER = 1
 					}
 				}
 			}
@@ -134,14 +139,26 @@ public class World { //abstract
 		int agility = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int strength = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int toughness = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
-		//Add to faction
 		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour);
 	}
 	
-	public void addUnit(Unit unit){
-		
+	public void addUnit(Unit unit) throws ModelException{
+		if (isFull())
+			throw new ModelException("World is full");
+		this.members.add(unit);
 	}
 	
+	private boolean isFull(){
+		return this.maxMembersWorld == this.members.size();
+	}
+	
+	public Set<Unit> getUnits(){
+		return this.members;
+	}
+	
+	private final int maxMembersWorld = 100;
+	private Set<Unit> members = new HashSet<Unit>(maxMembersWorld);
+
 	private int UPPER = 100;
 	private int LOWER = 25;
 	
