@@ -1,5 +1,6 @@
 package hillbillies.model;
 
+
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
@@ -43,7 +44,6 @@ import java.util.*;
  *
  */
 public class Unit {
-	
 	/**
 	 * Initialize this new Unit with the next parameters
 	 * 
@@ -210,7 +210,7 @@ public class Unit {
 	 * 
 	 */
 	@Basic
-	public static int getMaxSize(){
+	public int getMaxSize(){
 		return Math.max(World.getX(), Math.max(World.getY(),World.getZ()));
 	}
 	
