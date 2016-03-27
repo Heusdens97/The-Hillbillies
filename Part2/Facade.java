@@ -244,14 +244,12 @@ public class Facade implements IFacade {
 
 	@Override
 	public void addUnit(Unit unit, World world) throws ModelException {
-		// TODO Auto-generated method stub
-		
+		world.addUnit(unit); 
 	}
 
 	@Override
 	public Set<Unit> getUnits(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getUnits();
 	}
 
 	@Override
@@ -268,8 +266,7 @@ public class Facade implements IFacade {
 
 	@Override
 	public boolean isAlive(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		return unit.isAlive();
 	}
 
 	@Override
@@ -286,20 +283,19 @@ public class Facade implements IFacade {
 
 	@Override
 	public Faction getFaction(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		//return Faction.getFaction(unit);
+		return unit.getFaction();
 	}
 
 	@Override
 	public Set<Unit> getUnitsOfFaction(Faction faction) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return faction.getUnitsOfFaction();
 	}
 
 	@Override
 	public Set<Faction> getActiveFactions(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		//return Faction.getActiveFactions(world);
+		return world.getActiveFactions();
 	}
 
 	@Override
