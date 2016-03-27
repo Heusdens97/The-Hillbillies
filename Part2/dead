@@ -1,0 +1,8 @@
+	public void Dead(){
+		if (this.hitpoints <= 0){
+			world.members.remove(this);
+			Faction fac = this.getFaction();
+			fac.members.remove(this);
+			//drops objects
+		}
+	}
