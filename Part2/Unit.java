@@ -127,6 +127,17 @@ public class Unit {
 		arrowKeys = true;
 		world.addUnit(this);
 		Faction.addToFaction(this);
+		setExperiencePoints(0);
+	}
+	
+	private void setExperiencePoints(int experience){
+		this.experience = experience;
+	}
+	
+	private int experience;
+	
+	public int getExperiencePoints(){
+		return this.experience;
 	}
 	
 	public Faction faction;
@@ -659,6 +670,7 @@ public class Unit {
 	
 	
 	public void advanceTime(double dt) throws ModelException{
+		// isterminated toevoegen?
 		if (!isValidTime(dt)){
 			throw new ModelException();
 		} else {
@@ -688,10 +700,6 @@ public class Unit {
 					this.resting = false;
 				}
 			}
-//			if ((isResting()) && (isAttacking())){
-//				this.resting = false;
-//			}
-			// nog nodig?
 			if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
 			     moveTo(finaldest);
 			}else{
@@ -730,9 +738,44 @@ public class Unit {
 				work();
 				this.worktime -= dt;
 			}
+			dead();
+			levelUp();
 		}
 	}
-
+	
+	/**
+	 * 
+	 */
+	public void dead(){
+		if (this.hitpoints <= 0){
+			world.worldMembers.remove(this);
+			Faction fac = this.getFaction();
+			fac.members.remove(this);
+			//drops objects
+		}
+	}
+	/**
+	 * 
+	 */
+	public void levelUp(){
+		if (this.getExperiencePoints() >= 10){
+			setExperiencePoints(this.getExperiencePoints()- 10);
+			Random rand = new Random();
+			int Attribute = rand.nextInt(2);
+			switch (Attribute){
+				case 0:
+					this.setStrength((this.getStrength() + 1),1,200);
+					break;
+				case 1:
+					this.setAgility((this.getAgility() + 1),1,200);
+					break;
+				case 2:
+					this.setToughness((this.getToughness() + 1),1,200);
+					break;
+				}
+		}	
+	}
+	
 	/**
 	 * Variable registering the stamina of this unit in double.
 	 */
@@ -765,8 +808,8 @@ public class Unit {
 	 *       	| 	then result == true
 	 *       	| 	else result == false 
 	*/
-	private boolean isValidTime(double dt) throws ModelException{
-		return ((dt >= 0) && (dt < 0.2));
+	public boolean isValidTime(double dt) throws ModelException{
+		return ((dt >= 0) && (dt <= 0.2));
 			
 	}
 	/**
@@ -910,6 +953,7 @@ public class Unit {
 			if (isValidPosition(Adjacent)){
 				startMoving();
 				setSpeed();
+				setExperiencePoints(this.getExperiencePoints()+1);
 			}
 		}
 	}
@@ -989,8 +1033,10 @@ public class Unit {
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
 		}else{
-			if (this.worktime <=0)
+			if (this.worktime <=0){
 				this.working = false;
+				setExperiencePoints(this.getExperiencePoints()+10);
+			}
 		}
 	}
 	/**
@@ -1066,16 +1112,23 @@ public class Unit {
 	private void defend(Unit defender,Unit attacker) throws ModelException{
 		defender.attacking = false;
 		defender.defender = attacker; // of defender idk
-		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
-		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
+		double probability_dodge = 0;//(0.20)*((defender.getAgility())/((double)attacker.getAgility()));
+		double probability_block = 0;//(0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
 		if (new Random().nextDouble() <= probability_dodge){
 			dodge(defender,attacker);
+			defender.setExperiencePoints(defender.getExperiencePoints()+20);
 			System.out.println("dodged");
 		} else if (new Random().nextDouble() <= probability_block){
 			System.out.println("blocked");
+			defender.setExperiencePoints(defender.getExperiencePoints()+20);
 		} else {
 			defender.hitpoints_double = defender.hitpoints_double - (attacker.getStrength()/(double)10);
-			defender.setHitpoints((int)(defender.hitpoints_double));
+			if (defender.hitpoints_double < 0){
+				defender.setHitpoints(0);
+			} else {
+				defender.setHitpoints((int)(defender.hitpoints_double));
+			}
+			attacker.setExperiencePoints(attacker.getExperiencePoints()+20);
 			System.out.println("hit");
 		}
 	}	

@@ -103,11 +103,6 @@ public class Facade implements IFacade {
 		return unit.getStamina();
 	}
 
-	@Override
-	public void advanceTime(Unit unit, double dt) throws ModelException {
-		unit.advanceTime(dt); //niet meer nodig
-		
-	}
 
 	@Override
 	public void moveToAdjacent(Unit unit, int dx, int dy, int dz) throws ModelException {
@@ -148,12 +143,6 @@ public class Facade implements IFacade {
 	@Override
 	public void moveTo(Unit unit, int[] cube) throws ModelException {
 		unit.moveTo(cube);
-	}
-
-	@Override
-	public void work(Unit unit) throws ModelException {
-		unit.work(); // niet meer nodig
-		
 	}
 
 	@Override
@@ -216,8 +205,7 @@ public class Facade implements IFacade {
 
 	@Override
 	public void advanceTime(World world, double dt) throws ModelException {
-		// TODO Auto-generated method stub
-		
+		world.advanceTime(dt);
 	}
 
 	@Override
@@ -233,8 +221,7 @@ public class Facade implements IFacade {
 
 	@Override
 	public boolean isSolidConnectedToBorder(World world, int x, int y, int z) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		return world.isSolidConnectedToBorder(x, y, z);
 	}
 
 	@Override
@@ -271,8 +258,7 @@ public class Facade implements IFacade {
 
 	@Override
 	public int getExperiencePoints(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return unit.getExperiencePoints();
 	}
 
 	@Override

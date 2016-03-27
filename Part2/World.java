@@ -2,6 +2,7 @@ package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
 import hillbillies.part2.listener.TerrainChangeListener;
+import hillbillies.util.ConnectedToBorder;
 import ogp.framework.util.*;
 import hillbillies.model.Unit;
 
@@ -32,8 +33,13 @@ public class World {
 		this.z = terrainTypes[0][0].length;
 		Unit.world = this; // of world meegeven hier beneden!!!
 		Faction.world = this;
+		this.modelListener = modelListener;
+		this.border = new ConnectedToBorder(this.getX(), this.getY(), this.getZ());
+		CheckTerrainWorld();
 	}
 	private int[][][] world;
+	
+	TerrainChangeListener modelListener;
 	
 	/**
 	 * 
@@ -151,19 +157,19 @@ public class World {
 	public void addUnit(Unit unit) throws ModelException{
 		if (isFull())
 			throw new ModelException("World is full");
-		this.members.add(unit);
+		this.worldMembers.add(unit);
 	}
 	
 	private boolean isFull(){
-		return this.maxMembersWorld == this.members.size();
+		return this.maxMembersWorld == this.worldMembers.size();
 	}
 	
 	public Set<Unit> getUnits(){
-		return this.members;
+		return this.worldMembers;
 	}
 	
 	private final int maxMembersWorld = 100;
-	private Set<Unit> members = new HashSet<Unit>(maxMembersWorld);
+	public Set<Unit> worldMembers = new HashSet<Unit>(maxMembersWorld);
 
 	private int UPPER = 100;
 	private int LOWER = 25;
@@ -175,5 +181,52 @@ public class World {
 	}
 	
 	public Set<Faction> activeFactions = new HashSet<Faction>(Faction.maxFactions);
+	
+	private ConnectedToBorder border;
+	
+	public boolean isSolidConnectedToBorder(int x, int y, int z){
+		return border.isSolidConnectedToBorder(x, y, z);
+	}
+	
+	public void advanceTime(double dt) throws ModelException{
+		for (Unit unit : this.worldMembers){ 
+			if (!unit.isValidTime(dt))
+				throw new ModelException();
+			else {
+				unit.advanceTime(dt);
+			}
+		}
+	}
+	
+	private void CheckTerrainWorld(){
+		for (int i = 0; i < this.getX();i++){
+			for (int j = 0; j < this.getY();j++){
+				for (int k = 0; k < this.getZ();k++){
+					if (!this.isSolidConnectedToBorder(i, j, k)){
+						collapse(i, j, k);
+						System.out.println("collapse");
+					}
+				}
+			}
+		}
+	}
+	
+	private void collapse(int x, int y, int z){
+		setCubeType(x, y, z, TYPE_AIR);
+		modelListener.notifyTerrainChanged(x, y, z);
+		double probability = 0.25;
+		Random rand = new Random();
+		if (rand.nextDouble() <= probability){
+			int n = rand.nextInt(1);
+			if (n == 0){
+				// spawn boulder
+				System.out.println("spawn boulder");
+			}else {
+				// spawn log
+				System.out.println("spawn log");
+			}
+		}
+	}
+	
 	
 }

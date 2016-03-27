@@ -81,7 +81,7 @@ public class Faction{
 	//private static String[] factionNames = {"Appalachia", "Austinville", "Ozark", "Simpsons", "New Jersey"};
 	
 	
-	private final Set<Unit> members = new HashSet<Unit>(maxFactions);
+	public final Set<Unit> members = new HashSet<Unit>(maxFactions);
 	
 	public static boolean isFull(Set<Unit> faction){
 		return faction.size() == maxSizeFactions;
