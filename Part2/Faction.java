@@ -17,20 +17,24 @@ public class Faction{
 	public Faction(Unit unit){
 		//this.name = name;
 		this.members.add(unit);
-		Faction.activeFactions.add(this); //
+		world.activeFactions.add(this);
+		unit.faction = this;
 	}
+	
+	
+	public static World world; 
 	
 	private static Faction createFaction(Unit unit){
 		return new Faction(unit);
 	}
 	
 	//private String name;
-	private final static int maxFactions = 5;
+	public final static int maxFactions = 5;
 	private final static int maxSizeFactions = 50;
-	
+
 	public static void addToFaction(Unit unit){
 		//Random rand = new Random();
-		if (activeFactions.size() != maxFactions){
+		if (world.activeFactions.size() != maxFactions){
 //			String name = null;
 //			while (name == null){
 //				int n = rand.nextInt(factionNames.length);
@@ -43,30 +47,37 @@ public class Faction{
 			//minimum berekenen van de grootte vd factions
 			int[] sizeFaction = new int[maxFactions];
 			int i = 0;
-			for (Faction fac : activeFactions){
+			for (Faction fac : world.activeFactions){
 				sizeFaction[i] = fac.members.size();
 				i += 1;
 			}
 			int min = getMinValue(sizeFaction);
-			for (Faction fac : activeFactions){ //door magische wijze kloppen de cijfers niet altijd #magic
+			for (Faction fac : world.activeFactions){ 
 				if ((min == fac.members.size())&&(!isFull(fac.members))){
 					fac.members.add(unit);
+					unit.faction = fac;
 					break;
 				}
 			}
 		}
 	}
 	
-	private static Set<Faction> activeFactions = new HashSet<Faction>(maxFactions);
 	
-	public static Set<Unit> getUnitsOfFaction(Faction faction){
-		for (Faction fac : activeFactions){
-			if (fac == faction){
-				return fac.members;
-			}
-		}
-		return null;
+	
+//	public Set<Unit> getUnitsOfFaction(Faction faction){
+//		for (Faction fac : activeFactions){
+//			if (fac == faction){
+//				return fac.members;
+//			}
+//		}
+//		return null;
+//	}
+	
+	public Set<Unit> getUnitsOfFaction(){
+		return this.members;
 	}
+	
+	
 	//private static String[] factionNames = {"Appalachia", "Austinville", "Ozark", "Simpsons", "New Jersey"};
 	
 	
@@ -76,13 +87,13 @@ public class Faction{
 		return faction.size() == maxSizeFactions;
 	}
 	
-	public static Faction getFaction(Unit unit) {
-		for (Faction fac : activeFactions){
-			if (fac.members.contains(unit))
-				return fac;
-		} 
-		return null;
-	}
+//	public static Faction getFaction(Unit unit) {
+//		for (Faction fac : world.activeFactions){
+//			if (fac.members.contains(unit))
+//				return fac;
+//		} 
+//		return null;
+//	}
 	
 	private static int getMinValue(int[] array){
 		int min = array[0];
@@ -93,9 +104,21 @@ public class Faction{
 		return min;
 	}
 
-	public static Set<Faction> getActiveFactions(World world) {
-		return activeFactions;
-	}
+//	public static Set<Faction> getActiveFactions(World world) {
+//		return activeFactions;
+//	}
+//	
+//	private static Set<Faction> activeFactions = new HashSet<Faction>(maxFactions);
+	
+	//activefactions verplaatsen naar world
+	//getfaction naar unit
+	
+	// MORGEN:
+	// - path finding algoritme implementeren
+	// - experience points
+	// - game over
+	// - fighting (add defaultbehafiour)
+	// - dead
 
 
 	

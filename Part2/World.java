@@ -27,9 +27,11 @@ public class World {
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) throws ModelException{
 		this.world = terrainTypes;
-		World.x = terrainTypes.length;
-		World.y = terrainTypes[0].length;
-		World.z = terrainTypes[0][0].length;
+		this.x = terrainTypes.length;
+		this.y = terrainTypes[0].length;
+		this.z = terrainTypes[0][0].length;
+		Unit.world = this; // of world meegeven hier beneden!!!
+		Faction.world = this;
 	}
 	private int[][][] world;
 	
@@ -58,8 +60,8 @@ public class World {
 	 * @return
 	 */
 	@Basic @Raw
-	public static int getX() {
-		return World.x;
+	public int getX() {
+		return this.x;
 	}
 	
 	/**
@@ -67,8 +69,8 @@ public class World {
 	 * @return
 	 */
 	@Basic @Raw
-	public static int getY() {
-		return World.y;
+	public int getY() {
+		return this.y;
 	}
 	
 	/**
@@ -76,24 +78,24 @@ public class World {
 	 * @return
 	 */
 	@Basic @Raw
-	public static int getZ() {
-		return World.z;
+	public int getZ() {
+		return this.z;
 	}
 	
 	/**
 	 * 
 	 */
-	private static int x;
+	private int x;
 	
 	/**
 	 * 
 	 */
-	private static int y;
+	private int y;
 	
 	/**
 	 * 
 	 */
-	private static int z;
+	private int z;
 	
 	/**
 	 * 
@@ -113,33 +115,37 @@ public class World {
 	
 	public Unit randomUnit(boolean enabledefaultbehaviour) throws ModelException{
 		Random rand = new Random();
-		String name = "HillBilly"; //random naam?
-		int randomx = rand.nextInt(World.getX());
-		int randomy = rand.nextInt(World.getY());
-		int randomz = rand.nextInt(World.getZ());
-		
-		if (randomz != 0){
-			while ((this.world[randomx][randomy][randomz]!=TYPE_AIR)&&(this.world[randomx][randomy][randomz]!=TYPE_WORKSHOP)){
-				randomx = rand.nextInt(World.getX());
-				randomy = rand.nextInt(World.getY());
-				randomz = rand.nextInt(World.getZ());
-				if (randomz == 0){break;}
-				else{
-					while (((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)&&(this.world[randomx][randomy][randomz-1]!=TYPE_TREE))){
-						randomx = rand.nextInt(World.getX());
-						randomy = rand.nextInt(World.getY());
-						randomz = rand.nextInt(((World.getZ()-1) -1) + 1) + 1; //UPPER = 49; LOWER = 1
-					}
-				}
-			}
-		}
-		
-		int[] position = {randomx,randomy,randomz};
+		String name = "HillBilly";
+		int[] position = randomPositionUnit(rand);
 		int weight = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int agility = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int strength = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int toughness = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour);
+	}
+
+	private int[] randomPositionUnit(Random rand) {
+		int randomx = rand.nextInt(this.getX());
+		int randomy = rand.nextInt(this.getY());
+		int randomz = rand.nextInt(this.getZ());
+		if (randomz != 0){
+			while (((this.world[randomx][randomy][randomz]!=TYPE_AIR)||(this.world[randomx][randomy][randomz]!=TYPE_WORKSHOP))&&((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)||(this.world[randomx][randomy][randomz-1]!=TYPE_TREE))){
+				randomx = rand.nextInt(this.getX());
+				randomy = rand.nextInt(this.getY());
+				randomz = rand.nextInt(this.getZ());
+				if (randomz == 0){break;}
+				else{
+					if (((this.world[randomx][randomy][randomz]==TYPE_AIR)||(this.world[randomx][randomy][randomz]==TYPE_WORKSHOP))&&((this.world[randomx][randomy][randomz-1]==TYPE_ROCK)||(this.world[randomx][randomy][randomz-1]==TYPE_TREE))){
+						break;
+					}else{
+						randomx = rand.nextInt(this.getX());
+						randomy = rand.nextInt(this.getY());
+						randomz = rand.nextInt(((this.getZ()-1) -1) + 1) + 1; //UPPER = 49; LOWER = 1 (random  between [1,49])
+					}
+				}
+			}
+		}
+		return new int[] {randomx, randomy, randomz};
 	}
 	
 	public void addUnit(Unit unit) throws ModelException{
@@ -161,5 +167,13 @@ public class World {
 
 	private int UPPER = 100;
 	private int LOWER = 25;
+	
+	
+	
+	public Set<Faction> getActiveFactions() {
+		return this.activeFactions;
+	}
+	
+	public Set<Faction> activeFactions = new HashSet<Faction>(Faction.maxFactions);
 	
 }

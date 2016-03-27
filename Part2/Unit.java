@@ -4,9 +4,10 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
+import hillbillies.model.Faction;
 import java.math.*;
 import java.util.*;
-import hillbillies.model.Faction;
+
 
 /**
  * TO DO: 	- opdelen in classes?
@@ -124,7 +125,25 @@ public class Unit {
 		this.timetillrest = this.initial_timetillrest;
 		setDefaultBehaviourEnabled(enableDefaultBehavior);
 		arrowKeys = true;
+		world.addUnit(this);
 		Faction.addToFaction(this);
+	}
+	
+	public Faction faction;
+	public static World world;
+
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isAlive(){
+		return (this.getHitpoints() != 0);
+	}
+	
+
+	
+	public Faction getFaction(){
+		return this.faction;
 	}
 	
 	private int UPPER = 100;
@@ -213,8 +232,8 @@ public class Unit {
 	 * 
 	 */
 	@Basic
-	public static int getMaxSize(){
-		return Math.max(World.getX(), Math.max(World.getY(),World.getZ()));
+	public int getMaxSize(){
+		return Math.max(world.getX(), Math.max(world.getY(),world.getZ()));
 	}
 	
 	/**
@@ -647,15 +666,15 @@ public class Unit {
 			if (this.timetillrest <= 0){
 				rest();
 			}
-			if (isAttacking())
+			if (isAttacking()){
 				this.fighttime -= dt;
+				this.resting = false;
+			}
 			if (this.fighttime <= 0){
 				this.attacking = false;
 				this.defender = null;
 				this.fighttime = 1;
 			}
-			if (isAttacking())
-				this.resting = false;
 			if ((isResting())&&(!isWorking())){
 				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
 					this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
@@ -669,9 +688,10 @@ public class Unit {
 					this.resting = false;
 				}
 			}
-			if ((isResting()) && (isAttacking())){
-				this.resting = false;
-			}
+//			if ((isResting()) && (isAttacking())){
+//				this.resting = false;
+//			}
+			// nog nodig?
 			if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
 			     moveTo(finaldest);
 			}else{
@@ -1237,6 +1257,10 @@ public class Unit {
 	 */
 	private void stopDefaultBehaviour(){
 		this.defaultBehaviour = false;
+		// if ismoving ==> stopmoving
+		// if isresting ==> stopresting
+		// if isworking ==> stopwerking
+		// ???? zie assignment
 	}
 	/**
 	 * 
