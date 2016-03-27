@@ -1,0 +1,16 @@
+	public void LevelUp(){
+		if (getExperiencePoints > 10){
+			setExperiencePoints(getExperiencePoints - 10);
+			Random rand = new Random();
+			int Attribute = rand.nextInt(2);
+			switch (Attribute){
+				case 0:
+					this.setStrength(this.getStrength() + 1,1,200);
+				case 1:
+					this.setAgility(this.getAgility() + 1,1,200);
+				case 2:
+					this.setToughness(this.getToughness() + 1,1,200);
+				}
+		}	
+	}
+	
