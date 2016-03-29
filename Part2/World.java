@@ -3,6 +3,7 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import hillbillies.part2.listener.TerrainChangeListener;
 import hillbillies.util.ConnectedToBorder;
+import javafx.scene.control.TextInputDialog;
 import ogp.framework.util.*;
 import hillbillies.model.Unit;
 
@@ -44,22 +45,22 @@ public class World {
 	/**
 	 * 
 	 */
-	private static final int TYPE_AIR = 0;
+	public static final int TYPE_AIR = 0;
 	
 	/**
 	 * 
 	 */
-	private static final int TYPE_ROCK = 1;
+	public static final int TYPE_ROCK = 1;
 	
 	/**
 	 * 
 	 */
-	private static final int TYPE_TREE = 2;
+	public static final int TYPE_TREE = 2;
 	
 	/**
 	 * 
 	 */
-	private static final int TYPE_WORKSHOP = 3;
+	public static final int TYPE_WORKSHOP = 3;
 	
 	/**
 	 * 
@@ -189,14 +190,25 @@ public class World {
 	}
 	
 	public void advanceTime(double dt) throws ModelException{
-		for (Unit unit : this.worldMembers){ 
-			if (!unit.isValidTime(dt))
+		for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
+		    Unit unit = i.next();
+		    if (!unit.isValidTime(dt))
 				throw new ModelException();
 			else {
+				if (unit.getHitpoints() <= 0){
+					//this.worldMembers.remove(unit);
+					Faction fac = unit.getFaction();
+					fac.members.remove(unit);
+					i.remove();
+					System.out.println("dead, remaining: " + worldMembers.size());
+					//drops objects
+				}
 				unit.advanceTime(dt);
 			}
 		}
+		//gameOverCheck();
 	}
+
 	
 	private void CheckTerrainWorld(){
 		for (int i = 0; i < this.getX();i++){
@@ -227,6 +239,26 @@ public class World {
 			}
 		}
 	}
+	
+	private final static int GameOverCondition = Faction.maxSizeFactions;
+	
+	private void gameOverCheck(){
+		for (Faction fac: activeFactions){
+			if (fac.members.size() == GameOverCondition){
+				TextInputDialog dialog = new TextInputDialog();
+				dialog.setTitle("Rename unit");
+				dialog.setHeaderText("Rename unit");
+				dialog.setContentText("Enter a new name for the unit:");
+
+				//dialog.showAndWait().ifPresent(newName -> ae.setName(newName));
+				//PopUp.infoBox("Faction " + fac.index + " won! The game will be ended", "Victory!");
+				//getGame().getView().setStatusText("Fighting");
+			}
+		}
+	}
+	
+	//game over;
+	
 	
 	
 }

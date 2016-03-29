@@ -17,11 +17,12 @@ public class Faction{
 	public Faction(Unit unit){
 		//this.name = name;
 		this.members.add(unit);
+		this.index = world.activeFactions.size();
 		world.activeFactions.add(this);
 		unit.faction = this;
 	}
 	
-	
+	public int index;
 	public static World world; 
 	
 	private static Faction createFaction(Unit unit){
@@ -30,7 +31,7 @@ public class Faction{
 	
 	//private String name;
 	public final static int maxFactions = 5;
-	private final static int maxSizeFactions = 50;
+	public final static int maxSizeFactions = 50;
 
 	public static void addToFaction(Unit unit){
 		//Random rand = new Random();
@@ -115,10 +116,7 @@ public class Faction{
 	
 	// MORGEN:
 	// - path finding algoritme implementeren
-	// - experience points
 	// - game over
-	// - fighting (add defaultbehafiour)
-	// - dead
 
 
 	

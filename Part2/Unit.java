@@ -347,7 +347,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	private static boolean isValidAgility(int agility, int begin, int end) {
+	private boolean isValidAgility(int agility, int begin, int end) {
 		return ((agility >= begin) && (agility <= end)); 
 	}
 
@@ -408,7 +408,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	private static boolean isValidStrength(int strength, int begin, int end) {
+	private boolean isValidStrength(int strength, int begin, int end) {
 		return ((strength >= begin) && (strength <= end)); 
 	}
 
@@ -469,7 +469,7 @@ public class Unit {
 	 * 			|	then result == true
 	 * 			|	else result == false
 	*/
-	private static boolean isValidToughness(int toughness, int begin, int end) {
+	private boolean isValidToughness(int toughness, int begin, int end) {
 		return ((toughness >= begin) && (toughness <= end)); 
 	}
 	
@@ -526,7 +526,7 @@ public class Unit {
 	 *       	| 	else result == false
 	*/
 	private boolean isValidStamina(int stamina) {
-		return (stamina >= 0 && stamina <= (this.getMaxStaminaAndHitPoints()));
+		return ((stamina >= 0) && (stamina <= this.getMaxStaminaAndHitPoints()));
 	}
 
 	/**
@@ -573,7 +573,7 @@ public class Unit {
 	 *       	| 	else result == false
 	*/
 	private boolean isValidHitpoints(int hitpoints) {
-		return (hitpoints >= 0 && hitpoints <= (this.getMaxStaminaAndHitPoints()));
+		return ((hitpoints >= 0) && (hitpoints <= this.getMaxStaminaAndHitPoints()));
 	}
 	
 	/**
@@ -670,7 +670,6 @@ public class Unit {
 	
 	
 	public void advanceTime(double dt) throws ModelException{
-		// isterminated toevoegen?
 		if (!isValidTime(dt)){
 			throw new ModelException();
 		} else {
@@ -678,90 +677,110 @@ public class Unit {
 			if (this.timetillrest <= 0){
 				rest();
 			}
-			if (isAttacking()){
-				this.fighttime -= dt;
-				this.resting = false;
-			}
-			if (this.fighttime <= 0){
-				this.attacking = false;
-				this.defender = null;
-				this.fighttime = 1;
-			}
+			advanceTime_Fight(dt);
 			if ((isResting())&&(!isWorking())){
 				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
 					this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
+					if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
+						this.setHitpoints(this.getMaxStaminaAndHitPoints());
 					this.setHitpoints((int)(this.hitpoints_double));
 				}
 				else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
 					this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
+					if (this.stamina_double > this.getMaxStaminaAndHitPoints())
+						this.setStamina(this.getMaxStaminaAndHitPoints());
 					this.setStamina((int)(this.stamina_double));
 				}
 				else{
 					this.resting = false;
 				}
 			}
-			if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
-			     moveTo(finaldest);
-			}else{
-				arrowKeys = true;
-			}
-			if (this.getStamina() == 0 && isSprinting())
-				stopSprinting();
-			if ((this.getPosition() != null)&&(this.getDestiny()!=null)&&(!isWorking())){
-				if (!Arrays.equals(this.getPosition(), this.getDestiny())){
-					double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
-					double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
-					double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
-					setPosition(New);
-					setOrientation(Math.atan2(v[1],v[0]));
-					if (isSprinting()){
-						this.stamina_double = this.stamina_double - (dt/(double)0.1);
-						setStamina((int)this.stamina_double);
-					}
-				}
-				if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
-					setSpeed();
-				}
-				if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
-					stopMoving();
-					this.position = this.getDestiny();	
-				}
-			}
-			if (arrowKeys){
-				finaldest[0] = (int)this.getPosition()[0];
-				finaldest[1] = (int)this.getPosition()[1];
-				finaldest[2] = (int)this.getPosition()[2];
-			}
-			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))
+			advanceTime_Moving(dt);
+			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 				setDefaultBehaviourEnabled(true);
 			if (isWorking()){
 				work();
 				this.worktime -= dt;
 			}
-			dead();
-			levelUp();
+			advanceTime_levelUp();
+		}
+	}
+
+	private void advanceTime_Moving(double dt) throws ModelException {
+		if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
+		     moveTo(finaldest);
+		}else{
+			arrowKeys = true;
+		}
+		if (this.getStamina() == 0 && isSprinting())
+			stopSprinting();
+		if ((this.getPosition() != null)&&(this.getDestiny()!=null)){
+			if (!Arrays.equals(this.getPosition(), this.getDestiny())){
+				double d = Math.sqrt(Math.pow((this.getDestiny()[0]-this.getPosition()[0]),2)+Math.pow((this.getDestiny()[1]-this.getPosition()[1]),2)+Math.pow((this.getDestiny()[2]-this.getPosition()[2]),2));
+				double[] v = {this.getSpeed()*((this.getDestiny()[0]-this.getPosition()[0])/(double)d),this.getSpeed()*((this.getDestiny()[1]-this.getPosition()[1])/(double)d),this.getSpeed()*((this.getDestiny()[2]-this.getPosition()[2])/(double)d)};
+				double[] New = {this.getPosition()[0] + v[0]*dt,this.getPosition()[1] + v[1]*dt,this.getPosition()[2] + v[2]*dt};
+				setPosition(New);
+				setOrientation(Math.atan2(v[1],v[0]));
+				if (isSprinting()){
+					this.stamina_double = this.stamina_double - (dt/(double)0.1);
+					if (this.stamina_double < 0)
+						setStamina(0);
+					setStamina((int)this.stamina_double);
+				}
+			}
+			if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
+				setSpeed();
+			}
+			if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
+				stopMoving();
+				this.position = this.getDestiny();	
+			}
+		}
+		if (arrowKeys){
+			finaldest[0] = (int)this.getPosition()[0];
+			finaldest[1] = (int)this.getPosition()[1];
+			finaldest[2] = (int)this.getPosition()[2];
+		}
+	}
+	
+	/**
+	 * 
+	 * @param dt
+	 * @throws ModelException
+	 */
+	private void advanceTime_Fight(double dt) throws ModelException {
+		if ((defender != null)&&(this.fighttime == 1)){
+			if ((defender.isAlive())&&(isAttackingDefaultBehaviour)){
+				this.fight(defender);
+			}
+			if (!defender.isAlive()){
+				isAttackingDefaultBehaviour = false;
+				this.defender = null;
+			}
+			if ((defender != null)&&(defender!=this)&&(!this.isMoving())){
+				if ((!isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate()))&&(!Arrays.equals(this.getPosition(),defender.getPosition()))&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
+					moveTo(defender.getCubeCoordinate());
+				}
+			}
+		}
+		if (isAttacking()||isAttackingDefaultBehaviour){
+			this.fighttime -= dt;
+			this.resting = false;
+		}
+		if (this.fighttime <= 0){
+			this.attacking = false;
+			this.fighttime = 1;
 		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void dead(){
-		if (this.hitpoints <= 0){
-			world.worldMembers.remove(this);
-			Faction fac = this.getFaction();
-			fac.members.remove(this);
-			//drops objects
-		}
-	}
-	/**
-	 * 
-	 */
-	public void levelUp(){
-		if (this.getExperiencePoints() >= 10){
-			setExperiencePoints(this.getExperiencePoints()- 10);
+	public void advanceTime_levelUp(){
+		if (this.getExperiencePoints() >= experienceLevelUp){
+			setExperiencePoints(this.getExperiencePoints()- experienceLevelUp);
 			Random rand = new Random();
-			int Attribute = rand.nextInt(2);
+			int Attribute = rand.nextInt(3);
 			switch (Attribute){
 				case 0:
 					this.setStrength((this.getStrength() + 1),1,200);
@@ -775,6 +794,8 @@ public class Unit {
 				}
 		}	
 	}
+	
+	private final static int experienceLevelUp = 10;
 	
 	/**
 	 * Variable registering the stamina of this unit in double.
@@ -951,12 +972,15 @@ public class Unit {
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
 			setDestiny(Adjacent);
 			if (isValidPosition(Adjacent)){
+				this.attacking = false;
 				startMoving();
 				setSpeed();
-				setExperiencePoints(this.getExperiencePoints()+1);
+				setExperiencePoints(this.getExperiencePoints()+movementExperience);
 			}
 		}
 	}
+	
+	private static final int movementExperience = 1;
 	
 	/**
 	 * Variable registering the final destination of this unit.
@@ -1035,10 +1059,12 @@ public class Unit {
 		}else{
 			if (this.worktime <=0){
 				this.working = false;
-				setExperiencePoints(this.getExperiencePoints()+10);
+				setExperiencePoints(this.getExperiencePoints()+workExperience);
 			}
 		}
 	}
+	
+	private static final int workExperience = 10;
 	/**
 	 * Variable registering the worktime of this unit.
 	 */
@@ -1081,7 +1107,7 @@ public class Unit {
 		this.working = false;
 		if (!isAttacking())
 			this.fighttime = 1;
-		if ((defender != null)&&(defender != this)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this,defender)))){
+		if ((!isMoving())&&(defender != null)&&(defender != this)&&(this.faction != defender.faction)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate())))){
 			attack(this,defender); 
 			defend(defender,this);
 			this.setOrientation((Math.atan2((defender.getPosition()[1]-this.getPosition()[1]),(defender.getPosition()[0]-this.getPosition()[0]))));
@@ -1111,16 +1137,17 @@ public class Unit {
 	 */
 	private void defend(Unit defender,Unit attacker) throws ModelException{
 		defender.attacking = false;
-		defender.defender = attacker; // of defender idk
-		double probability_dodge = 0;//(0.20)*((defender.getAgility())/((double)attacker.getAgility()));
-		double probability_block = 0;//(0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
-		if (new Random().nextDouble() <= probability_dodge){
+		defender.defender = defender;
+		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
+		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
+		Random rand = new Random();
+		if (rand.nextDouble() <= probability_dodge){
 			dodge(defender,attacker);
-			defender.setExperiencePoints(defender.getExperiencePoints()+20);
+			defender.setExperiencePoints(defender.getExperiencePoints()+fightExperience);
 			System.out.println("dodged");
-		} else if (new Random().nextDouble() <= probability_block){
+		} else if (rand.nextDouble() <= probability_block){
 			System.out.println("blocked");
-			defender.setExperiencePoints(defender.getExperiencePoints()+20);
+			defender.setExperiencePoints(defender.getExperiencePoints()+fightExperience);
 		} else {
 			defender.hitpoints_double = defender.hitpoints_double - (attacker.getStrength()/(double)10);
 			if (defender.hitpoints_double < 0){
@@ -1128,10 +1155,12 @@ public class Unit {
 			} else {
 				defender.setHitpoints((int)(defender.hitpoints_double));
 			}
-			attacker.setExperiencePoints(attacker.getExperiencePoints()+20);
+			attacker.setExperiencePoints(attacker.getExperiencePoints()+fightExperience);
 			System.out.println("hit");
 		}
 	}	
+	
+	private static final int fightExperience = 20;
 	/**
 	 * 
 	 * defender dodges the attacker
@@ -1146,6 +1175,7 @@ public class Unit {
 		int random_y = 0;
 		Random rand = new Random();
 		int randomNumber = rand.nextInt(8);
+		// wat als hem dodget naar buiten de wereld? while adden met passable etc
 		switch (randomNumber){
 			case 0:
 				random_x=1;
@@ -1191,10 +1221,8 @@ public class Unit {
 	 * @param	other
 	 * 			a unit
 	 */
-	private boolean isNeighbour(Unit me, Unit other){
-		double[] mine = {me.getPosition()[0], me.getPosition()[1],me.getPosition()[2]};
-		double[] different = {other.getPosition()[0], other.getPosition()[1],other.getPosition()[2]};
-		if ((Math.abs((int)mine[0]-(int)different[0]) == 1)||(Math.abs((int)mine[1]-(int)different[1]) == 1)||(Math.abs((int)mine[2]-(int)different[2]) == 1))
+	private boolean isNeighbour (int[] me, int[] other){
+		if (((Math.abs((int)me[0]-(int)other[0]) == 1)||((Math.abs((int)me[0]-(int)other[0]) == 0))&&((Math.abs((int)me[1]-(int)other[1]) == 1)||((Math.abs((int)me[1]-(int)other[1]) == 0)))&&((Math.abs((int)me[1]-(int)other[1]) != 0)||(Math.abs((int)me[1]-(int)other[1]) != 0))))
 			return true;
 		return false;
 	}
@@ -1245,75 +1273,101 @@ public class Unit {
 	 * @throws ModelException 
 	 */
 	private void startDefaultBehaviour() throws ModelException{
-		this.defaultBehaviour = true;
-		Random rand = new Random();
 		if ((!isWorking())&& (!isResting())&&(!isMoving())){
-			int randomNumber = rand.nextInt(3);
-			switch (randomNumber){
-				case 0:
-					if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
-						rest();
-						System.out.println("rest");
-						break;
-					}else{
-						Random rand2 = new Random();
-						int randomNumber_2 = rand2.nextInt(2);
-						switch(randomNumber_2){
-							case 0:
-								work();
-								System.out.println("work,case 0");
-								break;
-							case 1:
-								int randomx = rand.nextInt(getMaxSize() - 1);
-								int randomy = rand.nextInt(getMaxSize() - 1);
-								int randomz = rand.nextInt(getMaxSize() - 1);
-								int[] randompos = {randomx, randomy, randomz};
-								moveTo(randompos);
-								int randomMove = rand.nextInt(2);
-								if (randomMove == 0){
-									startSprinting();
-									System.out.println("start sprinten, case 0");
-								} else{
-									System.out.println("gewoon verder wandelen,case 0");
-								}
-								System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
-								break;
+			this.defaultBehaviour = true;
+			boolean checker = true;
+			Random rand = new Random();
+			while (checker){
+				int randomNumber = rand.nextInt(4);
+				switch (randomNumber){
+					case 0:
+						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
+							rest();
+							System.out.println("rest");
+							checker = false;
+							break;
 						}
 						break;
-					}
-				case 1:
-					work();
-					System.out.println("work,case 1");
-					break;
-				case 2:
-					int randomx = rand.nextInt(getMaxSize());
-					int randomy = rand.nextInt(getMaxSize());
-					int randomz = rand.nextInt(getMaxSize());
-					int[] randompos = {randomx, randomy, randomz};
-					moveTo(randompos);
-					int randomMove = rand.nextInt(2);
-					if (randomMove == 0){
-						startSprinting();
-						System.out.println("start sprinten, case 2");
-					}else {
-						System.out.println("gewoon verder wandelen, case 2");
-					}
-					System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
-					break;
-						
+					case 1:
+						work();
+						System.out.println("work");
+						checker = false;
+						break;
+					case 2:
+						int randomx = rand.nextInt(getMaxSize());
+						int randomy = rand.nextInt(getMaxSize());
+						int randomz = rand.nextInt(getMaxSize());
+						int[] randompos = {randomx, randomy, randomz};
+						moveTo(randompos);
+						randomSprinting(rand);
+						checker = false;
+						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
+						break;
+					case 3:
+						for (Unit unit: world.worldMembers){
+							if (unit.faction != this.faction){
+								int[] cube = unit.getCubeCoordinate();
+								this.defender = unit;
+								int[] positionToGo = positionNearCube(cube);
+								this.moveTo(positionToGo);
+								randomSprinting(rand);
+								this.isAttackingDefaultBehaviour = true;
+								System.out.println("fight at " + positionToGo[0] + " " + positionToGo[1] + " " + positionToGo[2] );
+								checker = false;
+								break;
+							}
+						}
+						break;
+							
+				}
 			}
 		}
 	}
+
+	private void randomSprinting(Random rand) {
+		int randomMove = rand.nextInt(2);
+		if (randomMove == 0){
+			startSprinting();
+			System.out.println("start sprinten");
+		}else {
+			System.out.println("gewoon verder wandelen");
+		}
+	}
+	
+	public int[] positionNearCube(int[] cube) throws ModelException{
+		Random rand = new Random();
+		boolean validposition = true;
+		int random = rand.nextInt(2);
+		if (random == 1){
+			while (((world.getCubeType(cube[0], cube[1], cube[2])!=World.TYPE_AIR)&&(world.getCubeType(cube[0], cube[1], cube[2])!=World.TYPE_WORKSHOP))&&(!isNeighbour(cube, this.defender.getCubeCoordinate()))&&(validposition)){
+				int min = -1;
+				int max = 1;
+				int x = rand.nextInt((max - min) + 1) + min;
+				int y = rand.nextInt((max - min) + 1) + min;
+				cube[0] += x;
+				cube[1] += y;
+				double[] doublecube = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+				if (isValidPosition(doublecube)){
+					validposition = true;
+				}else { 
+					validposition = false;
+					cube = defender.getCubeCoordinate();
+					break;
+				}
+			}
+		}
+		
+		return cube;
+			
+	}
+	
+	private boolean isAttackingDefaultBehaviour;
 	/**
 	 * 
 	 * start defaultbehaviour
 	 */
 	private void stopDefaultBehaviour(){
 		this.defaultBehaviour = false;
-		// if ismoving ==> stopmoving
-		// if isresting ==> stopresting
-		// if isworking ==> stopwerking
-		// ???? zie assignment
 	}
 	/**
 	 * 
