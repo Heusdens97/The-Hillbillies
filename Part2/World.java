@@ -206,7 +206,7 @@ public class World {
 				unit.advanceTime(dt);
 			}
 		}
-		//gameOverCheck();
+		gameOverCheck();
 	}
 
 	
@@ -245,11 +245,11 @@ public class World {
 	private void gameOverCheck(){
 		for (Faction fac: activeFactions){
 			if (fac.members.size() == GameOverCondition){
-				TextInputDialog dialog = new TextInputDialog();
-				dialog.setTitle("Rename unit");
-				dialog.setHeaderText("Rename unit");
-				dialog.setContentText("Enter a new name for the unit:");
-
+//				TextInputDialog dialog = new TextInputDialog();
+//				dialog.setTitle("Rename unit");
+//				dialog.setHeaderText("Rename unit");
+//				dialog.setContentText("Enter a new name for the unit:");
+				System.out.println("gameover");
 				//dialog.showAndWait().ifPresent(newName -> ae.setName(newName));
 				//PopUp.infoBox("Faction " + fac.index + " won! The game will be ended", "Victory!");
 				//getGame().getView().setStatusText("Fighting");
