@@ -1,6 +1,7 @@
 package hillbillies.model;
 
 import be.kuleuven.cs.som.annotate.*;
+import javax.swing.JOptionPane; 
 import hillbillies.part2.listener.TerrainChangeListener;
 import hillbillies.util.ConnectedToBorder;
 import javafx.scene.control.TextInputDialog;
@@ -32,7 +33,7 @@ public class World {
 		this.x = terrainTypes.length;
 		this.y = terrainTypes[0].length;
 		this.z = terrainTypes[0][0].length;
-		Unit.world = this; // of world meegeven hier beneden!!!
+		Unit.world = this; 
 		Faction.world = this;
 		this.modelListener = modelListener;
 		this.border = new ConnectedToBorder(this.getX(), this.getY(), this.getZ());
@@ -190,25 +191,36 @@ public class World {
 	}
 	
 	public void advanceTime(double dt) throws ModelException{
-		for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
-		    Unit unit = i.next();
-		    if (!unit.isValidTime(dt))
-				throw new ModelException();
-			else {
-				if (unit.getHitpoints() <= 0){
-					//this.worldMembers.remove(unit);
-					Faction fac = unit.getFaction();
-					fac.members.remove(unit);
-					i.remove();
-					System.out.println("dead, remaining: " + worldMembers.size());
-					//drops objects
+		if (!gameOverCheck()){
+			gameOverTimer -= dt;
+			for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
+			    Unit unit = i.next();
+			    if (!unit.isValidTime(dt))
+					throw new ModelException();
+				else {
+					if (unit.getHitpoints() <= 0){
+						//this.worldMembers.remove(unit);
+						Faction fac = unit.getFaction();
+						fac.members.remove(unit);
+						i.remove();
+						System.out.println("dead, remaining: " + worldMembers.size());
+						//drops objects
+					}
+					unit.advanceTime(dt);
 				}
-				unit.advanceTime(dt);
 			}
+		} else {
+			int index = -1;
+			for (Faction fac: activeFactions){
+				if (fac.members.size() <= 1){
+					index = fac.index;
+					break;
+				}		
+			}
+			JOptionPane.showMessageDialog(null, "Faction " + index + " won! The game will close");
+			System.exit(0);
 		}
-		gameOverCheck();
 	}
-
 	
 	private void CheckTerrainWorld(){
 		for (int i = 0; i < this.getX();i++){
@@ -240,25 +252,11 @@ public class World {
 		}
 	}
 	
-	private final static int GameOverCondition = Faction.maxSizeFactions;
+	private static double gameOverTimer = 1000;
 	
-	private void gameOverCheck(){
-		for (Faction fac: activeFactions){
-			if (fac.members.size() == GameOverCondition){
-//				TextInputDialog dialog = new TextInputDialog();
-//				dialog.setTitle("Rename unit");
-//				dialog.setHeaderText("Rename unit");
-//				dialog.setContentText("Enter a new name for the unit:");
-				System.out.println("gameover");
-				//dialog.showAndWait().ifPresent(newName -> ae.setName(newName));
-				//PopUp.infoBox("Faction " + fac.index + " won! The game will be ended", "Victory!");
-				//getGame().getView().setStatusText("Fighting");
-			}
-		}
+	private boolean gameOverCheck(){		
+		return ((gameOverTimer <0)&&(this.worldMembers.size() <= 1));
 	}
-	
-	//game over;
-	
-	
-	
+
+
 }

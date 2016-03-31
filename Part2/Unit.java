@@ -1317,8 +1317,7 @@ public class Unit {
 								break;
 							}
 						}
-						break;
-							
+						break;		
 				}
 			}
 		}
