@@ -699,7 +699,10 @@ public class Unit {
 			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 				setDefaultBehaviourEnabled(true);
 			if (isWorking()){
-				work();
+				int x = this.getCubeCoordinate()[0];
+				int y = this.getCubeCoordinate()[1];
+				int z = this.getCubeCoordinate()[2];
+				workAt(x, y, z);
 				this.worktime -= dt;
 			}
 			advanceTime_levelUp();
@@ -1034,6 +1037,7 @@ public class Unit {
 //			}	
 //		}
 //	}
+	
 	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
 	
 	public void moveTo(int[] cube) throws ModelException{
@@ -1057,7 +1061,8 @@ public class Unit {
 							moveToAdjacent(pos[0][0], pos[0][1], pos[0][2]);
 					}
 				} else{
-					return;
+					positionQueue.clear();
+					moveTo(cube);
 				}
 			}
 		}
@@ -1113,9 +1118,9 @@ public class Unit {
 	private boolean alreadyInQueue(int[] position, int n){
 		for (int[][] pos: positionQueue){
 			if (n <= pos[1][0])
-				return true;
+				return false;
 		}
-		return false;
+		return true;
 	}
 	
 	
@@ -1132,11 +1137,30 @@ public class Unit {
 	public boolean isWorking(){
 		return this.working;
 	}
+//	/**
+//	 * 
+//	 * the unit starts working.
+//	 */
+//	public void work() throws ModelException{ 
+//		this.resting = false;
+//		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
+//		if (!isWorking()){
+//			this.worktime = (500/(double)this.getStrength());
+//			this.working = true;
+//		}else{
+//			if (this.worktime <=0){
+//				this.working = false;
+//				setExperiencePoints(this.getExperiencePoints()+workExperience);
+//			}
+//		}
+//	}
+	
 	/**
 	 * 
 	 * the unit starts working.
 	 */
-	public void work() throws ModelException{ 
+	public void workAt(int x, int y, int z) throws ModelException{ 
+		int[] position = {x,y,z};
 		this.resting = false;
 		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
 		if (!isWorking()){
@@ -1145,9 +1169,57 @@ public class Unit {
 		}else{
 			if (this.worktime <=0){
 				this.working = false;
+				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
+					if (world.logs.size() == 0){
+						world.createBoulder(world, position);
+						world.boulders.clear();
+					} else if (world.boulders.size() == 0){
+						world.createLog(world, position);
+						world.logs.clear();
+					}
+				}
+				if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAndBoulderAvailable(position))){
+					
+				}
+				
 				setExperiencePoints(this.getExperiencePoints()+workExperience);
 			}
 		}
+	}
+	
+	private boolean logAndBoulderAvailable(int[] position){
+		double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+		boolean logBoolean = false;
+		boolean boulderBoolean = false;
+		for (Boulder boulder: world.boulders){
+			if (boulder.getPosition() == doublepos){
+				boulderBoolean = true;
+				break;
+			}
+		}
+		for (Log log: world.logs){
+			if (log.getPosition() == doublepos){
+				logBoolean = true;
+				break;
+			}
+		}
+		if ((logBoolean)&&(boulderBoolean))
+			return true;
+		else
+			return false;
+		
+	}
+	
+	private Set<Boulder> carryingBoulder = new HashSet<Boulder>();
+	
+	public boolean isCarryingBoulder(){
+		return (this.carryingBoulder.size() != 0);
+	}
+	
+	private Set<Log> carryingLog = new HashSet<Log>();
+	
+	public boolean isCarryingLog(){
+		return (this.carryingLog.size() != 0);
 	}
 	
 	private static final int workExperience = 10;
@@ -1401,7 +1473,10 @@ public class Unit {
 						}
 						break;
 					case 1:
-						work();
+						int x = this.getCubeCoordinate()[0];
+						int y = this.getCubeCoordinate()[1];
+						int z = this.getCubeCoordinate()[2];
+						workAt(x, y, z);
 						System.out.println("work");
 						checker = false;
 						break;

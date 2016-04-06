@@ -191,7 +191,8 @@ public class World {
 	
 	public void advanceTime(double dt) throws ModelException{
 		if (!gameOverCheck()){
-			gameOverTimer -= dt;
+			if (this.worldMembers.size() != 0)
+				gameOverTimer -= dt;
 			for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
 			    Unit unit = i.next();
 			    if (!unit.isValidTime(dt))
@@ -201,6 +202,9 @@ public class World {
 						//this.worldMembers.remove(unit);
 						Faction fac = unit.getFaction();
 						fac.members.remove(unit);
+						if (fac.members.size() == 0) {
+							this.activeFactions.remove(fac);
+						}
 						i.remove();
 						System.out.println("dead, remaining: " + worldMembers.size());
 						//drops objects
@@ -211,10 +215,7 @@ public class World {
 		} else {
 			int index = -1;
 			for (Faction fac: activeFactions){
-				if (fac.members.size() <= 1){
-					index = fac.index;
-					break;
-				}		
+				index = fac.index;
 			}
 			JOptionPane.showMessageDialog(null, "Faction " + index + " won! The game will close");
 			System.exit(0);
@@ -235,28 +236,55 @@ public class World {
 	}
 	
 	private void collapse(int x, int y, int z){
+		int[] position = {x,y,z};
 		setCubeType(x, y, z, TYPE_AIR);
-		//border.changePassableToSolid(x, y, z);
+		border.changeSolidToPassable(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
 		double probability = 0.25;
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
 			int n = rand.nextInt(1);
 			if (n == 0){
-				// spawn boulder
+				createBoulder(this,position);
 				System.out.println("spawn boulder");
 			}else {
-				// spawn log
+				createLog(this,position);
 				System.out.println("spawn log");
 			}
 		}
 	}
 	
-	private static double gameOverTimer = 1000;
+	private static double gameOverTimer = 10000;
 	
 	private boolean gameOverCheck(){		
-		return ((gameOverTimer <0)&&(this.worldMembers.size() <= 1));
+		return ((gameOverTimer <0)&&((this.worldMembers.size() <= 1)||(oneFactionLeft())));
 	}
+	
+	private boolean oneFactionLeft(){
+		return (this.activeFactions.size() == 1);
+	}
+	
+	public Set<Boulder> boulders = new HashSet<Boulder>();
+	
+	public Set<Log> logs = new HashSet<Log>();
+	
+	public Boulder createBoulder(World world, int[] position){
+		return new Boulder(world, position);
+	}
+	
+	public Log createLog(World world, int[] position){
+		return new Log(world, position);
+	}
+	
+	public Set<Boulder> getBoulders(){
+		return this.boulders;
+	}
+	
+	public Set<Log> getLogs(){
+		return this.logs;
+	}
+	
+	
 
 
 }
