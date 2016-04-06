@@ -992,48 +992,134 @@ public class Unit {
 	 */
 	private Boolean arrowKeys;
 	
-	/**
-	 * 
-	 * The unit moves to the cube.
-	 * 
-	 * @param 	cube
-	 * 			the new position of the unit.
-	 * @throws 	ModelException
-	 * 			if it's not a valid position.
-	 */
+//	/**
+//	 * 
+//	 * The unit moves to the cube.
+//	 * 
+//	 * @param 	cube
+//	 * 			the new position of the unit.
+//	 * @throws 	ModelException
+//	 * 			if it's not a valid position.
+//	 */
+//	public void moveTo(int[] cube) throws ModelException{
+//		double[] Position = {0,0,0};
+//		Position[0] = (double)(cube[0])+0.5;
+//		Position[1] = (double)(cube[1])+0.5;
+//		Position[2] = (double)(cube[2])+0.5;
+//		if (isValidPosition(Position)){
+//			this.working = false;
+//			this.arrowKeys = false;
+//			this.finaldest = cube;
+//			int dx,dy,dz;
+//			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
+//				if (this.getPosition()[0] == Position[0])
+//					dx = 0;
+//				else if (this.getPosition()[0] < Position[0])
+//					dx = 1;
+//				else
+//					dx = -1;
+//				if (this.getPosition()[1] == Position[1])
+//					dy = 0;
+//				else if (this.getPosition()[1] < Position[1])
+//					dy = 1;
+//				else
+//					dy = -1;
+//				if (this.getPosition()[2] == Position[2])
+//					dz = 0;
+//				else if (this.getPosition()[2] < Position[2])
+//					dz = 1;
+//				else
+//					dz = -1;
+//				moveToAdjacent(dx, dy, dz);
+//			}	
+//		}
+//	}
+	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
+	
 	public void moveTo(int[] cube) throws ModelException{
-		double[] Position = {0,0,0};
-		Position[0] = (double)(cube[0])+0.5;
-		Position[1] = (double)(cube[1])+0.5;
-		Position[2] = (double)(cube[2])+0.5;
-		if (isValidPosition(Position)){
+		double[] position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+		if (isValidPosition(position)){
 			this.working = false;
 			this.arrowKeys = false;
 			this.finaldest = cube;
-			int dx,dy,dz;
-			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
-				if (this.getPosition()[0] == Position[0])
-					dx = 0;
-				else if (this.getPosition()[0] < Position[0])
-					dx = 1;
-				else
-					dx = -1;
-				if (this.getPosition()[1] == Position[1])
-					dy = 0;
-				else if (this.getPosition()[1] < Position[1])
-					dy = 1;
-				else
-					dy = -1;
-				if (this.getPosition()[2] == Position[2])
-					dz = 0;
-				else if (this.getPosition()[2] < Position[2])
-					dz = 1;
-				else
-					dz = -1;
-				moveToAdjacent(dx, dy, dz);
-			}	
+			if (!Arrays.equals(this.getCubeCoordinate(), cube)){
+				int[][] adder = {cube, {0}};
+				positionQueue.add(adder);
+				search(cube, 0);
+				Iterator<int[][]> iterator = positionQueue.iterator();
+				while ((iterator.hasNext())&&(!containsQueue(this.getCubeCoordinate()))){
+					int[][] getter = iterator.next();
+					search(getter[0], getter[1][0]);
+				}
+				if (containsQueue(this.getCubeCoordinate())){
+					for (int[][] pos: positionQueue){
+						if ((isNeighbour(pos[0], this.getCubeCoordinate())))
+							moveToAdjacent(pos[0][0], pos[0][1], pos[0][2]);
+					}
+				} else{
+					return;
+				}
+			}
 		}
-	}	
+		
+	}
+	
+	private boolean containsQueue(int[] position){
+		for (int[][] pos: positionQueue){
+			if (pos[0]==position)
+				return true;
+		}
+		return false;
+	}
+	
+	
+	public void search(int[] position, int n) throws ModelException{
+		List<int[]> positionList = new ArrayList<int[]>();
+		int x = position[0];
+		int y = position[1];
+		int z = position[2];
+		for (int i = x-1; i <= x+1; i++){
+			for (int j = y-1; j <= y+1; j++){
+				for (int k = z-1; k <= z+1; k++){
+					int[] pos = {i,j,k};
+					double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
+					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
+						positionList.add(pos);
+					}	
+				}
+			}
+		}
+//			Random rand = new Random();
+//			int max = 1;
+//			int min = -1;
+//			int x = rand.nextInt((max - min) + 1) + min;
+//			int y = rand.nextInt((max - min) + 1) + min;
+//			int z = rand.nextInt((max - min) + 1) + min;
+//			// moet maar één pos toevoegen? dan dit;
+//			// anders for loop
+//			int[] pos = {position[0]+x,position[1]+y,position[2]+z};
+//			double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
+//			if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
+//				positionList.add(pos);
+//				checker = false;
+//			}	
+			
+		for (int[] pos: positionList){
+			int[][] adder = {pos,{n+1}};
+			positionQueue.add(adder);
+		}
+	}
+	
+	private boolean alreadyInQueue(int[] position, int n){
+		for (int[][] pos: positionQueue){
+			if (n <= pos[1][0])
+				return true;
+		}
+		return false;
+	}
+	
+	
+	
 	/**
 	 * Variable registering whether the unit is working.
 	 */
@@ -1222,9 +1308,35 @@ public class Unit {
 	 * 			a unit
 	 */
 	private boolean isNeighbour (int[] me, int[] other){
-		if (((Math.abs((int)me[0]-(int)other[0]) == 1)||((Math.abs((int)me[0]-(int)other[0]) == 0))&&((Math.abs((int)me[1]-(int)other[1]) == 1)||((Math.abs((int)me[1]-(int)other[1]) == 0)))&&((Math.abs((int)me[1]-(int)other[1]) != 0)||(Math.abs((int)me[1]-(int)other[1]) != 0))))
-			return true;
+		return ((Math.abs((int)me[0]-(int)other[0]) == 1)||((Math.abs((int)me[0]-(int)other[0]) == 0))
+				&&((Math.abs((int)me[1]-(int)other[1]) == 1)||((Math.abs((int)me[1]-(int)other[1]) == 0)))
+				&&((Math.abs((int)me[0]-(int)other[0]) != 0)||(Math.abs((int)me[1]-(int)other[1]) != 0)||(Math.abs((int)me[2]-(int)other[2]) != 0))
+				&&((Math.abs((int)me[2]-(int)other[2]) == 1)||((Math.abs((int)me[2]-(int)other[2]) == 0))));
+	}
+	
+	private boolean isNeighbouringSolidTerrain(int[] position) throws ModelException{
+		int[] cube = Arrays.copyOf(position, 3);
+		for (int i=0; i < 200; i++){
+			position = Arrays.copyOf(cube, 3);
+			Random rand = new Random();
+			int max = 1;
+			int min = -1;
+			int x = rand.nextInt((max - min) + 1) + min;
+			int y = rand.nextInt((max - min) + 1) + min;
+			int z = rand.nextInt((max - min) + 1) + min;
+			position[0] += x;
+			position[1] += y;
+			position[2] += z;
+			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+			if ((isValidPosition(doubleposition))&&(isPassableTerrain(position)) && (isNeighbour(cube, position))){
+				return true;
+			}
+		}
 		return false;
+	}
+	
+	private boolean isPassableTerrain(int[] position){
+		return ((world.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(world.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)||(position[2]==0)); 
 	}
 	/**
 	 * Variable registering the initial time till rest of this unit.
@@ -1398,4 +1510,6 @@ public class Unit {
 	    bd = bd.setScale(places, RoundingMode.HALF_UP);
 	    return bd.doubleValue();
 	}
+	
+	//getworld etc toevoegen
 }

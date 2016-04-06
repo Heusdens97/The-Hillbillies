@@ -4,7 +4,6 @@ import be.kuleuven.cs.som.annotate.*;
 import javax.swing.JOptionPane; 
 import hillbillies.part2.listener.TerrainChangeListener;
 import hillbillies.util.ConnectedToBorder;
-import javafx.scene.control.TextInputDialog;
 import ogp.framework.util.*;
 import hillbillies.model.Unit;
 
@@ -237,6 +236,7 @@ public class World {
 	
 	private void collapse(int x, int y, int z){
 		setCubeType(x, y, z, TYPE_AIR);
+		//border.changePassableToSolid(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
 		double probability = 0.25;
 		Random rand = new Random();
