@@ -237,16 +237,17 @@ public class World {
 	
 	public void collapse(int x, int y, int z) throws ModelException{
 		int[] position = {x,y,z};
+		int previousCubeType = this.getCubeType(x, y, z);
 		setCubeType(x, y, z, TYPE_AIR);
 		border.changeSolidToPassable(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
-		double probability = 0.25;
+		double probability = 1;//0.25;
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
-			if (this.getCubeType(x, y, z)==World.TYPE_ROCK){
+			if (previousCubeType==World.TYPE_ROCK){
 				createBoulder(this,position);
 				System.out.println("spawn boulder");
-			}else if (this.getCubeType(x, y, z)==World.TYPE_TREE){
+			}else if (previousCubeType==World.TYPE_TREE){
 				createLog(this,position);
 				System.out.println("spawn log");
 			}

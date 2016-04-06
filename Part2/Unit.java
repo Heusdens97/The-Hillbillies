@@ -1164,15 +1164,15 @@ public class Unit {
 	public void workAt(int x, int y, int z) throws ModelException{ 
 		int[] position = {x,y,z};
 		isMovingToWork = false;
-		if (this.getCubeCoordinate() != position){
-			moveTo(position);
+		if (!Arrays.equals(this.getCubeCoordinate(),position)){
 			this.isMovingToWork = true;
+			moveTo(position);
 		}
 		this.resting = false;
-		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
 		if ((!isWorking())&&(!isMovingToWork)){
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
+			this.sprinting = false;
 		}else{
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
