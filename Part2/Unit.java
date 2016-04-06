@@ -4,6 +4,7 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
+import javafx.scene.shape.MoveTo;
 import hillbillies.model.Faction;
 import java.math.*;
 import java.util.*;
@@ -698,10 +699,10 @@ public class Unit {
 			advanceTime_Moving(dt);
 			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 				setDefaultBehaviourEnabled(true);
-			if (isWorking()){
-				int x = this.getCubeCoordinate()[0];
-				int y = this.getCubeCoordinate()[1];
-				int z = this.getCubeCoordinate()[2];
+			if (((isWorking())||(this.isMovingToWork))&&(!isMoving())){
+				int x = finaldest[0];
+				int y = finaldest[1];
+				int z = finaldest[2];
 				workAt(x, y, z);
 				this.worktime -= dt;
 			}
@@ -995,79 +996,79 @@ public class Unit {
 	 */
 	private Boolean arrowKeys;
 	
-//	/**
-//	 * 
-//	 * The unit moves to the cube.
-//	 * 
-//	 * @param 	cube
-//	 * 			the new position of the unit.
-//	 * @throws 	ModelException
-//	 * 			if it's not a valid position.
-//	 */
-//	public void moveTo(int[] cube) throws ModelException{
-//		double[] Position = {0,0,0};
-//		Position[0] = (double)(cube[0])+0.5;
-//		Position[1] = (double)(cube[1])+0.5;
-//		Position[2] = (double)(cube[2])+0.5;
-//		if (isValidPosition(Position)){
-//			this.working = false;
-//			this.arrowKeys = false;
-//			this.finaldest = cube;
-//			int dx,dy,dz;
-//			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
-//				if (this.getPosition()[0] == Position[0])
-//					dx = 0;
-//				else if (this.getPosition()[0] < Position[0])
-//					dx = 1;
-//				else
-//					dx = -1;
-//				if (this.getPosition()[1] == Position[1])
-//					dy = 0;
-//				else if (this.getPosition()[1] < Position[1])
-//					dy = 1;
-//				else
-//					dy = -1;
-//				if (this.getPosition()[2] == Position[2])
-//					dz = 0;
-//				else if (this.getPosition()[2] < Position[2])
-//					dz = 1;
-//				else
-//					dz = -1;
-//				moveToAdjacent(dx, dy, dz);
-//			}	
-//		}
-//	}
-	
-	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
-	
+	/**
+	 * 
+	 * The unit moves to the cube.
+	 * 
+	 * @param 	cube
+	 * 			the new position of the unit.
+	 * @throws 	ModelException
+	 * 			if it's not a valid position.
+	 */
 	public void moveTo(int[] cube) throws ModelException{
-		double[] position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
-		if (isValidPosition(position)){
+		double[] Position = {0,0,0};
+		Position[0] = (double)(cube[0])+0.5;
+		Position[1] = (double)(cube[1])+0.5;
+		Position[2] = (double)(cube[2])+0.5;
+		if (isValidPosition(Position)){
 			this.working = false;
 			this.arrowKeys = false;
 			this.finaldest = cube;
-			if (!Arrays.equals(this.getCubeCoordinate(), cube)){
-				int[][] adder = {cube, {0}};
-				positionQueue.add(adder);
-				search(cube, 0);
-				Iterator<int[][]> iterator = positionQueue.iterator();
-				while ((iterator.hasNext())&&(!containsQueue(this.getCubeCoordinate()))){
-					int[][] getter = iterator.next();
-					search(getter[0], getter[1][0]);
-				}
-				if (containsQueue(this.getCubeCoordinate())){
-					for (int[][] pos: positionQueue){
-						if ((isNeighbour(pos[0], this.getCubeCoordinate())))
-							moveToAdjacent(pos[0][0], pos[0][1], pos[0][2]);
-					}
-				} else{
-					positionQueue.clear();
-					moveTo(cube);
-				}
-			}
+			int dx,dy,dz;
+			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
+				if (this.getPosition()[0] == Position[0])
+					dx = 0;
+				else if (this.getPosition()[0] < Position[0])
+					dx = 1;
+				else
+					dx = -1;
+				if (this.getPosition()[1] == Position[1])
+					dy = 0;
+				else if (this.getPosition()[1] < Position[1])
+					dy = 1;
+				else
+					dy = -1;
+				if (this.getPosition()[2] == Position[2])
+					dz = 0;
+				else if (this.getPosition()[2] < Position[2])
+					dz = 1;
+				else
+					dz = -1;
+				moveToAdjacent(dx, dy, dz);
+			}	
 		}
-		
 	}
+	
+	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
+	
+//	public void moveTo(int[] cube) throws ModelException{
+//		double[] position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+//		if (isValidPosition(position)){
+//			this.working = false;
+//			this.arrowKeys = false;
+//			this.finaldest = cube;
+//			if (!Arrays.equals(this.getCubeCoordinate(), cube)){
+//				int[][] adder = {cube, {0}};
+//				positionQueue.add(adder);
+//				search(cube, 0);
+//				Iterator<int[][]> iterator = positionQueue.iterator();
+//				while ((iterator.hasNext())&&(!containsQueue(this.getCubeCoordinate()))){
+//					int[][] getter = iterator.next();
+//					search(getter[0], getter[1][0]);
+//				}
+//				if (containsQueue(this.getCubeCoordinate())){
+//					for (int[][] pos: positionQueue){
+//						if ((isNeighbour(pos[0], this.getCubeCoordinate())))
+//							moveToAdjacent(pos[0][0], pos[0][1], pos[0][2]);
+//					}
+//				} else{
+//					positionQueue.clear();
+//					moveTo(cube);
+//				}
+//			}
+//		}
+//		
+//	}
 	
 	private boolean containsQueue(int[] position){
 		for (int[][] pos: positionQueue){
@@ -1088,7 +1089,7 @@ public class Unit {
 				for (int k = z-1; k <= z+1; k++){
 					int[] pos = {i,j,k};
 					double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
-					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
+					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(world.isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
 						positionList.add(pos);
 					}	
 				}
@@ -1155,19 +1156,25 @@ public class Unit {
 //		}
 //	}
 	
+	private boolean isMovingToWork;
 	/**
 	 * 
 	 * the unit starts working.
 	 */
 	public void workAt(int x, int y, int z) throws ModelException{ 
 		int[] position = {x,y,z};
+		isMovingToWork = false;
+		if (this.getCubeCoordinate() != position){
+			moveTo(position);
+			this.isMovingToWork = true;
+		}
 		this.resting = false;
 		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
-		if (!isWorking()){
+		if ((!isWorking())&&(!isMovingToWork)){
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
 		}else{
-			if (this.worktime <=0){
+			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
 					if (world.logs.size() == 0){
@@ -1178,37 +1185,48 @@ public class Unit {
 						world.logs.clear();
 					}
 				}
-				if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAndBoulderAvailable(position))){
-					
+				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+				if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doublepos)&&(boulderAvailable(doublepos)))){
+					world.removeBoulder(doublepos);
+					world.removeLog(doublepos);
+					setWeight(getWeight()+ 5, 1, 200);
+					setToughness(getToughness()+5, 1, 200);
 				}
 				
+				if (boulderAvailable(doublepos)){
+					Boulder boulder = world.removeBoulder(doublepos);
+					this.carryingBoulder.add(boulder);
+				}
+				if (logAvailable(doublepos)){
+					Log log = world.removeLog(doublepos);
+					this.carryingLog.add(log);
+				}
+				if ((world.getCubeType(x, y, z)==World.TYPE_TREE)||(world.getCubeType(x, y, z)==World.TYPE_ROCK)){
+					world.collapse(x, y, z);
+				}
 				setExperiencePoints(this.getExperiencePoints()+workExperience);
 			}
 		}
 	}
 	
-	private boolean logAndBoulderAvailable(int[] position){
-		double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-		boolean logBoolean = false;
-		boolean boulderBoolean = false;
-		for (Boulder boulder: world.boulders){
-			if (boulder.getPosition() == doublepos){
-				boulderBoolean = true;
-				break;
-			}
-		}
+	private boolean logAvailable(double[] position){
 		for (Log log: world.logs){
-			if (log.getPosition() == doublepos){
-				logBoolean = true;
-				break;
+			if (log.getPosition() == position){
+				return true;
+			}
+		}	
+		return false;
+	}
+	
+	private boolean boulderAvailable(double[] position){
+		for (Boulder boulder: world.boulders){
+			if (boulder.getPosition() == position){
+				return true;
 			}
 		}
-		if ((logBoolean)&&(boulderBoolean))
-			return true;
-		else
-			return false;
-		
+		return false;
 	}
+	
 	
 	private Set<Boulder> carryingBoulder = new HashSet<Boulder>();
 	
@@ -1400,16 +1418,14 @@ public class Unit {
 			position[1] += y;
 			position[2] += z;
 			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-			if ((isValidPosition(doubleposition))&&(isPassableTerrain(position)) && (isNeighbour(cube, position))){
+			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)) && (isNeighbour(cube, position))){
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private boolean isPassableTerrain(int[] position){
-		return ((world.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(world.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)||(position[2]==0)); 
-	}
+	
 	/**
 	 * Variable registering the initial time till rest of this unit.
 	 */

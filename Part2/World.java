@@ -222,7 +222,7 @@ public class World {
 		}
 	}
 	
-	private void CheckTerrainWorld(){
+	private void CheckTerrainWorld() throws ModelException{
 		for (int i = 0; i < this.getX();i++){
 			for (int j = 0; j < this.getY();j++){
 				for (int k = 0; k < this.getZ();k++){
@@ -235,7 +235,7 @@ public class World {
 		}
 	}
 	
-	private void collapse(int x, int y, int z){
+	public void collapse(int x, int y, int z) throws ModelException{
 		int[] position = {x,y,z};
 		setCubeType(x, y, z, TYPE_AIR);
 		border.changeSolidToPassable(x, y, z);
@@ -243,11 +243,10 @@ public class World {
 		double probability = 0.25;
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
-			int n = rand.nextInt(1);
-			if (n == 0){
+			if (this.getCubeType(x, y, z)==World.TYPE_ROCK){
 				createBoulder(this,position);
 				System.out.println("spawn boulder");
-			}else {
+			}else if (this.getCubeType(x, y, z)==World.TYPE_TREE){
 				createLog(this,position);
 				System.out.println("spawn log");
 			}
@@ -268,11 +267,11 @@ public class World {
 	
 	public Set<Log> logs = new HashSet<Log>();
 	
-	public Boulder createBoulder(World world, int[] position){
+	public Boulder createBoulder(World world, int[] position) throws ModelException{
 		return new Boulder(world, position);
 	}
 	
-	public Log createLog(World world, int[] position){
+	public Log createLog(World world, int[] position) throws ModelException{
 		return new Log(world, position);
 	}
 	
@@ -284,6 +283,29 @@ public class World {
 		return this.logs;
 	}
 	
+	public Log removeLog(double[] position){
+		for (Log log: this.logs){
+			if (log.getPosition() == position){
+				logs.remove(log);
+				return log;
+			}
+	  	}
+		return null;
+	}
+	
+	public Boulder removeBoulder(double[] position){
+		for (Boulder boulder: this.boulders){
+			if (boulder.getPosition() == position){
+				boulders.remove(boulder);
+				return boulder;
+			}
+		}
+		return null;
+	}
+	
+	public boolean isPassableTerrain(int[] position){
+		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)||(position[2]==0)); 
+	}
 	
 
 
