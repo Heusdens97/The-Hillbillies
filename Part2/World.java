@@ -308,6 +308,10 @@ public class World {
 		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)); 
 	}
 	
+	public boolean isImpassableTerrain(int[] position){
+		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_ROCK)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_TREE)); 
+	}
+	
 
 
 }

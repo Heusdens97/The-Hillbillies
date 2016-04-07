@@ -50,12 +50,9 @@ public class Boulder {
 			if (pos[2] == 0)
 				return true;
 			else{
-				System.out.println(!getWorld().isPassableTerrain(posUnder));
-				return !getWorld().isPassableTerrain(posUnder);
+				return getWorld().isImpassableTerrain(posUnder);
 			}
 		}
 		return false;
-		//return ((getWorld().isPassableTerrain(pos)||(pos[2]==0))&&(!getWorld().isPassableTerrain(posUnder)));
-
 	}
 }

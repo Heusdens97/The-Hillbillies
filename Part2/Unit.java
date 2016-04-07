@@ -706,6 +706,7 @@ public class Unit {
 				workAt(x, y, z);
 				this.worktime -= dt;
 			}
+			
 			advanceTime_levelUp();
 		}
 	}
@@ -1170,39 +1171,37 @@ public class Unit {
 		}
 		this.resting = false;
 		if ((!isWorking())&&(!isMovingToWork)){
-			this.worktime = (500/(double)this.getStrength());
+			this.worktime = 1; //(500/(double)this.getStrength());
 			this.working = true;
 			this.sprinting = false;
 		}else{
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
+				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
 					if (this.isCarryingBoulder()){
-						Boulder boulder = this.removeBoulderInventory();
-						boulder.setPosition(this.getPosition()); //voorlopig zo, gaat ook met advancetime in boulder/log
-						world.boulders.add(boulder);
+						removeBoulderAndAddToInventory();
 					} else if (this.isCarryingLog()){
-						Log log = this.removeLogInventory();
-						world.logs.add(log);
+						removeLogAndAddToInventory();
 					}
 				}
-				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-				if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doublepos)&&(boulderAvailable(doublepos)))){
+				else if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doublepos)&&(boulderAvailable(doublepos)))){
 					world.removeBoulder(doublepos);
 					world.removeLog(doublepos);
 					setWeight(getWeight()+ 5, 1, 200);
 					setToughness(getToughness()+5, 1, 200);
 				}
-				
-				if (boulderAvailable(doublepos)){
+				else if (boulderAvailable(doublepos)){
 					Boulder boulder = world.removeBoulder(doublepos);
 					this.carryingBoulder.add(boulder);
+					setWeight(getWeight()+boulder.getWeight(), 1, 200+boulder.getWeight());
 				}
-				if (logAvailable(doublepos)){
+				else if (logAvailable(doublepos)){
 					Log log = world.removeLog(doublepos);
 					this.carryingLog.add(log);
+					setWeight(getWeight()+log.getWeight(), 1, 200+log.getWeight());
 				}
-				if ((world.getCubeType(x, y, z)==World.TYPE_TREE)||(world.getCubeType(x, y, z)==World.TYPE_ROCK)){
+				else if ((world.getCubeType(x, y, z)==World.TYPE_TREE)||(world.getCubeType(x, y, z)==World.TYPE_ROCK)){
 					world.collapse(x, y, z);
 				}
 				setExperiencePoints(this.getExperiencePoints()+workExperience);
@@ -1210,20 +1209,34 @@ public class Unit {
 		}
 	}
 	
-	private Boulder removeBoulderInventory(){
+	private void removeBoulderAndAddToInventory(){
 		for (Boulder boulder: carryingBoulder){
+			try {
+				boulder.setPosition(this.getPosition());
+			} catch (ModelException e) {
+				System.out.println("don't drop boulder, move on..");
+				e.printStackTrace();
+				break;
+			} 
 			carryingBoulder.remove(boulder);
-			return boulder;
+			setWeight(this.getWeight()-boulder.getWeight(), 1, 200);
+			world.boulders.add(boulder);
 		}
-		return null;
 	}
 	
-	private Log removeLogInventory(){
+	private void removeLogAndAddToInventory(){
 		for (Log log: carryingLog){
+			try {
+				log.setPosition(this.getPosition());
+			} catch (ModelException e) {
+				System.out.println("don't drop log, move on..");
+				e.printStackTrace();
+				break;
+			}
 			carryingLog.remove(log);
-			return log;
+			setWeight(this.getWeight()-log.getWeight(), 1, 200);
+			world.logs.add(log);
 		}
-		return null;
 	}
 	
 	private boolean logAvailable(double[] position){

@@ -18,7 +18,7 @@ public class Log {
 	private World getWorld(){
 		return this.world;
 	}
-	private void setPosition(double[] position) throws ModelException{
+	public void setPosition(double[] position) throws ModelException{
 		if (!isValidPosition(position)){
 			throw new ModelException();
 		}
@@ -34,7 +34,14 @@ public class Log {
 	private boolean isValidPosition(double[] position){
 		int[] pos = {(int)position[0], (int)position[1],(int) position[2]};
 		int[] posUnder = {pos[0],pos[1],pos[2]-1};
-		return (getWorld().isPassableTerrain(pos)&&(!getWorld().isPassableTerrain(posUnder)));
+		if (getWorld().isPassableTerrain(pos)){
+			if (pos[2] == 0)
+				return true;
+			else{
+				return getWorld().isImpassableTerrain(posUnder);
+			}
+		}
+		return false;
 
 	}
 	
