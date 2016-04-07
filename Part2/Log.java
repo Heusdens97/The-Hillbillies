@@ -7,10 +7,10 @@ import ogp.framework.util.ModelException;
 public class Log {
 	
 	public Log(World world, int[] position) throws ModelException{
+		this.world = world;
 		double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
 		setPosition(doubleposition);
 		world.logs.add(this);
-		this.world = world;
 	}
 	
 	private World world;
@@ -29,7 +29,7 @@ public class Log {
 		return this.position;
 	}
 	
-	double[] position;
+	private double[] position;
 	
 	private boolean isValidPosition(double[] position){
 		int[] pos = {(int)position[0], (int)position[1],(int) position[2]};
@@ -45,5 +45,5 @@ public class Log {
 	private int max = 50;
 	private int min = 10;
 	
-	final int weight = new Random().nextInt((max - min) + 1) + min;
+	private final int weight = new Random().nextInt((max - min) + 1) + min;
 }

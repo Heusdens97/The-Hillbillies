@@ -241,7 +241,7 @@ public class World {
 		setCubeType(x, y, z, TYPE_AIR);
 		border.changeSolidToPassable(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
-		double probability = 1;//0.25;
+		double probability = 1; //0.25
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
 			if (previousCubeType==World.TYPE_ROCK){
@@ -286,7 +286,7 @@ public class World {
 	
 	public Log removeLog(double[] position){
 		for (Log log: this.logs){
-			if (log.getPosition() == position){
+			if (Arrays.equals(log.getPosition(), position)){
 				logs.remove(log);
 				return log;
 			}
@@ -296,7 +296,7 @@ public class World {
 	
 	public Boulder removeBoulder(double[] position){
 		for (Boulder boulder: this.boulders){
-			if (boulder.getPosition() == position){
+			if (Arrays.equals(boulder.getPosition(), position)){
 				boulders.remove(boulder);
 				return boulder;
 			}
@@ -305,7 +305,7 @@ public class World {
 	}
 	
 	public boolean isPassableTerrain(int[] position){
-		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)||(position[2]==0)); 
+		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)); 
 	}
 	
 

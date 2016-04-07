@@ -1089,7 +1089,7 @@ public class Unit {
 				for (int k = z-1; k <= z+1; k++){
 					int[] pos = {i,j,k};
 					double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
-					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(world.isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
+					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(world.isPassableTerrain(pos)||(pos[2]==0))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
 						positionList.add(pos);
 					}	
 				}
@@ -1177,12 +1177,13 @@ public class Unit {
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
-					if (world.logs.size() == 0){
-						world.createBoulder(world, position);
-						world.boulders.clear();
-					} else if (world.boulders.size() == 0){
-						world.createLog(world, position);
-						world.logs.clear();
+					if (this.isCarryingBoulder()){
+						Boulder boulder = this.removeBoulderInventory();
+						boulder.setPosition(this.getPosition()); //voorlopig zo, gaat ook met advancetime in boulder/log
+						world.boulders.add(boulder);
+					} else if (this.isCarryingLog()){
+						Log log = this.removeLogInventory();
+						world.logs.add(log);
 					}
 				}
 				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
@@ -1209,9 +1210,25 @@ public class Unit {
 		}
 	}
 	
+	private Boulder removeBoulderInventory(){
+		for (Boulder boulder: carryingBoulder){
+			carryingBoulder.remove(boulder);
+			return boulder;
+		}
+		return null;
+	}
+	
+	private Log removeLogInventory(){
+		for (Log log: carryingLog){
+			carryingLog.remove(log);
+			return log;
+		}
+		return null;
+	}
+	
 	private boolean logAvailable(double[] position){
 		for (Log log: world.logs){
-			if (log.getPosition() == position){
+			if (Arrays.equals(log.getPosition(), position)){
 				return true;
 			}
 		}	
@@ -1220,7 +1237,7 @@ public class Unit {
 	
 	private boolean boulderAvailable(double[] position){
 		for (Boulder boulder: world.boulders){
-			if (boulder.getPosition() == position){
+			if (Arrays.equals(boulder.getPosition(),position)){
 				return true;
 			}
 		}
@@ -1418,7 +1435,7 @@ public class Unit {
 			position[1] += y;
 			position[2] += z;
 			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)) && (isNeighbour(cube, position))){
+			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
 				return true;
 			}
 		}
