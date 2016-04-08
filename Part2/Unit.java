@@ -15,6 +15,7 @@ import java.util.*;
  * 			- documentatie aanvullen
  * 			- tests schrijven
  * 			- "spaghetti" code verwijderen
+ * 			- getters toevoegen
  */
 
 /**
@@ -678,6 +679,9 @@ public class Unit {
 			if (this.timetillrest <= 0){
 				rest();
 			}
+			if (startfalling||isFalling()){
+				fall();
+			}
 			advanceTime_Fight(dt);
 			if ((isResting())&&(!isWorking())){
 				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
@@ -699,6 +703,7 @@ public class Unit {
 			advanceTime_Moving(dt);
 			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 				setDefaultBehaviourEnabled(true);
+			// als "bots" worden aangevallen, doen ze niets meer
 			if (((isWorking())||(this.isMovingToWork))&&(!isMoving())){
 				int x = finaldest[0];
 				int y = finaldest[1];
@@ -708,6 +713,32 @@ public class Unit {
 			}
 			
 			advanceTime_levelUp();
+		}
+	}
+	
+	private boolean startfalling = false;
+	
+	private int z_falling;
+
+	private void fall() throws ModelException {
+		if (!startfalling){
+			this.z_falling= this.getCubeCoordinate()[2];
+		}
+		this.startfalling = true;
+		setSpeed();
+		int[] posUnder = {this.getCubeCoordinate()[0],this.getCubeCoordinate()[1],this.getCubeCoordinate()[2]-1};
+		if (world.isPassableTerrain(posUnder)){
+			moveToAdjacent(0, 0, -1);
+			this.sprinting = false;
+		} else if ((world.isImpassableTerrain(posUnder))||(this.getCubeCoordinate()[2]==0)){
+			this.startfalling = false;
+			int dz = this.z_falling - this.getCubeCoordinate()[2];
+			int hitpoints = this.getHitpoints()-(dz*10);
+			if (hitpoints < 0)
+				setHitpoints(0);
+			else {
+				setHitpoints(hitpoints);
+			}
 		}
 	}
 
@@ -754,17 +785,19 @@ public class Unit {
 	 * @throws ModelException
 	 */
 	private void advanceTime_Fight(double dt) throws ModelException {
-		if ((defender != null)&&(this.fighttime == 1)){
-			if ((defender.isAlive())&&(isAttackingDefaultBehaviour)){
-				this.fight(defender);
-			}
-			if (!defender.isAlive()){
-				isAttackingDefaultBehaviour = false;
-				this.defender = null;
-			}
-			if ((defender != null)&&(defender!=this)&&(!this.isMoving())){
-				if ((!isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate()))&&(!Arrays.equals(this.getPosition(),defender.getPosition()))&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
-					moveTo(defender.getCubeCoordinate());
+		if (isDefaultBehaviourEnabled()){
+			if ((defender != null)&&(this.fighttime == 1)){
+				if ((defender!=this)&&(!this.isMoving())){
+					if ((!isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate()))&&(!Arrays.equals(this.getPosition(),defender.getPosition()))&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
+						moveTo(defender.getCubeCoordinate());
+					}
+				}
+				if ((defender.isAlive())&&(isAttackingDefaultBehaviour)&&(!defender.isMoving())){
+					this.fight(defender);
+				}
+				if (!defender.isAlive()){
+					isAttackingDefaultBehaviour = false;
+					this.defender = null;
 				}
 			}
 		}
@@ -867,6 +900,7 @@ public class Unit {
 	
 	/**
 	 * Set the speed of this unit
+	 * @throws ModelException 
 	 * 
 	 *
 	 * @post   	if the unit is sprinting
@@ -879,21 +913,25 @@ public class Unit {
 	 * 			|speed = 0
 	 */
 	@Raw
-	private void setSpeed(){
+	private void setSpeed() throws ModelException{
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
-		if ((isMoving()) && (this.getDestiny() != null)){
-			if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) < 0) //verandert in part 2!
-				speed = (1/(double)2)*speed;
-			else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) > 0)
-				speed = (1.2)*speed;
-			if (isSprinting())
-				speed = 2*speed;
-			
-			//else
-			//speed = speed
-		}
-		else if (!isMoving())
-			speed = 0*speed;
+	    if (isFalling()){
+	    	speed = 3;
+	    } else {
+	    	if ((isMoving()) && (this.getDestiny() != null)){
+				if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) < 0) //verandert in part 2!
+					speed = (1/(double)2)*speed;
+				else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) > 0)
+					speed = (1.2)*speed;
+				if (isSprinting())
+					speed = 2*speed;
+				
+				//else
+				//speed = speed
+			}
+			else if (!isMoving())
+				speed = 0*speed;
+	    }
 		this.speed = speed;
 	}
 	/**
@@ -950,12 +988,13 @@ public class Unit {
 	}
 	/**
 	 * The unit stops sprinting and the new speed will be calculated.
+	 * @throws ModelException 
 	 *  
 	 * @post 	sprinting has to change to false.
 	 * 			|this.sprinting = false
 	 * 			| setSpeed();
 	*/
-	public void stopSprinting(){
+	public void stopSprinting() throws ModelException{
 		this.sprinting = false;
 		setSpeed();
 	}
@@ -980,7 +1019,8 @@ public class Unit {
 				this.attacking = false;
 				startMoving();
 				setSpeed();
-				setExperiencePoints(this.getExperiencePoints()+movementExperience);
+				if (!isFalling())
+					setExperiencePoints(this.getExperiencePoints()+movementExperience);
 			}
 		}
 	}
@@ -1211,13 +1251,7 @@ public class Unit {
 	
 	private void removeBoulderAndAddToInventory(){
 		for (Boulder boulder: carryingBoulder){
-			try {
-				boulder.setPosition(this.getPosition());
-			} catch (ModelException e) {
-				System.out.println("don't drop boulder, move on..");
-				e.printStackTrace();
-				break;
-			} 
+			boulder.setPosition(this.getPosition());
 			carryingBoulder.remove(boulder);
 			setWeight(this.getWeight()-boulder.getWeight(), 1, 200);
 			world.boulders.add(boulder);
@@ -1226,13 +1260,7 @@ public class Unit {
 	
 	private void removeLogAndAddToInventory(){
 		for (Log log: carryingLog){
-			try {
-				log.setPosition(this.getPosition());
-			} catch (ModelException e) {
-				System.out.println("don't drop log, move on..");
-				e.printStackTrace();
-				break;
-			}
+			log.setPosition(this.getPosition());
 			carryingLog.remove(log);
 			setWeight(this.getWeight()-log.getWeight(), 1, 200);
 			world.logs.add(log);
@@ -1343,7 +1371,8 @@ public class Unit {
 	 */
 	private void defend(Unit defender,Unit attacker) throws ModelException{
 		defender.attacking = false;
-		defender.defender = defender;
+		this.defender = defender;
+	//	defender.defender = defender;
 		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
 		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
 		Random rand = new Random();
@@ -1428,13 +1457,34 @@ public class Unit {
 	 * 			a unit
 	 */
 	private boolean isNeighbour (int[] me, int[] other){
-		return ((Math.abs((int)me[0]-(int)other[0]) == 1)||((Math.abs((int)me[0]-(int)other[0]) == 0))
-				&&((Math.abs((int)me[1]-(int)other[1]) == 1)||((Math.abs((int)me[1]-(int)other[1]) == 0)))
-				&&((Math.abs((int)me[0]-(int)other[0]) != 0)||(Math.abs((int)me[1]-(int)other[1]) != 0)||(Math.abs((int)me[2]-(int)other[2]) != 0))
-				&&((Math.abs((int)me[2]-(int)other[2]) == 1)||((Math.abs((int)me[2]-(int)other[2]) == 0))));
+		return (((Math.abs(me[0]-other[0]) == 1)||(me[0]-other[0]) == 0)
+				&&((Math.abs(me[1]-other[1]) == 1)||((me[1]-other[1]) == 0))
+				&&(((me[0]-other[0]) != 0)||((me[1]-other[1]) != 0)||((me[2]-other[2]) != 0))
+				&&((Math.abs(me[2]-other[2]) == 1)||(me[2]-other[2]) == 0));
 	}
 	
-	private boolean isNeighbouringSolidTerrain(int[] position) throws ModelException{
+//	private boolean isNeighbouringSolidTerrain(int[] position) throws ModelException{
+//		int[] cube = Arrays.copyOf(position, 3);
+//		for (int i=0; i < 200; i++){
+//			position = Arrays.copyOf(cube, 3);
+//			Random rand = new Random();
+//			int max = 1;
+//			int min = -1;
+//			int x = rand.nextInt((max - min) + 1) + min;
+//			int y = rand.nextInt((max - min) + 1) + min;
+//			int z = rand.nextInt((max - min) + 1) + min;
+//			position[0] += x;
+//			position[1] += y;
+//			position[2] += z;
+//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+//			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
+	
+	private boolean isNeighbouringPassableTerrain(int[] position) throws ModelException{
 		int[] cube = Arrays.copyOf(position, 3);
 		for (int i=0; i < 200; i++){
 			position = Arrays.copyOf(cube, 3);
@@ -1448,11 +1498,11 @@ public class Unit {
 			position[1] += y;
 			position[2] += z;
 			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
-				return true;
+			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	
@@ -1568,10 +1618,10 @@ public class Unit {
 	
 	public int[] positionNearCube(int[] cube) throws ModelException{
 		Random rand = new Random();
-		boolean validposition = true;
+		boolean validposition = false;
 		int random = rand.nextInt(2);
 		if (random == 1){
-			while (((world.getCubeType(cube[0], cube[1], cube[2])!=World.TYPE_AIR)&&(world.getCubeType(cube[0], cube[1], cube[2])!=World.TYPE_WORKSHOP))&&(!isNeighbour(cube, this.defender.getCubeCoordinate()))&&(validposition)){
+			while ((!world.isPassableTerrain(cube))&&(!isNeighbour(cube, this.defender.getCubeCoordinate()))&&(!validposition)){
 				int min = -1;
 				int max = 1;
 				int x = rand.nextInt((max - min) + 1) + min;
@@ -1584,7 +1634,6 @@ public class Unit {
 				}else { 
 					validposition = false;
 					cube = defender.getCubeCoordinate();
-					break;
 				}
 			}
 		}
@@ -1632,5 +1681,10 @@ public class Unit {
 	    return bd.doubleValue();
 	}
 	
-	//getworld etc toevoegen
+	private boolean isFalling() throws ModelException{
+		return isNeighbouringPassableTerrain(this.getCubeCoordinate());
+		
+	}
+	
+	
 }

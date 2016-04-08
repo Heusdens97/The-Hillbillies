@@ -18,11 +18,12 @@ public class Log {
 	private World getWorld(){
 		return this.world;
 	}
-	public void setPosition(double[] position) throws ModelException{
+	public void setPosition(double[] position){
 		if (!isValidPosition(position)){
-			throw new ModelException();
+			//fall
+		} else {
+			this.position = position;
 		}
-		this.position = position;
 	}
 	
 	public double[] getPosition(){
@@ -51,6 +52,12 @@ public class Log {
 	
 	private int max = 50;
 	private int min = 10;
+	
+	public void advanceTime(double dt) throws ModelException {
+		if (isFalling()){
+			fall();
+		}
+	}
 	
 	private final int weight = new Random().nextInt((max - min) + 1) + min;
 }

@@ -195,16 +195,17 @@ public class World {
 				gameOverTimer -= dt;
 			for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
 			    Unit unit = i.next();
-			    if (!unit.isValidTime(dt))
+			    if (!unit.isValidTime(dt)) //isvalidtime in world zetten?
 					throw new ModelException();
 				else {
 					if (unit.getHitpoints() <= 0){
 						//this.worldMembers.remove(unit);
 						Faction fac = unit.getFaction();
 						fac.members.remove(unit);
-						if (fac.members.size() == 0) {
-							this.activeFactions.remove(fac);
-						}
+//						if (fac.members.size() == 0) {
+//							this.activeFactions.remove(fac);
+//						}
+						// anders kunnen we onze eigen faction niet meer besturen
 						i.remove();
 						System.out.println("dead, remaining: " + worldMembers.size());
 						//drops objects
@@ -212,10 +213,20 @@ public class World {
 					unit.advanceTime(dt);
 				}
 			}
+			for (Boulder boulder : boulders){
+				boulder.advanceTime(dt);
+			}
+			for (Log log: logs){
+				log.advanceTime(dt);
+			}
+			
 		} else {
 			int index = -1;
 			for (Faction fac: activeFactions){
-				index = fac.index;
+				if (fac.members.size() != 0){
+					index = fac.index;
+					break;
+				}		
 			}
 			JOptionPane.showMessageDialog(null, "Faction " + index + " won! The game will close");
 			System.exit(0);
@@ -254,14 +265,19 @@ public class World {
 		}
 	}
 	
-	private static double gameOverTimer = 10000;
+	private static double gameOverTimer = 300;
 	
 	private boolean gameOverCheck(){		
 		return ((gameOverTimer <0)&&((this.worldMembers.size() <= 1)||(oneFactionLeft())));
 	}
 	
 	private boolean oneFactionLeft(){
-		return (this.activeFactions.size() == 1);
+		int count = 0;
+		for (Faction fac: activeFactions){
+			if (fac.members.size() != 0)
+				count += 1;
+		}
+		return (count == 1);
 	}
 	
 	public Set<Boulder> boulders = new HashSet<Boulder>();

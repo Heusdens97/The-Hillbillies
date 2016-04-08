@@ -20,11 +20,12 @@ public class Boulder {
 		return this.world;
 	}
 	
-	public void setPosition(double[] position) throws ModelException{
+	public void setPosition(double[] position){
 		if (!isValidPosition(position)){
-			throw new ModelException();
+			//fall
+		} else {
+			this.position = position;
 		}
-		this.position = position;
 	}
 	
 	public double[] getPosition(){
@@ -54,5 +55,35 @@ public class Boulder {
 			}
 		}
 		return false;
+	}
+	
+	public void advanceTime(double dt) throws ModelException {
+		if (isFalling()){
+			fall();
+		}
+	}
+	
+	private int speed;
+	private int z_falling;
+	
+	private void fall() throws ModelException {
+		if (!startfalling){
+			this.z_falling= this.getCubeCoordinate()[2];
+		}
+		this.startfalling = true;
+		int[] posUnder = {this.getCubeCoordinate()[0],this.getCubeCoordinate()[1],this.getCubeCoordinate()[2]-1};
+		if (world.isPassableTerrain(posUnder)){
+			moveToAdjacent(0, 0, -1);
+			this.sprinting = false;
+		} else if ((world.isImpassableTerrain(posUnder))||(this.getCubeCoordinate()[2]==0)){
+			this.startfalling = false;
+			int dz = this.z_falling - this.getCubeCoordinate()[2];
+			int hitpoints = this.getHitpoints()-(dz*10);
+			if (hitpoints < 0)
+				setHitpoints(0);
+			else {
+				setHitpoints(hitpoints);
+			}
+		}
 	}
 }
