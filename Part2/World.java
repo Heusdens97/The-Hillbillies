@@ -37,11 +37,11 @@ public class World {
 		this.modelListener = modelListener;
 		this.border = new ConnectedToBorder(this.getX(), this.getY(), this.getZ());
 		CheckTerrainWorld();
-		this.pathfinding = new Astar(this);
+		this.pathfinding = new Pathfinding(this);
 	}
 	private int[][][] terrain;
 	
-	public Astar pathfinding;
+	public Pathfinding pathfinding;
 	
 	public int[][][] getTerrain(){
 		return this.terrain;
@@ -224,13 +224,14 @@ public class World {
 						//this.worldMembers.remove(unit);
 						Faction fac = unit.getFaction();
 						fac.members.remove(unit);
+						unit.removeBoulderAndAddToInventory();
+						unit.removeLogAndAddToInventory();
 //						if (fac.members.size() == 0) {
 //							this.activeFactions.remove(fac);
 //						}
 						// anders kunnen we onze eigen faction niet meer besturen
 						i.remove();
 						System.out.println("dead, remaining: " + worldMembers.size());
-						//drops objects
 					}
 					unit.advanceTime(dt);
 				}
@@ -274,7 +275,7 @@ public class World {
 		setCubeType(x, y, z, TYPE_AIR);
 		border.changeSolidToPassable(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
-		double probability = 1; //0.25
+		double probability = 0.25;
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
 			if (previousCubeType==World.TYPE_ROCK){

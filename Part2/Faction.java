@@ -5,13 +5,7 @@ import java.util.*;
 
 
 public class Faction{
-	
-	//faction names:
-	//	- Appalachia
-	//	- Austinville
-	//	- Ozark
-	//	- Simpsons (they live near Springfield)
-	//	- New Jersey
+
 	
 	
 	public Faction(Unit unit){
@@ -29,20 +23,11 @@ public class Faction{
 		return new Faction(unit);
 	}
 	
-	//private String name;
 	public final static int maxFactions = 5;
 	public final static int maxSizeFactions = 50;
 
 	public static void addToFaction(Unit unit){
-		//Random rand = new Random();
 		if (world.activeFactions.size() != maxFactions){
-//			String name = null;
-//			while (name == null){
-//				int n = rand.nextInt(factionNames.length);
-//				name = factionNames[n];
-//				if (factionNames[n]!= null)
-//					factionNames[n]=null;
-//			}
 			createFaction(unit);
 		} else {
 			//minimum berekenen van de grootte vd factions
@@ -65,22 +50,11 @@ public class Faction{
 	
 	
 	
-//	public Set<Unit> getUnitsOfFaction(Faction faction){
-//		for (Faction fac : activeFactions){
-//			if (fac == faction){
-//				return fac.members;
-//			}
-//		}
-//		return null;
-//	}
-	
 	public Set<Unit> getUnitsOfFaction(){
 		return this.members;
 	}
 	
-	
-	//private static String[] factionNames = {"Appalachia", "Austinville", "Ozark", "Simpsons", "New Jersey"};
-	
+
 	
 	public final Set<Unit> members = new HashSet<Unit>(maxFactions);
 	
@@ -88,13 +62,6 @@ public class Faction{
 		return faction.size() == maxSizeFactions;
 	}
 	
-//	public static Faction getFaction(Unit unit) {
-//		for (Faction fac : world.activeFactions){
-//			if (fac.members.contains(unit))
-//				return fac;
-//		} 
-//		return null;
-//	}
 	
 	private static int getMinValue(int[] array){
 		int min = array[0];
@@ -105,18 +72,8 @@ public class Faction{
 		return min;
 	}
 
-//	public static Set<Faction> getActiveFactions(World world) {
-//		return activeFactions;
-//	}
-//	
-//	private static Set<Faction> activeFactions = new HashSet<Faction>(maxFactions);
-	
-	//activefactions verplaatsen naar world
-	//getfaction naar unit
-	
-	// MORGEN:
-	// - path finding algoritme implementeren
-	// - game over
+
+
 
 
 	

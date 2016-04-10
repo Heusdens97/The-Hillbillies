@@ -132,7 +132,7 @@ public class Unit {
 		world.addUnit(this);
 		Faction.addToFaction(this);
 		setExperiencePoints(0);
-		Astar.unit = this;
+		Pathfinding.unit = this;
 	}
 	
 	private void setExperiencePoints(int experience){
@@ -703,12 +703,15 @@ public class Unit {
 		advanceTime_Moving(dt);
 		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 			setDefaultBehaviourEnabled(true);
-		if ((isWorking())&&((!this.isMovingToWork)||(!isMoving()))){
-			int x = finaldest[0];
-			int y = finaldest[1];
-			int z = finaldest[2];
-			workAt(x, y, z);
-			this.worktime -= dt;
+		if ((isWorking()||isMovingToWork)){
+			if (isWorking())
+				this.worktime -= dt;
+			else {
+				int x = finaldest[0];
+				int y = finaldest[1];
+				int z = finaldest[2];
+				workAt(x, y, z);
+			}
 		}
 		
 		advanceTime_levelUp();
@@ -1020,50 +1023,7 @@ public class Unit {
 	 * Variable registering the state of the arrowKeys.
 	 */
 	private Boolean arrowKeys;
-	
-//	/**
-//	 * 
-//	 * The unit moves to the cube.
-//	 * 
-//	 * @param 	cube
-//	 * 			the new position of the unit.
-//	 * @throws 	ModelException
-//	 * 			if it's not a valid position.
-//	 */
-//	public void moveTo(int[] cube){
-//		double[] Position = {0,0,0};
-//		Position[0] = (double)(cube[0])+0.5;
-//		Position[1] = (double)(cube[1])+0.5;
-//		Position[2] = (double)(cube[2])+0.5;
-//		if (isValidPosition(Position)){
-//			this.working = false;
-//			this.arrowKeys = false;
-//			this.finaldest = cube;
-//			int dx,dy,dz;
-//			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
-//				if (this.getPosition()[0] == Position[0])
-//					dx = 0;
-//				else if (this.getPosition()[0] < Position[0])
-//					dx = 1;
-//				else
-//					dx = -1;
-//				if (this.getPosition()[1] == Position[1])
-//					dy = 0;
-//				else if (this.getPosition()[1] < Position[1])
-//					dy = 1;
-//				else
-//					dy = -1;
-//				if (this.getPosition()[2] == Position[2])
-//					dz = 0;
-//				else if (this.getPosition()[2] < Position[2])
-//					dz = 1;
-//				else
-//					dz = -1;
-//				moveToAdjacent(dx, dy, dz);
-//			}	
-//		}
-//	}
-	
+
 	private List<int[]> path;
 	
 	public void moveTo(int[] cube){
@@ -1103,92 +1063,6 @@ public class Unit {
 	private World getWorld(){
 		return Unit.world;
 	}	
-	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
-	
-//	public void moveTo(int[] cube) throws ModelException{
-//		double[] position = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
-//		if (isValidPosition(position)){
-//			this.working = false;
-//			this.arrowKeys = false;
-//			this.finaldest = cube;
-//			if (!Arrays.equals(this.getCubeCoordinate(), cube)){
-//				int[][] adder = {cube, {0}};
-//				positionQueue.add(adder);
-//				search(cube, 0);
-//				Iterator<int[][]> iterator = positionQueue.iterator();
-//				while ((iterator.hasNext())&&(!containsQueue(this.getCubeCoordinate()))){
-//					int[][] getter = iterator.next();
-//					search(getter[0], getter[1][0]);
-//				}
-//				if (containsQueue(this.getCubeCoordinate())){
-//					for (int[][] pos: positionQueue){
-//						if ((isNeighbour(pos[0], this.getCubeCoordinate())))
-//							moveToAdjacent(pos[0][0], pos[0][1], pos[0][2]);
-//					}
-//				} else{
-//					positionQueue.clear();
-//					moveTo(cube);
-//				}
-//			}
-//		}
-//		
-//	}
-	
-	private boolean containsQueue(int[] position){
-		for (int[][] pos: positionQueue){
-			if (pos[0]==position)
-				return true;
-		}
-		return false;
-	}
-	
-	
-	public void search(int[] position, int n){
-		List<int[]> positionList = new ArrayList<int[]>();
-		int x = position[0];
-		int y = position[1];
-		int z = position[2];
-		for (int i = x-1; i <= x+1; i++){
-			for (int j = y-1; j <= y+1; j++){
-				for (int k = z-1; k <= z+1; k++){
-					int[] pos = {i,j,k};
-					double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
-					if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(world.isPassableTerrain(pos)||(pos[2]==0))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
-						positionList.add(pos);
-					}	
-				}
-			}
-		}
-//			Random rand = new Random();
-//			int max = 1;
-//			int min = -1;
-//			int x = rand.nextInt((max - min) + 1) + min;
-//			int y = rand.nextInt((max - min) + 1) + min;
-//			int z = rand.nextInt((max - min) + 1) + min;
-//			// moet maar één pos toevoegen? dan dit;
-//			// anders for loop
-//			int[] pos = {position[0]+x,position[1]+y,position[2]+z};
-//			double[] doubleposition = {pos[0] +0.5,pos[1] +0.5,pos[2] +0.5};
-//			if ((isValidPosition(doubleposition))&&(isNeighbour(pos, position))&&(isPassableTerrain(pos))&&(isNeighbouringSolidTerrain(pos))&&(!alreadyInQueue(pos, n))){
-//				positionList.add(pos);
-//				checker = false;
-//			}	
-			
-		for (int[] pos: positionList){
-			int[][] adder = {pos,{n+1}};
-			positionQueue.add(adder);
-		}
-	}
-	
-	private boolean alreadyInQueue(int[] position, int n){
-		for (int[][] pos: positionQueue){
-			if (n <= pos[1][0])
-				return false;
-		}
-		return true;
-	}
-	
-	
 	
 	/**
 	 * Variable registering whether the unit is working.
@@ -1202,58 +1076,49 @@ public class Unit {
 	public boolean isWorking(){
 		return this.working;
 	}
-//	/**
-//	 * 
-//	 * the unit starts working.
-//	 */
-//	public void work() throws ModelException{ 
-//		this.resting = false;
-//		this.sprinting = false;//wegdoen om hem te laten onthouden om te rusten
-//		if (!isWorking()){
-//			this.worktime = (500/(double)this.getStrength());
-//			this.working = true;
-//		}else{
-//			if (this.worktime <=0){
-//				this.working = false;
-//				setExperiencePoints(this.getExperiencePoints()+workExperience);
-//			}
-//		}
-//	}
-	
+
 	private boolean isMovingToWork;
+	
+	private boolean isAdjacent (int[] me, int[] other){
+		return (((Math.abs(me[0]-other[0]) == 1)||(me[0]-other[0]) == 0)
+				&&((Math.abs(me[1]-other[1]) == 1)||((me[1]-other[1]) == 0))
+				&&(((me[0]-other[0]) != 0)||((me[1]-other[1]) != 0)));
+	}
 	/**
 	 * 
 	 * the unit starts working.
 	 */
 	public void workAt(int x, int y, int z){ 
-//		try {
-//			if (z == 0)
-//				throw new ModelException("Not allowed to work at level 0");
-//		} catch (ModelException e){
-//			e.printStackTrace();
-//			return;
-//		}
-//		int[] position = {x,y,z};
-//		this.isMovingToWork = false;
-//		System.out.println(isNeighbour(this.getCubeCoordinate(),position));
-//		if ((!isNeighbour(this.getCubeCoordinate(), position))&&(!isMoving()||!isMovingToWork)&&(!isWorking())&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
-//			for (int i = x-1; i <= x+1;i++){
-//				for (int j = y-1; j <= y+1;j++){
-//					int[] pos = {i,j,z};
-//					double[] doublepos = {i+0.5,j+0.5,z+0.5};
-//					if ((isNeighbour(position, pos))&&(isValidPosition(doublepos))&&(world.isPassableTerrain(pos))){
-//						System.out.println(pos);
-//						moveTo(pos);
-//						this.isMovingToWork = true;
-//						this.setOrientation((Math.atan2((this.getPosition()[1]-pos[1]),(this.getPosition()[0]-pos[0]))));
-//						break;
-//					}
-//				}
-//			}
-//		} 
-		this.resting = false;
+		try {
+			if (z == 0)
+				throw new ModelException("Not allowed to work at level 0");
+		} catch (ModelException e){
+			e.printStackTrace();
+			return;
+		}
+		int[] position = {x,y,z};
+		if ((!isAdjacent(this.getCubeCoordinate(), position))&&(!isMoving())){
+			System.out.println("hier");
+			for (int i = x-1; i <= x+1;i++){
+				for (int j = y-1; j <= y+1;j++){
+					int[] pos = {i,j,z};
+					double[] doublepos = {i+0.5,j+0.5,z+0.5};
+					if ((isAdjacent(position, pos))&&(isValidPosition(doublepos))&&(world.isPassableTerrain(pos))){
+						System.out.println(pos);
+						moveTo(pos);
+						this.isMovingToWork = true;
+						break;
+					}
+				}
+			}
+		} 
+		else if (isAdjacent(this.getCubeCoordinate(), position)){
+			isMovingToWork = false;
+			this.setOrientation((Math.atan2((this.getPosition()[1]-position[1]),(this.getPosition()[0]-position[0]))));
+		}
 		if ((!isWorking())&&(!isMovingToWork)){
-			this.worktime = 2;//(500/(double)this.getStrength());
+			this.resting = false;
+			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
 			this.sprinting = false;
 		}else{
@@ -1291,7 +1156,7 @@ public class Unit {
 		}
 	}
 	
-	private void removeBoulderAndAddToInventory(){
+	public void removeBoulderAndAddToInventory(){
 		for (Boulder boulder: carryingBoulder){
 			boulder.setPosition(this.getPosition());
 			carryingBoulder.remove(boulder);
@@ -1300,7 +1165,7 @@ public class Unit {
 		}
 	}
 	
-	private void removeLogAndAddToInventory(){
+	public void removeLogAndAddToInventory(){
 		for (Log log: carryingLog){
 			log.setPosition(this.getPosition());
 			carryingLog.remove(log);
@@ -1602,16 +1467,16 @@ public class Unit {
 						int randomy = rand.nextInt(getMaxSize());
 						int randomz = rand.nextInt(getMaxSize());
 						int[] randompos = {randomx, randomy, randomz};
-						// toevoegen path != null
-						while (!world.isPassableTerrain(randompos)){
+						calculatePathTo(randompos);
+						while ((!world.isPassableTerrain(randompos))||(path==null)){
 							randomx = rand.nextInt(getMaxSize());
 							randomy = rand.nextInt(getMaxSize());
 							randomz = rand.nextInt(getMaxSize());
 							randompos[0] = randomx;
 							randompos[1] = randomy;
 							randompos[2] = randomz;
+							calculatePathTo(randompos);
 						}
-						
 						moveTo(randompos);
 						randomSprinting(rand);
 						checker = false;
@@ -1623,6 +1488,10 @@ public class Unit {
 								int[] cube = unit.getCubeCoordinate();
 								this.defender = unit;
 								int[] positionToGo = positionNearCube(cube);
+								calculatePathTo(positionToGo);
+								if (path == null){
+									continue;
+								}
 								this.moveTo(positionToGo);
 								randomSprinting(rand);
 								this.isAttackingDefaultBehaviour = true;
@@ -1634,6 +1503,14 @@ public class Unit {
 						break;		
 				}
 			}
+		}
+	}
+
+	private void calculatePathTo(int[] randompos) {
+		try {
+			path = getWorld().pathfinding.searchPath(this.getCubeCoordinate(), randompos);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
