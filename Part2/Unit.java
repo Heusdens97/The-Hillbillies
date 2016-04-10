@@ -1099,7 +1099,6 @@ public class Unit {
 		double[] doubleposition = {x+0.5, y+0.5, z+0.5};
 		this.workat = position;
 		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isWorking())){
-			System.out.println("hier");
 			for (int i = x-1; i <= x+1;i++){
 				for (int j = y-1; j <= y+1;j++){
 					int[] pos = {i,j,z};
