@@ -1,0 +1,86 @@
+/**
+	 * 
+	 * the unit starts working.
+	 */
+	private boolean settingLocation = true;
+	private int[] pos = {0,0,0};
+	private double[] doublepos = {0,0,0};
+	public void workAt(int x, int y, int z){ 
+		try {
+			if (z == 0)
+				throw new ModelException("Not allowed to work at level 0");
+		} catch (ModelException e){
+			e.printStackTrace();
+			return;		
+		}
+		int[] position = {x,y,z};
+		this.isMovingToWork = false;
+		
+		if (settingLocation &&(!isNeighbour(this.getCubeCoordinate(), position) && this.getCubeCoordinate() != position)&&(!isMoving()||!isMovingToWork)&&(!isWorking())){
+			for (int i = x-1; i <= x+1;i++){
+				for (int j = y-1; j <= y+1;j++){
+					pos[0] = i;
+					pos[1] = j;
+					pos[2] = z;
+					doublepos[0] = i+0.5;
+					doublepos[0] = j+0.5;
+					doublepos[0] = z+0.5;
+					if (isValidPosition(doublepos)&&(world.isPassableTerrain(pos))){
+						settingLocation = false;
+						break;	
+					}
+				}
+			}
+		}
+		if (!settingLocation){
+						
+						moveTo(pos);
+						this.isMovingToWork = true;
+						this.setOrientation((Math.atan2((this.getPosition()[1]-pos[1]),(this.getPosition()[0]-pos[0]))));
+						
+					
+		   }
+		
+		  
+		this.resting = false;
+		if ((!isWorking())&&(!isMovingToWork)){
+			this.worktime = 1; //(500/(double)this.getStrength());
+			this.working = true;
+			this.sprinting = false;
+			
+		}if(working){
+			if ((this.worktime <=0)&&(!isMovingToWork)){
+				this.working = false;
+				settingLocation = true;
+				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
+					if (this.isCarryingBoulder()){
+						removeBoulderAndAddToInventory();
+					} else if (this.isCarryingLog()){
+						removeLogAndAddToInventory();
+					}
+				}
+				else if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doublepos)&&(boulderAvailable(doublepos)))){
+					world.removeBoulder(doublepos);
+					world.removeLog(doublepos);
+					setWeight(getWeight()+ 5, 1, 200);
+					setToughness(getToughness()+5, 1, 200);
+				}
+				else if (boulderAvailable(doublepos)){
+					Boulder boulder = world.removeBoulder(doublepos);
+					this.carryingBoulder.add(boulder);
+					setWeight(getWeight()+boulder.getWeight(), 1, 200+boulder.getWeight());
+				}
+				else if (logAvailable(doublepos)){
+					Log log = world.removeLog(doublepos);
+					this.carryingLog.add(log);
+					setWeight(getWeight()+log.getWeight(), 1, 200+log.getWeight());
+				}
+				else if ((world.getCubeType(x, y, z)==World.TYPE_TREE)||(world.getCubeType(x, y, z)==World.TYPE_ROCK)){
+					world.collapse(x, y, z);
+				}
+				setExperiencePoints(this.getExperiencePoints()+workExperience);
+				
+			}
+		}
+	}
