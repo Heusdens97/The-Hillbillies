@@ -703,7 +703,7 @@ public class Unit {
 		advanceTime_Moving(dt);
 		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 			setDefaultBehaviourEnabled(true);
-		if (((isWorking())||(this.isMovingToWork))&&(!isMoving())){
+		if ((isWorking())&&((!this.isMovingToWork)||(!isMoving()))){
 			int x = finaldest[0];
 			int y = finaldest[1];
 			int z = finaldest[2];
@@ -723,7 +723,6 @@ public class Unit {
 			this.z_falling= this.getCubeCoordinate()[2];
 		}
 		this.startfalling = true;
-		setSpeed();
 		int[] posUnder = {this.getCubeCoordinate()[0],this.getCubeCoordinate()[1],this.getCubeCoordinate()[2]-1};
 		if (world.isPassableTerrain(posUnder)){
 			moveToAdjacent(0, 0, -1);
@@ -899,7 +898,7 @@ public class Unit {
 	@Raw
 	private void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
-	    if (isFalling()){
+	    if (isFalling()||startfalling){
 	    	speed = 3;
 	    } else {
 	    	if ((isMoving()) && (this.getDestiny() != null)){
@@ -1227,22 +1226,34 @@ public class Unit {
 	 * the unit starts working.
 	 */
 	public void workAt(int x, int y, int z){ 
-		try {
-			if (z == 0)
-				throw new ModelException("Not allowed to work at level 0");
-		} catch (ModelException e){
-			e.printStackTrace();
-			return;
-		}
-		int[] position = {x,y,z};
-		this.isMovingToWork = false;
-		if ((!isNeighbour(this.getCubeCoordinate(), position))){
-			this.isMovingToWork = true;
-			moveTo(position);
-		} 
+//		try {
+//			if (z == 0)
+//				throw new ModelException("Not allowed to work at level 0");
+//		} catch (ModelException e){
+//			e.printStackTrace();
+//			return;
+//		}
+//		int[] position = {x,y,z};
+//		this.isMovingToWork = false;
+//		System.out.println(isNeighbour(this.getCubeCoordinate(),position));
+//		if ((!isNeighbour(this.getCubeCoordinate(), position))&&(!isMoving()||!isMovingToWork)&&(!isWorking())&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
+//			for (int i = x-1; i <= x+1;i++){
+//				for (int j = y-1; j <= y+1;j++){
+//					int[] pos = {i,j,z};
+//					double[] doublepos = {i+0.5,j+0.5,z+0.5};
+//					if ((isNeighbour(position, pos))&&(isValidPosition(doublepos))&&(world.isPassableTerrain(pos))){
+//						System.out.println(pos);
+//						moveTo(pos);
+//						this.isMovingToWork = true;
+//						this.setOrientation((Math.atan2((this.getPosition()[1]-pos[1]),(this.getPosition()[0]-pos[0]))));
+//						break;
+//					}
+//				}
+//			}
+//		} 
 		this.resting = false;
 		if ((!isWorking())&&(!isMovingToWork)){
-			this.worktime = 1; //(500/(double)this.getStrength());
+			this.worktime = 2;//(500/(double)this.getStrength());
 			this.working = true;
 			this.sprinting = false;
 		}else{
@@ -1591,6 +1602,16 @@ public class Unit {
 						int randomy = rand.nextInt(getMaxSize());
 						int randomz = rand.nextInt(getMaxSize());
 						int[] randompos = {randomx, randomy, randomz};
+						// toevoegen path != null
+						while (!world.isPassableTerrain(randompos)){
+							randomx = rand.nextInt(getMaxSize());
+							randomy = rand.nextInt(getMaxSize());
+							randomz = rand.nextInt(getMaxSize());
+							randompos[0] = randomx;
+							randompos[1] = randomy;
+							randompos[2] = randomz;
+						}
+						
 						moveTo(randompos);
 						randomSprinting(rand);
 						checker = false;
@@ -1683,7 +1704,7 @@ public class Unit {
 		}
 	}
 	
-	private static double round(double value, int places) {
+	public static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
 
 	    BigDecimal bd = new BigDecimal(value);
