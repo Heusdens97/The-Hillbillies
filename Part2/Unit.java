@@ -4,7 +4,6 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
-import javafx.scene.shape.MoveTo;
 import hillbillies.model.Faction;
 
 import java.io.IOException;
@@ -703,19 +702,19 @@ public class Unit {
 		advanceTime_Moving(dt);
 		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 			setDefaultBehaviourEnabled(true);
-		if ((isWorking()||isMovingToWork)){
+		if (((isWorking()||isMovingToWork))&&(!isMoving()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))){
 			if (isWorking())
 				this.worktime -= dt;
-			else {
-				int x = finaldest[0];
-				int y = finaldest[1];
-				int z = finaldest[2];
-				workAt(x, y, z);
-			}
+			int x = workat[0];
+			int y = workat[1];
+			int z = workat[2];
+			workAt(x, y, z);
 		}
 		
 		advanceTime_levelUp();
 	}
+	
+	private int[] workat;
 	
 	private boolean startfalling = false;
 	
@@ -1077,7 +1076,7 @@ public class Unit {
 		return this.working;
 	}
 
-	private boolean isMovingToWork;
+	private boolean isMovingToWork = false;
 	
 	private boolean isAdjacent (int[] me, int[] other){
 		return (((Math.abs(me[0]-other[0]) == 1)||(me[0]-other[0]) == 0)
@@ -1097,7 +1096,9 @@ public class Unit {
 			return;
 		}
 		int[] position = {x,y,z};
-		if ((!isAdjacent(this.getCubeCoordinate(), position))&&(!isMoving())){
+		double[] doubleposition = {x+0.5, y+0.5, z+0.5};
+		this.workat = position;
+		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isWorking())){
 			System.out.println("hier");
 			for (int i = x-1; i <= x+1;i++){
 				for (int j = y-1; j <= y+1;j++){
@@ -1111,12 +1112,11 @@ public class Unit {
 					}
 				}
 			}
-		} 
-		else if (isAdjacent(this.getCubeCoordinate(), position)){
-			isMovingToWork = false;
-			this.setOrientation((Math.atan2((this.getPosition()[1]-position[1]),(this.getPosition()[0]-position[0]))));
+		} else{
+			this.isMovingToWork = false;
 		}
-		if ((!isWorking())&&(!isMovingToWork)){
+		if ((!isWorking())&&(!isMovingToWork)&&(isAdjacent(this.getCubeCoordinate(), position))){
+			this.setOrientation((Math.atan2((doubleposition[1]-this.getPosition()[1]),(doubleposition[0]-this.getPosition()[0]))));
 			this.resting = false;
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
@@ -1124,7 +1124,6 @@ public class Unit {
 		}else{
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
-				double[] doublepos = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
 					if (this.isCarryingBoulder()){
 						removeBoulderAndAddToInventory();
@@ -1132,19 +1131,19 @@ public class Unit {
 						removeLogAndAddToInventory();
 					}
 				}
-				else if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doublepos)&&(boulderAvailable(doublepos)))){
-					world.removeBoulder(doublepos);
-					world.removeLog(doublepos);
+				else if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doubleposition)&&(boulderAvailable(doubleposition)))){
+					world.removeBoulder(doubleposition);
+					world.removeLog(doubleposition);
 					setWeight(getWeight()+ 5, 1, 200);
 					setToughness(getToughness()+5, 1, 200);
 				}
-				else if (boulderAvailable(doublepos)){
-					Boulder boulder = world.removeBoulder(doublepos);
+				else if (boulderAvailable(doubleposition)){
+					Boulder boulder = world.removeBoulder(doubleposition);
 					this.carryingBoulder.add(boulder);
 					setWeight(getWeight()+boulder.getWeight(), 1, 200+boulder.getWeight());
 				}
-				else if (logAvailable(doublepos)){
-					Log log = world.removeLog(doublepos);
+				else if (logAvailable(doubleposition)){
+					Log log = world.removeLog(doubleposition);
 					this.carryingLog.add(log);
 					setWeight(getWeight()+log.getWeight(), 1, 200+log.getWeight());
 				}
