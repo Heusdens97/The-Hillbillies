@@ -6,6 +6,8 @@ import ogp.framework.util.*;
 import hillbillies.model.World;
 import javafx.scene.shape.MoveTo;
 import hillbillies.model.Faction;
+
+import java.io.IOException;
 import java.math.*;
 import java.util.*;
 
@@ -130,6 +132,7 @@ public class Unit {
 		world.addUnit(this);
 		Faction.addToFaction(this);
 		setExperiencePoints(0);
+		Astar.unit = this;
 	}
 	
 	private void setExperiencePoints(int experience){
@@ -671,56 +674,51 @@ public class Unit {
 	private double speed;
 	
 	
-	public void advanceTime(double dt) throws ModelException{
-		if (!isValidTime(dt)){
-			throw new ModelException();
-		} else {
-			this.timetillrest -= dt;
-			if (this.timetillrest <= 0){
-				rest();
-			}
-			if (startfalling||isFalling()){
-				fall();
-			}
-			advanceTime_Fight(dt);
-			if ((isResting())&&(!isWorking())){
-				if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
-					this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
-					if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
-						this.setHitpoints(this.getMaxStaminaAndHitPoints());
-					this.setHitpoints((int)(this.hitpoints_double));
-				}
-				else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
-					this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
-					if (this.stamina_double > this.getMaxStaminaAndHitPoints())
-						this.setStamina(this.getMaxStaminaAndHitPoints());
-					this.setStamina((int)(this.stamina_double));
-				}
-				else{
-					this.resting = false;
-				}
-			}
-			advanceTime_Moving(dt);
-			if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
-				setDefaultBehaviourEnabled(true);
-			// als "bots" worden aangevallen, doen ze niets meer
-			if (((isWorking())||(this.isMovingToWork))&&(!isMoving())){
-				int x = finaldest[0];
-				int y = finaldest[1];
-				int z = finaldest[2];
-				workAt(x, y, z);
-				this.worktime -= dt;
-			}
-			
-			advanceTime_levelUp();
+	public void advanceTime(double dt){
+		this.timetillrest -= dt;
+		if (this.timetillrest <= 0){
+			rest();
 		}
+		if (startfalling||isFalling()){
+			fall();
+		}
+		advanceTime_Fight(dt);
+		if ((isResting())&&(!isWorking())){
+			if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
+				this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
+				if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
+					this.setHitpoints(this.getMaxStaminaAndHitPoints());
+				this.setHitpoints((int)(this.hitpoints_double));
+			}
+			else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
+				this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
+				if (this.stamina_double > this.getMaxStaminaAndHitPoints())
+					this.setStamina(this.getMaxStaminaAndHitPoints());
+				this.setStamina((int)(this.stamina_double));
+			}
+			else{
+				this.resting = false;
+			}
+		}
+		advanceTime_Moving(dt);
+		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
+			setDefaultBehaviourEnabled(true);
+		if (((isWorking())||(this.isMovingToWork))&&(!isMoving())){
+			int x = finaldest[0];
+			int y = finaldest[1];
+			int z = finaldest[2];
+			workAt(x, y, z);
+			this.worktime -= dt;
+		}
+		
+		advanceTime_levelUp();
 	}
 	
 	private boolean startfalling = false;
 	
 	private int z_falling;
 
-	private void fall() throws ModelException {
+	private void fall() {
 		if (!startfalling){
 			this.z_falling= this.getCubeCoordinate()[2];
 		}
@@ -742,7 +740,7 @@ public class Unit {
 		}
 	}
 
-	private void advanceTime_Moving(double dt) throws ModelException {
+	private void advanceTime_Moving(double dt) {
 		if ((Math.round(this.getPosition()[0] -0.5)) != (Math.round(finaldest[0])) || (Math.round(this.getPosition()[1]-0.5)) != (Math.round(finaldest[1]))||(Math.round(this.getPosition()[2]-0.5)) != (Math.round(finaldest[2]))){
 		     moveTo(finaldest);
 		}else{
@@ -784,7 +782,7 @@ public class Unit {
 	 * @param dt
 	 * @throws ModelException
 	 */
-	private void advanceTime_Fight(double dt) throws ModelException {
+	private void advanceTime_Fight(double dt) {
 		if (isDefaultBehaviourEnabled()){
 			if ((defender != null)&&(this.fighttime == 1)){
 				if ((defender!=this)&&(!this.isMoving())){
@@ -856,21 +854,7 @@ public class Unit {
 	public boolean isMoving(){
 		return this.moving;
 	}
-	/**
-	 * Check whether the given time is a valid time for
-	 * any unit.
-	 *  
-	 * @param  	dt
-	 *         	The time to check.
-	 * @return 	true if the time is valid: time equal or bigger than 0 and less than 0,2.
-	 *       	| if (0 <= dt < 0.2)
-	 *       	| 	then result == true
-	 *       	| 	else result == false 
-	*/
-	public boolean isValidTime(double dt) throws ModelException{
-		return ((dt >= 0) && (dt <= 0.2));
-			
-	}
+	
 	/**
 	 * Variable registering whether the unit is moving.
 	 */
@@ -913,7 +897,7 @@ public class Unit {
 	 * 			|speed = 0
 	 */
 	@Raw
-	private void setSpeed() throws ModelException{
+	private void setSpeed(){
 	    double speed = 1.5*((this.getStrength()+this.getAgility())/(double)(200*(this.getWeight()/(double)100)));
 	    if (isFalling()){
 	    	speed = 3;
@@ -994,7 +978,7 @@ public class Unit {
 	 * 			|this.sprinting = false
 	 * 			| setSpeed();
 	*/
-	public void stopSprinting() throws ModelException{
+	public void stopSprinting(){
 		this.sprinting = false;
 		setSpeed();
 	}
@@ -1011,11 +995,12 @@ public class Unit {
 	 * @throws 	ModelException
 	 * 			if it's not a valid position.
 	 */
-	public void moveToAdjacent(int dx, int dy, int dz) throws ModelException{
+	public void moveToAdjacent(int dx, int dy, int dz){
 		if (!isMoving()){
 			double[] Adjacent = {this.getPosition()[0]+dx,this.getPosition()[1]+dy,this.getPosition()[2]+dz};
-			setDestiny(Adjacent);
-			if (isValidPosition(Adjacent)){
+			int[] intAdjacent = {(int)Adjacent[0],(int)Adjacent[1],(int)Adjacent[2]};
+			if (isValidPosition(Adjacent)&&(getWorld().isPassableTerrain(intAdjacent)||intAdjacent[2]==0)){
+				setDestiny(Adjacent);
 				this.attacking = false;
 				startMoving();
 				setSpeed();
@@ -1037,49 +1022,88 @@ public class Unit {
 	 */
 	private Boolean arrowKeys;
 	
-	/**
-	 * 
-	 * The unit moves to the cube.
-	 * 
-	 * @param 	cube
-	 * 			the new position of the unit.
-	 * @throws 	ModelException
-	 * 			if it's not a valid position.
-	 */
-	public void moveTo(int[] cube) throws ModelException{
-		double[] Position = {0,0,0};
-		Position[0] = (double)(cube[0])+0.5;
-		Position[1] = (double)(cube[1])+0.5;
-		Position[2] = (double)(cube[2])+0.5;
-		if (isValidPosition(Position)){
+//	/**
+//	 * 
+//	 * The unit moves to the cube.
+//	 * 
+//	 * @param 	cube
+//	 * 			the new position of the unit.
+//	 * @throws 	ModelException
+//	 * 			if it's not a valid position.
+//	 */
+//	public void moveTo(int[] cube){
+//		double[] Position = {0,0,0};
+//		Position[0] = (double)(cube[0])+0.5;
+//		Position[1] = (double)(cube[1])+0.5;
+//		Position[2] = (double)(cube[2])+0.5;
+//		if (isValidPosition(Position)){
+//			this.working = false;
+//			this.arrowKeys = false;
+//			this.finaldest = cube;
+//			int dx,dy,dz;
+//			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
+//				if (this.getPosition()[0] == Position[0])
+//					dx = 0;
+//				else if (this.getPosition()[0] < Position[0])
+//					dx = 1;
+//				else
+//					dx = -1;
+//				if (this.getPosition()[1] == Position[1])
+//					dy = 0;
+//				else if (this.getPosition()[1] < Position[1])
+//					dy = 1;
+//				else
+//					dy = -1;
+//				if (this.getPosition()[2] == Position[2])
+//					dz = 0;
+//				else if (this.getPosition()[2] < Position[2])
+//					dz = 1;
+//				else
+//					dz = -1;
+//				moveToAdjacent(dx, dy, dz);
+//			}	
+//		}
+//	}
+	
+	private List<int[]> path;
+	
+	public void moveTo(int[] cube){
+		double[] doublepos = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+		if (isValidPosition(doublepos)){
 			this.working = false;
 			this.arrowKeys = false;
 			this.finaldest = cube;
-			int dx,dy,dz;
-			if ((this.getPosition()[0] != Position[0])||(this.getPosition()[1] != Position[1])||(this.getPosition()[2] != Position[2])){
-				if (this.getPosition()[0] == Position[0])
-					dx = 0;
-				else if (this.getPosition()[0] < Position[0])
-					dx = 1;
-				else
-					dx = -1;
-				if (this.getPosition()[1] == Position[1])
-					dy = 0;
-				else if (this.getPosition()[1] < Position[1])
-					dy = 1;
-				else
-					dy = -1;
-				if (this.getPosition()[2] == Position[2])
-					dz = 0;
-				else if (this.getPosition()[2] < Position[2])
-					dz = 1;
-				else
-					dz = -1;
-				moveToAdjacent(dx, dy, dz);
-			}	
+			if (!Arrays.equals(this.getPosition(),doublepos)&&(!isMoving())){
+				// path altijd opnieuw laten berekenen ==> mogelijk terrain changes
+				try {
+					path = getWorld().pathfinding.searchPath(this.getCubeCoordinate(), cube);
+					if (path == null)
+						throw new ModelException("there is no pad");
+					else {
+						path.remove(0);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (ModelException e) {
+					System.out.println("no pad available");
+					this.finaldest = this.getCubeCoordinate();
+					e.printStackTrace();
+				}
+				if (path != null){
+					int [] first = path.get(0);
+					int dx = first[0] - this.getCubeCoordinate()[0];
+					int dy = first[1] - this.getCubeCoordinate()[1];
+					int dz = first[2] - this.getCubeCoordinate()[2];  
+					moveToAdjacent(dx, dy, dz);
+					path.remove(0);
+				}
+			}
 		}
 	}
 	
+	private World getWorld(){
+		return Unit.world;
+	}	
 	public Queue<int[][]> positionQueue = new LinkedList<int[][]>();
 	
 //	public void moveTo(int[] cube) throws ModelException{
@@ -1120,7 +1144,7 @@ public class Unit {
 	}
 	
 	
-	public void search(int[] position, int n) throws ModelException{
+	public void search(int[] position, int n){
 		List<int[]> positionList = new ArrayList<int[]>();
 		int x = position[0];
 		int y = position[1];
@@ -1202,13 +1226,20 @@ public class Unit {
 	 * 
 	 * the unit starts working.
 	 */
-	public void workAt(int x, int y, int z) throws ModelException{ 
+	public void workAt(int x, int y, int z){ 
+		try {
+			if (z == 0)
+				throw new ModelException("Not allowed to work at level 0");
+		} catch (ModelException e){
+			e.printStackTrace();
+			return;
+		}
 		int[] position = {x,y,z};
-		isMovingToWork = false;
-		if (!Arrays.equals(this.getCubeCoordinate(),position)){
+		this.isMovingToWork = false;
+		if ((!isNeighbour(this.getCubeCoordinate(), position))){
 			this.isMovingToWork = true;
 			moveTo(position);
-		}
+		} 
 		this.resting = false;
 		if ((!isWorking())&&(!isMovingToWork)){
 			this.worktime = 1; //(500/(double)this.getStrength());
@@ -1317,7 +1348,7 @@ public class Unit {
 	 * returns the cubecoordinates.
 	 */
 	@Basic @Raw
-	public int[] getCubeCoordinate() throws ModelException{
+	public int[] getCubeCoordinate() {
 		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};
 	}
 	
@@ -1337,7 +1368,7 @@ public class Unit {
 	 * @param 	defender
 	 * 			the defending unit
 	 */
-	public void fight(Unit defender) throws ModelException{ 
+	public void fight(Unit defender){ 
 		this.working = false;
 		if (!isAttacking())
 			this.fighttime = 1;
@@ -1357,7 +1388,7 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	private void attack(Unit attacker,Unit defender) throws ModelException{
+	private void attack(Unit attacker,Unit defender){
 		attacker.attacking = true;	
 	}
 	/**
@@ -1369,7 +1400,7 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	private void defend(Unit defender,Unit attacker) throws ModelException{
+	private void defend(Unit defender,Unit attacker){
 		defender.attacking = false;
 		this.defender = defender;
 	//	defender.defender = defender;
@@ -1405,7 +1436,7 @@ public class Unit {
 	 * @param	defender
 	 * 			the defender
 	 */
-	private void dodge(Unit defender,Unit attacker) throws ModelException{
+	private void dodge(Unit defender,Unit attacker){
 		int random_x = 0;
 		int random_y = 0;
 		Random rand = new Random();
@@ -1463,28 +1494,7 @@ public class Unit {
 				&&((Math.abs(me[2]-other[2]) == 1)||(me[2]-other[2]) == 0));
 	}
 	
-//	private boolean isNeighbouringSolidTerrain(int[] position) throws ModelException{
-//		int[] cube = Arrays.copyOf(position, 3);
-//		for (int i=0; i < 200; i++){
-//			position = Arrays.copyOf(cube, 3);
-//			Random rand = new Random();
-//			int max = 1;
-//			int min = -1;
-//			int x = rand.nextInt((max - min) + 1) + min;
-//			int y = rand.nextInt((max - min) + 1) + min;
-//			int z = rand.nextInt((max - min) + 1) + min;
-//			position[0] += x;
-//			position[1] += y;
-//			position[2] += z;
-//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-//			if ((isValidPosition(doubleposition))&&(world.isPassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-	
-	private boolean isNeighbouringPassableTerrain(int[] position) throws ModelException{
+	public boolean isNeighbouringPassableTerrain(int[] position){
 		int[] cube = Arrays.copyOf(position, 3);
 		for (int i=0; i < 200; i++){
 			position = Arrays.copyOf(cube, 3);
@@ -1519,7 +1529,7 @@ public class Unit {
 	 * the unit starts resting.
 	 * 
 	 */
-	public void rest() throws ModelException{
+	public void rest(){
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
 			this.sprinting = false;
 			this.resting = true;
@@ -1552,7 +1562,7 @@ public class Unit {
 	 * start defaultbehaviour
 	 * @throws ModelException 
 	 */
-	private void startDefaultBehaviour() throws ModelException{
+	private void startDefaultBehaviour() {
 		if ((!isWorking())&& (!isResting())&&(!isMoving())){
 			this.defaultBehaviour = true;
 			boolean checker = true;
@@ -1616,7 +1626,7 @@ public class Unit {
 		}
 	}
 	
-	public int[] positionNearCube(int[] cube) throws ModelException{
+	public int[] positionNearCube(int[] cube) {
 		Random rand = new Random();
 		boolean validposition = false;
 		int random = rand.nextInt(2);
@@ -1664,7 +1674,7 @@ public class Unit {
 	 * 			the value of defaultbehaviour
 	 *	
 	 */
-	public void setDefaultBehaviourEnabled(boolean value) throws ModelException{
+	public void setDefaultBehaviourEnabled(boolean value){
 		this.defaultBehaviour = value;
 		if (value){
 			startDefaultBehaviour();
@@ -1681,7 +1691,7 @@ public class Unit {
 	    return bd.doubleValue();
 	}
 	
-	private boolean isFalling() throws ModelException{
+	private boolean isFalling(){
 		return isNeighbouringPassableTerrain(this.getCubeCoordinate());
 		
 	}

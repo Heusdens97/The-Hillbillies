@@ -27,8 +27,8 @@ public class World {
 	 * @param modelListener
 	 * @throws ModelException 
 	 */
-	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) throws ModelException{
-		this.world = terrainTypes;
+	public World(int[][][] terrainTypes, TerrainChangeListener modelListener){
+		this.terrain = terrainTypes;
 		this.x = terrainTypes.length;
 		this.y = terrainTypes[0].length;
 		this.z = terrainTypes[0][0].length;
@@ -37,8 +37,15 @@ public class World {
 		this.modelListener = modelListener;
 		this.border = new ConnectedToBorder(this.getX(), this.getY(), this.getZ());
 		CheckTerrainWorld();
+		this.pathfinding = new Astar(this);
 	}
-	private int[][][] world;
+	private int[][][] terrain;
+	
+	public Astar pathfinding;
+	
+	public int[][][] getTerrain(){
+		return this.terrain;
+	}
 	
 	TerrainChangeListener modelListener;
 	
@@ -113,11 +120,11 @@ public class World {
 	 */
 	@Basic @Raw
 	public int getCubeType(int x, int y, int z){
-		return this.world[x][y][z];
+		return this.terrain[x][y][z];
 	}
 
 	public void setCubeType(int x, int y, int z, int value){
-		this.world[x][y][z] = value;
+		this.terrain[x][y][z] = value;
 	}
 	
 	public Unit randomUnit(boolean enabledefaultbehaviour) throws ModelException{
@@ -136,13 +143,13 @@ public class World {
 		int randomy = rand.nextInt(this.getY());
 		int randomz = rand.nextInt(this.getZ());
 		if (randomz != 0){
-			while (((this.world[randomx][randomy][randomz]!=TYPE_AIR)||(this.world[randomx][randomy][randomz]!=TYPE_WORKSHOP))&&((this.world[randomx][randomy][randomz-1]!=TYPE_ROCK)||(this.world[randomx][randomy][randomz-1]!=TYPE_TREE))){
+			while (((this.terrain[randomx][randomy][randomz]!=TYPE_AIR)||(this.terrain[randomx][randomy][randomz]!=TYPE_WORKSHOP))&&((this.terrain[randomx][randomy][randomz-1]!=TYPE_ROCK)||(this.terrain[randomx][randomy][randomz-1]!=TYPE_TREE))){
 				randomx = rand.nextInt(this.getX());
 				randomy = rand.nextInt(this.getY());
 				randomz = rand.nextInt(this.getZ());
 				if (randomz == 0){break;}
 				else{
-					if (((this.world[randomx][randomy][randomz]==TYPE_AIR)||(this.world[randomx][randomy][randomz]==TYPE_WORKSHOP))&&((this.world[randomx][randomy][randomz-1]==TYPE_ROCK)||(this.world[randomx][randomy][randomz-1]==TYPE_TREE))){
+					if (((this.terrain[randomx][randomy][randomz]==TYPE_AIR)||(this.terrain[randomx][randomy][randomz]==TYPE_WORKSHOP))&&((this.terrain[randomx][randomy][randomz-1]==TYPE_ROCK)||(this.terrain[randomx][randomy][randomz-1]==TYPE_TREE))){
 						break;
 					}else{
 						randomx = rand.nextInt(this.getX());
@@ -189,15 +196,30 @@ public class World {
 		return border.isSolidConnectedToBorder(x, y, z);
 	}
 	
+	/**
+	 * Check whether the given time is a valid time for
+	 * any unit.
+	 *  
+	 * @param  	dt
+	 *         	The time to check.
+	 * @return 	true if the time is valid: time equal or bigger than 0 and less than 0,2.
+	 *       	| if (0 <= dt < 0.2)
+	 *       	| 	then result == true
+	 *       	| 	else result == false 
+	*/
+	private boolean isValidTime(double dt){
+		return ((dt >= 0) && (dt <= 0.2));		
+	}
+	
 	public void advanceTime(double dt) throws ModelException{
-		if (!gameOverCheck()){
-			if (this.worldMembers.size() != 0)
-				gameOverTimer -= dt;
-			for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
-			    Unit unit = i.next();
-			    if (!unit.isValidTime(dt)) //isvalidtime in world zetten?
-					throw new ModelException();
-				else {
+		if (!isValidTime(dt)){
+			throw new ModelException();
+		} else {
+			if (!gameOverCheck()){
+				if (this.worldMembers.size() != 0)
+					gameOverTimer -= dt;
+				for (Iterator<Unit> i = worldMembers.iterator(); i.hasNext();) {
+				    Unit unit = i.next();
 					if (unit.getHitpoints() <= 0){
 						//this.worldMembers.remove(unit);
 						Faction fac = unit.getFaction();
@@ -212,28 +234,28 @@ public class World {
 					}
 					unit.advanceTime(dt);
 				}
+				for (Boulder boulder : boulders){
+					boulder.advanceTime(dt);
+				}
+				for (Log log: logs){
+					log.advanceTime(dt);
+				}
+				
+			} else {
+				int index = -1;
+				for (Faction fac: activeFactions){
+					if (fac.members.size() != 0){
+						index = fac.index;
+						break;
+					}		
+				}
+				JOptionPane.showMessageDialog(null, "Faction " + index + " won! The game will close");
+				System.exit(0);
 			}
-			for (Boulder boulder : boulders){
-				boulder.advanceTime(dt);
-			}
-			for (Log log: logs){
-				log.advanceTime(dt);
-			}
-			
-		} else {
-			int index = -1;
-			for (Faction fac: activeFactions){
-				if (fac.members.size() != 0){
-					index = fac.index;
-					break;
-				}		
-			}
-			JOptionPane.showMessageDialog(null, "Faction " + index + " won! The game will close");
-			System.exit(0);
 		}
 	}
 	
-	private void CheckTerrainWorld() throws ModelException{
+	private void CheckTerrainWorld() {
 		for (int i = 0; i < this.getX();i++){
 			for (int j = 0; j < this.getY();j++){
 				for (int k = 0; k < this.getZ();k++){
@@ -246,7 +268,7 @@ public class World {
 		}
 	}
 	
-	public void collapse(int x, int y, int z) throws ModelException{
+	public void collapse(int x, int y, int z){
 		int[] position = {x,y,z};
 		int previousCubeType = this.getCubeType(x, y, z);
 		setCubeType(x, y, z, TYPE_AIR);
@@ -284,11 +306,11 @@ public class World {
 	
 	public Set<Log> logs = new HashSet<Log>();
 	
-	public Boulder createBoulder(World world, int[] position) throws ModelException{
+	public Boulder createBoulder(World world, int[] position){
 		return new Boulder(world, position);
 	}
 	
-	public Log createLog(World world, int[] position) throws ModelException{
+	public Log createLog(World world, int[] position){
 		return new Log(world, position);
 	}
 	
@@ -327,7 +349,6 @@ public class World {
 	public boolean isImpassableTerrain(int[] position){
 		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_ROCK)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_TREE)); 
 	}
-	
 
 
 }
