@@ -241,14 +241,12 @@ public class Facade implements IFacade {
 
 	@Override
 	public boolean isCarryingLog(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		return unit.isCarryingLog();
 	}
 
 	@Override
 	public boolean isCarryingBoulder(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		return unit.isCarryingBoulder();
 	}
 
 	@Override
@@ -263,13 +261,11 @@ public class Facade implements IFacade {
 
 	@Override
 	public void workAt(Unit unit, int x, int y, int z) throws ModelException {
-		// TODO Auto-generated method stub
-		
+		unit.workAt(x, y, z);
 	}
 
 	@Override
 	public Faction getFaction(Unit unit) throws ModelException {
-		//return Faction.getFaction(unit);
 		return unit.getFaction();
 	}
 
@@ -280,32 +276,27 @@ public class Facade implements IFacade {
 
 	@Override
 	public Set<Faction> getActiveFactions(World world) throws ModelException {
-		//return Faction.getActiveFactions(world);
 		return world.getActiveFactions();
 	}
 
 	@Override
 	public double[] getPosition(Boulder boulder) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return boulder.getPosition();
 	}
 
 	@Override
 	public Set<Boulder> getBoulders(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getBoulders();
 	}
 
 	@Override
 	public double[] getPosition(Log log) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return log.getPosition();
 	}
 
 	@Override
 	public Set<Log> getLogs(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getLogs();
 	}
 
 }
