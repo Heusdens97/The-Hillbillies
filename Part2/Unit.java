@@ -109,7 +109,8 @@ public class Unit {
 	 * 			Throws an exception if it isnt't valid
 	 * 			| ! canHaveAsPosition(initialposition)
 	 */
-	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior) throws ModelException{
+	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior, World world) throws ModelException{
+		this.world = world;
 		this.setName(name);
 		finaldest = initialposition;
 		double[] position = {initialposition[0]+0.5,initialposition[1]+0.5,initialposition[2]+0.5};
@@ -145,7 +146,7 @@ public class Unit {
 	}
 	
 	public Faction faction;
-	public static World world;
+	public World world;
 
 	/**
 	 * 
@@ -688,6 +689,7 @@ public class Unit {
 				if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
 					this.setHitpoints(this.getMaxStaminaAndHitPoints());
 				this.setHitpoints((int)(this.hitpoints_double));
+				// soms nog een error?
 			}
 			else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
 				this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
@@ -700,7 +702,7 @@ public class Unit {
 			}
 		}
 		advanceTime_Moving(dt);
-		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
+		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isMovingToWork)&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
 			setDefaultBehaviourEnabled(true);
 		if (((isWorking()||isMovingToWork))&&(!isMoving()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))){
 			if (isWorking())
@@ -766,7 +768,7 @@ public class Unit {
 			if ((Math.abs((this.getPosition()[2]-this.getDestiny()[2])) == 1) || ((this.getPosition()[2] - this.getDestiny()[2]) == 0)){
 				setSpeed();
 			}
-			if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])){
+			if ((round(this.getPosition()[0],1) == this.getDestiny()[0])&&(round(this.getPosition()[1],1) == this.getDestiny()[1])&&(round(this.getPosition()[2],1) == this.getDestiny()[2])&&((isMoving()||isMovingToWork))){
 				stopMoving();
 				this.position = this.getDestiny();	
 			}
@@ -1060,7 +1062,7 @@ public class Unit {
 	}
 	
 	private World getWorld(){
-		return Unit.world;
+		return this.world;
 	}	
 	
 	/**
@@ -1088,6 +1090,7 @@ public class Unit {
 	 * the unit starts working.
 	 */
 	public void workAt(int x, int y, int z){ 
+		//pathfinding met workat is soms nogal raar?
 		try {
 			if (z == 0)
 				throw new ModelException("Not allowed to work at level 0");
@@ -1098,7 +1101,7 @@ public class Unit {
 		int[] position = {x,y,z};
 		double[] doubleposition = {x+0.5, y+0.5, z+0.5};
 		this.workat = position;
-		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isWorking())){
+		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isWorking())&&(!isMovingToWork)){
 			for (int i = x-1; i <= x+1;i++){
 				for (int j = y-1; j <= y+1;j++){
 					int[] pos = {i,j,z};
@@ -1123,6 +1126,7 @@ public class Unit {
 		}else{
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
+				//mogelijkheid om associatie tussen unit en objects toe te voegen
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
 					if (this.isCarryingBoulder()){
 						removeBoulderAndAddToInventory();
@@ -1156,7 +1160,7 @@ public class Unit {
 	
 	public void removeBoulderAndAddToInventory(){
 		for (Boulder boulder: carryingBoulder){
-			boulder.setPosition(this.getPosition());
+			boulder.setPosition(this.getPosition()); // mss xyz van work
 			carryingBoulder.remove(boulder);
 			setWeight(this.getWeight()-boulder.getWeight(), 1, 200);
 			world.boulders.add(boulder);
@@ -1249,6 +1253,7 @@ public class Unit {
 		if ((!isMoving())&&(defender != null)&&(defender != this)&&(this.faction != defender.faction)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate())))){
 			attack(this,defender); 
 			defend(defender,this);
+			// mogelijkheid met een parameter
 			this.setOrientation((Math.atan2((defender.getPosition()[1]-this.getPosition()[1]),(defender.getPosition()[0]-this.getPosition()[0]))));
 			defender.setOrientation((Math.atan2((this.getPosition()[1]-defender.getPosition()[1]),(this.getPosition()[0]-defender.getPosition()[0]))));
 		}		
@@ -1264,6 +1269,7 @@ public class Unit {
 	 */
 	private void attack(Unit attacker,Unit defender){
 		attacker.attacking = true;	
+		// mogelijkheid met een parameter
 	}
 	/**
 	 * 
@@ -1275,8 +1281,9 @@ public class Unit {
 	 * 			the defender
 	 */
 	private void defend(Unit defender,Unit attacker){
+		// mogelijkheid met een parameter
 		defender.attacking = false;
-		this.defender = defender;
+		attacker.defender = defender;
 	//	defender.defender = defender;
 		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
 		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
@@ -1453,11 +1460,22 @@ public class Unit {
 						}
 						break;
 					case 1:
-						int x = this.getCubeCoordinate()[0];
-						int y = this.getCubeCoordinate()[1];
-						int z = this.getCubeCoordinate()[2];
+						int x = rand.nextInt(getMaxSize());
+						int y = rand.nextInt(getMaxSize());
+						int z = rand.nextInt(getMaxSize());
+						int [] pos = {x,y,z};
+						calculatePathTo(pos);
+						while ((z== 0)||(path == null)){
+							x = rand.nextInt(getMaxSize());
+							y = rand.nextInt(getMaxSize());
+							z = rand.nextInt(getMaxSize());
+							pos[0] = x;
+							pos[1] = y;
+							pos[2] = z;
+							calculatePathTo(pos);
+						}
 						workAt(x, y, z);
-						System.out.println("work");
+						System.out.println("work at " + x +" "+ y +" "+ z);
 						checker = false;
 						break;
 					case 2:

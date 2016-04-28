@@ -32,7 +32,6 @@ public class World {
 		this.x = terrainTypes.length;
 		this.y = terrainTypes[0].length;
 		this.z = terrainTypes[0][0].length;
-		Unit.world = this; 
 		Faction.world = this;
 		this.modelListener = modelListener;
 		this.border = new ConnectedToBorder(this.getX(), this.getY(), this.getZ());
@@ -135,7 +134,7 @@ public class World {
 		int agility = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int strength = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
 		int toughness = rand.nextInt((UPPER - LOWER) + 1) + LOWER;
-		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour);
+		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour, this);
 	}
 
 	private int[] randomPositionUnit(Random rand) {
@@ -286,6 +285,7 @@ public class World {
 				System.out.println("spawn log");
 			}
 		}
+		//collapse();
 	}
 	
 	private static double gameOverTimer = 300;

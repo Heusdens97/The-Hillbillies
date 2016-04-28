@@ -34,8 +34,7 @@ public class Faction{
 			int[] sizeFaction = new int[maxFactions];
 			int i = 0;
 			for (Faction fac : world.activeFactions){
-				sizeFaction[i] = fac.members.size();
-				i += 1;
+				sizeFaction[i++] = fac.members.size();
 			}
 			int min = getMinValue(sizeFaction);
 			for (Faction fac : world.activeFactions){ 
@@ -72,6 +71,11 @@ public class Faction{
 		return min;
 	}
 
+	private Scheduler scheduler = new Scheduler();
+	
+	public Scheduler getScheduler(){
+		return this.scheduler;
+	}
 
 
 
