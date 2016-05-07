@@ -1,0 +1,32 @@
+package hillbillies.unitExpression;
+
+import hillbillies.model.*;
+import hillbillies.model.Unit;
+import ogp.framework.util.ModelException;
+
+public class UnitFriend extends Unit{
+	
+	public UnitFriend(hillbillies.model.Unit unit){
+		if (Faction.world.worldMembers.isEmpty()){
+			try {
+				throw new ModelException();
+			} catch (ModelException e) {
+				System.out.println("no units available");
+				e.printStackTrace();
+			}
+		}
+		else{
+			for(hillbillies.model.Unit friend: Faction.world.worldMembers){
+				if(friend.faction == unit.faction){
+					this.friend = friend;
+					break;
+				}
+			}
+		}
+	}
+	public hillbillies.model.Unit friend;
+	@Override
+	public Unit getResult() {
+		return this.friend;
+	}
+}
