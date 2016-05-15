@@ -2,7 +2,7 @@ package hillbillies.positionExpressions;
 
 import hillbillies.model.*;
 
-public class PositionHere extends Position {
+public class PositionHere<T> extends Position<T> {
 
 	public PositionHere(){
 		for(Unit unit: Faction.world.getUnits()){
@@ -14,18 +14,24 @@ public class PositionHere extends Position {
 					for (int value : oldArray) {
 					    newArray[i++] = Integer.valueOf(value);
 					}
-					this.here = newArray;
+					this.here = (T) newArray;
 					break;
 				}
 			}
 		}
 	}
 	
-	public Integer[] here;
+	public T here;
 	
 	@Override
-	public Integer[] getResult() {
+	public T getResult() {
 		return this.here;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionHere<?>)
+				&& (getResult() == ((PositionHere<T>) other).getResult());
 	}
 	
 	

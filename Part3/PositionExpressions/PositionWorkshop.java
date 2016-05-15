@@ -2,7 +2,7 @@ package hillbillies.positionExpressions;
 
 import hillbillies.model.*;
 
-public class PositionWorkshop extends Position {
+public class PositionWorkshop<T> extends Position<T> {
 
 	public PositionWorkshop(){
 		for (int i = 0; i < Faction.world.getX(); i++) {
@@ -10,7 +10,7 @@ public class PositionWorkshop extends Position {
 				for (int k = 0; k < Faction.world.getZ(); k++) {
 					if (World.TYPE_WORKSHOP == Faction.world.getCubeType(i, j, k)){
 						int[] pos = {i,j,k};
-						this.position = IntToInteger(pos);
+						this.position = (T) IntToInteger(pos);
 						break;
 					}
 				}
@@ -18,11 +18,16 @@ public class PositionWorkshop extends Position {
 		}
 	}
 	
-	public Integer[] position;
+	public T position;
 	
 	@Override
-	public Integer[] getResult() {
+	public T getResult() {
 		return this.position;
+	}
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionWorkshop<?>)
+				&& (getResult() == ((PositionWorkshop<T>) other).getResult());
 	}
 
 	

@@ -1,9 +1,10 @@
 package hillbillies.positionExpressions;
 
+
 import hillbillies.model.*;
 import ogp.framework.util.ModelException;
 
-public class PositionBoulder extends Position {
+public class PositionBoulder<T> extends Position<T> {
 
 	public PositionBoulder(){
 		if (Faction.world.boulders.isEmpty())
@@ -24,15 +25,21 @@ public class PositionBoulder extends Position {
 //				this.boulder = newArray;
 //				break;
 //			}
-			this.boulder = get(Faction.world.boulders);
+			this.boulder = (T) get(Faction.world.boulders);
 		}
 	}
 	
-	public Integer[] boulder;
+	public T boulder;
 	
 	@Override
-	public Integer[] getResult() {
+	public T getResult() {
 		return this.boulder;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionBoulder<?>)
+				&& (getResult() == ((PositionBoulder<T>) other).getResult());
 	}
 	
 

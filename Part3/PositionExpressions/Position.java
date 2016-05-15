@@ -5,28 +5,17 @@ import java.util.Set;
 
 import be.kuleuven.cs.som.annotate.Basic;
 import be.kuleuven.cs.som.annotate.Raw;
-import hillbillies.expressions.BasicExpression;
+import hillbillies.expressions.Expression;
 import hillbillies.model.Boulder;
 import hillbillies.model.Faction;
 import hillbillies.model.Objects;
 
-public abstract class Position extends BasicExpression {
-
-	@Override
-	public boolean isMutable() {
-		return true;
-	}
-
-	@Override
-	public boolean equals(Object other) {
-	//	return Arrays.equals(this.getposition, other.getposition)
-		return false;
-	}
+public abstract class Position<T> extends Expression<T> {
 	
 	// controleer bij uitvoer
 	public Integer[] get(Set<?> set){
 		for (Object obj: set){
-			IntToInteger(((Objects) obj).getCubeCoordinate());
+			return IntToInteger(((Objects) obj).getCubeCoordinate());
 		}
 		return null;
 	}

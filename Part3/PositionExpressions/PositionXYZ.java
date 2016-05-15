@@ -1,17 +1,23 @@
 package hillbillies.positionExpressions;
 
 
-public class PositionXYZ extends Position {
+public class PositionXYZ<T> extends Position<T> {
 
 	public PositionXYZ(int x, int y, int z){
 		int[] pos = {x,y,z};
-		this.position = IntToInteger(pos);
+		this.position = (T) IntToInteger(pos);
 	}
 	
-	public Integer[] position;
+	public T position;
+	
 	@Override
-	public Integer[] getResult() {
+	public T getResult() {
 		return this.position;
+	}
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionXYZ<?>)
+				&& (getResult() == ((PositionXYZ<T>) other).getResult());
 	}
 
 	

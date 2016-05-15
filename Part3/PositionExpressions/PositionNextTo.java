@@ -5,9 +5,9 @@ import java.util.Set;
 
 import hillbillies.expressions.Expression;
 
-public class PositionNextTo extends Position {
+public class PositionNextTo<T> extends Position<T> {
 
-	public PositionNextTo(Expression position){
+	public PositionNextTo(Expression<?> position){
 		Integer[] pos = (Integer[]) position.getResult();
 		Set<int[]> neighbors = new HashSet<int[]>();
 		for (int i = -1; i<= 1; i++){
@@ -26,6 +26,12 @@ public class PositionNextTo extends Position {
 	@Override
 	public Integer[] getResult() {
 		return this.nextTo;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionNextTo<?>)
+				&& (getResult() == ((PositionNextTo<T>) other).getResult());
 	}
 	
 

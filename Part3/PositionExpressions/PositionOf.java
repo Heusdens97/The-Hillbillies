@@ -2,17 +2,23 @@ package hillbillies.positionExpressions;
 
 import hillbillies.expressions.Expression;
 
-public class PositionOf extends Position {
+public class PositionOf<T> extends Position<T> {
 
-	public PositionOf(Expression position){
-		this.position = (Integer[]) position.getResult();
+	public PositionOf(Expression<?> unit){
+		this.position = (T) unit.getResult();
 	}
 	
-	public Integer[] position;
+	public T position;
 	
 	@Override
-	public Integer[] getResult() {
+	public T getResult() {
 		return this.position;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionOf<?>)
+				&& (getResult() == ((PositionOf<T>) other).getResult());
 	}
 
 }

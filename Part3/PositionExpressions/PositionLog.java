@@ -3,7 +3,7 @@ package hillbillies.positionExpressions;
 import hillbillies.model.*;
 import ogp.framework.util.ModelException;
 
-public class PositionLog extends Position {
+public class PositionLog<T> extends Position<T> {
 
 	public PositionLog(){
 		if (Faction.world.logs.isEmpty())
@@ -34,6 +34,11 @@ public class PositionLog extends Position {
 		return this.log;
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionLog<?>)
+				&& (getResult() == ((PositionLog<T>) other).getResult());
+	}
 	
 
 }
