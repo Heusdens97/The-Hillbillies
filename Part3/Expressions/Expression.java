@@ -1,44 +1,13 @@
 package hillbillies.expressions;
 
-import hillbillies.part3.programs.SourceLocation;
+import hillbillies.model.Statement;
 
-public abstract class Expression {
+public abstract class Expression<T> extends Statement<T>{
 	
-	/**
-	 * Check whether this expression has the given expression as one
-	 * of its subexpressions.
-	 *
-	 * @param  expression
-	 *         The expression to be checked.
-	 * @return True if the given expression is the same expression as this
-	 *         expression.
-	 *       | if (expression == this)
-	 *       |   then result == true
-	 * @return False if the given expression is not effective.
-	 *       | if (expression == null)
-	 *       |   then result == false
-	 * @note   This method illustrates partial specifications of methods. At this
-	 *         level, the effect of the method is only defined in 2 cases. All
-	 *         other cases must be worked out at the lower levels of the hierarchy.
-	 */
-	public abstract boolean hasAsSubExpression(Expression expression);
-
 	/**
 	 * Return the value of this expression.
 	 */
 	public abstract Object getResult();
-
-	/**
-	 * Check whether the state of this expression can be changed.
-	 * 
-	 * @note   This inspector is best avoided in languages fully supporting
-	 *         multiple inheritance. Then, mutable expression will inherit
-	 *         from an abstract class of mutable expressions introducing a.o.
-	 *         a method setValue, and a preliminary definition of cloning.
-	 *         An abstract class of immutable expressions might also be defined
-	 *         then, introducing a final version of cloning.
-	 */
-	public abstract boolean isMutable();
 
 	/**
 	 * Check whether this expression is equal to the given object.
@@ -69,42 +38,11 @@ public abstract class Expression {
 	@Override
 	public abstract boolean equals(Object other);
 	
-	/**
-	 * Return a clone of this expression.
-	 * 
-	 * @return The resulting expression is identical to this expression.
-	 *       | result.isIdenticalTo(this)
-	 * @return The resulting expression is the same as this expression
-	 *         if and only if this expression is immutable.
-	 *       | (result == this) == (! this.isMutable())
-	 */
-	@Override
-	public Expression clone() {
-		try {
-			if (isMutable())
-				return (Expression) super.clone();
-			else
-				return this;
-		} catch (CloneNotSupportedException exc) {
-			assert false;
-			return null;
-		}
-	}
-
-	/**
-	 * Return the hash code of this expression.
-	 */
-	@Override
-	public int hashCode() {
-		if (! this.isMutable())
-			return (int) getResult();
-		else
-			return super.hashCode();
-	}
-	
 	
 	//mogelijkheden:
 	//	- extra functie toevoegen getBoolean voor de composedExpressions
 	//	- principe van liskov toepassen op getValue met Object, Long en Boolean
+	//  - generics
+	//  - interfaces maken met generics voor Unit, Position, etc en dan iplements I...<Unit>
 
 }

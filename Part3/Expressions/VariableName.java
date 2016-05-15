@@ -3,7 +3,7 @@ package hillbillies.expressions;
 import be.kuleuven.cs.som.annotate.Basic;
 import be.kuleuven.cs.som.annotate.Immutable;
 
-public class VariableName extends BasicExpression {
+public class VariableName<T> extends Expression<T> {
 
 	/**
 	 * Initialize this new integer  with given name.
@@ -14,7 +14,7 @@ public class VariableName extends BasicExpression {
 	 *         the given name.
 	 *       | new.getname() == name
 	 */
-	public VariableName(String name) {
+	public VariableName(T name) {
 		this.name = name;
 	}
 
@@ -45,14 +45,14 @@ public class VariableName extends BasicExpression {
 	 */
 	@Override
 	@Basic @Immutable
-	public String getResult() {
+	public T getResult() {
 		return name;
 	}
 
 	/**
 	 * Variable registering the name of this integer .
 	 */
-	private final String name;
+	private final T name;
 
 	/**
 	 * Check whether this integer  is equal to the given
@@ -67,18 +67,7 @@ public class VariableName extends BasicExpression {
 	 */
 	@Override
 	public boolean equals(Object other) {
-		return (other instanceof VariableName)
-				&& (getResult() == ((VariableName) other).getResult());
-	}
-
-	/**
-	 * Check whether the state of this integer  can be changed.
-	 * 
-	 * @return Always false.
-	 *       | result == false
-	 */
-	@Override
-	public final boolean isMutable() {
-		return false;
+		return (other instanceof VariableName<?>)
+				&& (getResult() == ((VariableName<T>) other).getResult());
 	}
 }
