@@ -13,19 +13,29 @@ public class UnitEnemy<T> extends UnitExpression<T> {
 		while (fac.equals(unit.getFaction())){
 			fac = (Faction) get(Faction.world.activeFactions);
 		}
-		this.unit = (T) get(fac.getUnitsOfFaction());
+		this.unitEnemy = (T) get(fac.getUnitsOfFaction());
 	}
 	
-	private T unit;
+	private T unitEnemy;
 	
 	@Override
 	public T getResult() {
-		return this.unit;
+		return this.unitEnemy;
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void execute() {
+		Faction fac = (Faction) get(getUnit().world.activeFactions);
+		Unit unit = getUnit();
+		while (fac.equals(unit.getFaction())){
+			fac = (Faction) get(Faction.world.activeFactions);
+		}
+		this.unitEnemy = (T) get(fac.getUnitsOfFaction());
 	}
 }

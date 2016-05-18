@@ -14,5 +14,5 @@ public abstract class UnitExpression<T> extends Expression<T> {
 		}
 		return null;
 	}
-
+//TODO equals aanvullen #fancy
 }

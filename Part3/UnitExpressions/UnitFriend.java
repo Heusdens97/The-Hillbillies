@@ -6,18 +6,31 @@ import ogp.framework.util.ModelException;
 
 public class UnitFriend<T> extends UnitExpression<T> {
 	
-	public UnitFriend(){
-		if (Faction.world.worldMembers.isEmpty()){
+	public T friend;
+	
+	@Override
+	public T getResult() {
+		return this.friend;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void execute() {
+		if (getUnit().world.worldMembers.isEmpty()){
 			try {
 				throw new ModelException();
 			} catch (ModelException e) {
-				System.out.println("no Ts available");
+				System.out.println("no units available");
 				e.printStackTrace();
 			}
 		}
 		else{
-			Expression<T> unitthis = new UnitThis<T>();
-			Unit unit = (Unit) unitthis.getResult();
+			Unit unit = getUnit();
 			Faction faction = unit.getFaction();
 			if (faction.members.size() > 1){
 				for (Unit u: faction.members){
@@ -35,18 +48,6 @@ public class UnitFriend<T> extends UnitExpression<T> {
 				}
 			}
 		}
-	}
-	
-	public T friend;
-	
-	@Override
-	public T getResult() {
-		return this.friend;
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
+		
 	}
 }
