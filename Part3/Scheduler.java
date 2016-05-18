@@ -15,11 +15,11 @@ public class Scheduler {
 	
 	public List<Task> tasks = new ArrayList<>();
 	
-	public void AddTask(Task task){
+	public void addTask(Task task){
 		tasks.add(task);
 	}
 	
-	private void RemoveTask(Task task){
+	public void removeTask(Task task){
 		tasks.remove(task);
 	}
 	

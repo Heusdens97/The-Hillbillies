@@ -1,7 +1,9 @@
 package hillbillies.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import hillbillies.expressions.Expression;
+import hillbillies.statements.Statement;
 
 public class Task {
 	
@@ -71,6 +73,7 @@ public class Task {
 
 	public void setUnit(Unit unit) {
 		this.unit = unit;
+		statement.setUnit(unit);
 	}
 	
 	private World world;
@@ -94,6 +97,18 @@ public class Task {
 			}
 		}
 		return schedulers;
+	}
+	
+	public Map<String,Expression<?>> assignment = new HashMap<String,Expression<?>>();
+	public List<Statement> sequence = new ArrayList<Statement>();
+	private boolean complete;
+
+	public boolean isComplete() {
+		return complete;
+	}
+
+	public void setComplete(boolean complete) {
+		this.complete = complete;
 	}
 	
 	

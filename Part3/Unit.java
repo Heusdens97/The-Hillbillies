@@ -4,6 +4,11 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
+import hillbillies.positionExpressions.PositionHere;
+import hillbillies.positionExpressions.PositionSelected;
+import hillbillies.statements.Statement;
+import hillbillies.statements.StatementWithPosition;
+import hillbillies.statements.StatementWithUnit;
 import hillbillies.expressions.Expression;
 import hillbillies.model.Faction;
 
@@ -707,7 +712,7 @@ public class Unit {
 			}
 		}
 		advanceTime_Moving(dt);
-		if (isDefaultBehaviourEnabled()&&(!isMoving())&&(!isMovingToWork)&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()))
+		if (isDefaultBehaviourEnabled()&& CheckExecuteDefaultBeh())
 			setDefaultBehaviourEnabled(true);
 		if (((isWorking()||isMovingToWork))&&(!isMoving()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2]))){
 			if (isWorking())
@@ -717,9 +722,48 @@ public class Unit {
 			int z = workat[2];
 			workAt(x, y, z);
 		}
-		
 		advanceTime_levelUp();
+		taskExecute(dt);
+		if (isExecutingTask){
+			if (!isWorking()&&!isResting()&&!isMoving()&&!isAttacking()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
+				isExecutingTask = false;
+				if (getTask().isComplete())
+					getFaction().getScheduler().removeTask(getTask());
+			}
+		}
 	}
+	
+	private boolean CheckExecuteDefaultBeh(){
+		return ((!isMoving())&&(!isMovingToWork)&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()));
+	}
+	
+	private void taskExecute(double dt){
+		int AmountOfStatement = (int) ((int) dt/executingOneStatement);
+		if (this.getTask() != null){
+			Statement statement = this.getTask().getStatement();
+			if (getTask().sequence.isEmpty())
+				statement.execute();
+			List<Statement> sequenceToExcecute = getTask().sequence;
+			
+			for (Iterator<Statement> i = sequenceToExcecute.iterator(); i.hasNext();) {
+			    Statement s = i.next();
+				if (!isExecutingTask && s!=null){
+					getTask().getStatement().executing = null;
+					s.execute();
+					this.isExecutingTask = true;
+					System.out.println("task");
+					if (getTask().isComplete())
+						i.remove();
+				} else{
+					break;
+				}
+			}
+		}
+	}
+	
+	private boolean isExecutingTask;
+	
+	private final static double executingOneStatement = 0.001;
 	
 	private int[] workat;
 	
@@ -727,6 +771,7 @@ public class Unit {
 	
 	private int z_falling;
 
+	// z=0 probleem
 	private void fall() {
 		if (!startfalling){
 			this.z_falling= this.getCubeCoordinate()[2];
@@ -1095,7 +1140,6 @@ public class Unit {
 	 * the unit starts working.
 	 */
 	public void workAt(int x, int y, int z){ 
-		//pathfinding met workat is soms nogal raar?
 		try {
 			if (z == 0)
 				throw new ModelException("Not allowed to work at level 0");
@@ -1449,95 +1493,94 @@ public class Unit {
 	 * @throws ModelException 
 	 */
 	private void startDefaultBehaviour() {
-		if (this.getFaction().getScheduler().tasks.isEmpty()){
-			if ((!isWorking())&& (!isResting())&&(!isMoving())){
+		if ((!isWorking())&& (!isResting())&&(!isMoving())&&(!isExecutingTask)){
+			if (this.getFaction().getScheduler().tasks.isEmpty()){
 				this.defaultBehaviour = true;
 				boolean checker = true;
 				Random rand = new Random();
 				while (checker){
 					int randomNumber = rand.nextInt(4);
 					switch (randomNumber){
-						case 0:
-							if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
-								rest();
-								System.out.println("rest");
+					case 0:
+						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
+							rest();
+							System.out.println("rest");
+							checker = false;
+							break;
+						}
+						break;
+					case 1:
+						int x = rand.nextInt(getMaxSize());
+						int y = rand.nextInt(getMaxSize());
+						int z = rand.nextInt(getMaxSize());
+						int [] pos = {x,y,z};
+						calculatePathTo(pos);
+						while ((z== 0)||(path == null)){
+							x = rand.nextInt(getMaxSize());
+							y = rand.nextInt(getMaxSize());
+							z = rand.nextInt(getMaxSize());
+							pos[0] = x;
+							pos[1] = y;
+							pos[2] = z;
+							calculatePathTo(pos);
+						}
+						workAt(x, y, z);
+						System.out.println("work at " + x +" "+ y +" "+ z);
+						checker = false;
+						break;
+					case 2:
+						int randomx = rand.nextInt(getMaxSize());
+						int randomy = rand.nextInt(getMaxSize());
+						int randomz = rand.nextInt(getMaxSize());
+						int[] randompos = {randomx, randomy, randomz};
+						calculatePathTo(randompos);
+						while ((!world.isPassableTerrain(randompos))||(path==null)){
+							randomx = rand.nextInt(getMaxSize());
+							randomy = rand.nextInt(getMaxSize());
+							randomz = rand.nextInt(getMaxSize());
+							randompos[0] = randomx;
+							randompos[1] = randomy;
+							randompos[2] = randomz;
+							calculatePathTo(randompos);
+						}
+						moveTo(randompos);
+						randomSprinting(rand);
+						checker = false;
+						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
+						break;
+					case 3:
+						for (Unit unit: world.worldMembers){
+							if (unit.faction != this.faction){
+								int[] cube = unit.getCubeCoordinate();
+								this.defender = unit;
+								int[] positionToGo = positionNearCube(cube);
+								calculatePathTo(positionToGo);
+								if (path == null){
+									continue;
+								}
+								this.moveTo(positionToGo);
+								randomSprinting(rand);
+								this.isAttackingDefaultBehaviour = true;
+								System.out.println("fight at " + positionToGo[0] + " " + positionToGo[1] + " " + positionToGo[2] );
 								checker = false;
 								break;
 							}
-							break;
-						case 1:
-							int x = rand.nextInt(getMaxSize());
-							int y = rand.nextInt(getMaxSize());
-							int z = rand.nextInt(getMaxSize());
-							int [] pos = {x,y,z};
-							calculatePathTo(pos);
-							while ((z== 0)||(path == null)){
-								x = rand.nextInt(getMaxSize());
-								y = rand.nextInt(getMaxSize());
-								z = rand.nextInt(getMaxSize());
-								pos[0] = x;
-								pos[1] = y;
-								pos[2] = z;
-								calculatePathTo(pos);
-							}
-							workAt(x, y, z);
-							System.out.println("work at " + x +" "+ y +" "+ z);
-							checker = false;
-							break;
-						case 2:
-							int randomx = rand.nextInt(getMaxSize());
-							int randomy = rand.nextInt(getMaxSize());
-							int randomz = rand.nextInt(getMaxSize());
-							int[] randompos = {randomx, randomy, randomz};
-							calculatePathTo(randompos);
-							while ((!world.isPassableTerrain(randompos))||(path==null)){
-								randomx = rand.nextInt(getMaxSize());
-								randomy = rand.nextInt(getMaxSize());
-								randomz = rand.nextInt(getMaxSize());
-								randompos[0] = randomx;
-								randompos[1] = randomy;
-								randompos[2] = randomz;
-								calculatePathTo(randompos);
-							}
-							moveTo(randompos);
-							randomSprinting(rand);
-							checker = false;
-							System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
-							break;
-						case 3:
-							for (Unit unit: world.worldMembers){
-								if (unit.faction != this.faction){
-									int[] cube = unit.getCubeCoordinate();
-									this.defender = unit;
-									int[] positionToGo = positionNearCube(cube);
-									calculatePathTo(positionToGo);
-									if (path == null){
-										continue;
-									}
-									this.moveTo(positionToGo);
-									randomSprinting(rand);
-									this.isAttackingDefaultBehaviour = true;
-									System.out.println("fight at " + positionToGo[0] + " " + positionToGo[1] + " " + positionToGo[2] );
-									checker = false;
-									break;
-								}
-							}
-							break;		
+						}
+						break;		
 					}
 				}
-			}
-		} else {
-			Task task = this.getFaction().getScheduler().getAllTasksIterator().next();
+			} else {
 			Iterator<Task> i = this.getFaction().getScheduler().getAllTasksIterator();
+			Task task = i.next();
 			while (!task.isAvailable() && i.hasNext()){
-				task = this.getFaction().getScheduler().getAllTasksIterator().next();
+				task = i.next();
 			}
 			task.setAvailable(false);
 			task.setUnit(this);
 			task.setWorld(getWorld());
 			this.setTask(task);
+			}
 		}
-		
 	}
 	
 	private Task task;
