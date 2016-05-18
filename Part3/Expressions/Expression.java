@@ -1,13 +1,14 @@
 package hillbillies.expressions;
 
-import hillbillies.model.Statement;
+import hillbillies.model.Unit;
+import hillbillies.statements.Statement;
 
-public abstract class Expression<T> extends Statement<T>{
+public abstract class Expression<T> extends Statement{
 	
 	/**
 	 * Return the value of this expression.
 	 */
-	public abstract Object getResult();
+	public abstract T getResult();
 
 	/**
 	 * Check whether this expression is equal to the given object.

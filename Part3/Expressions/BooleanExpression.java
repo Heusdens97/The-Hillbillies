@@ -22,4 +22,9 @@ public class BooleanExpression<T> extends Expression<T> {
 		return (other instanceof BooleanExpression<?>)
 				&& (getResult() == ((BooleanExpression<T>) other).getResult());
 	}
+
+	@Override
+	public void execute() {
+		//niet nodig
+	}
 }

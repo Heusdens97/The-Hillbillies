@@ -18,28 +18,6 @@ public class VariableName<T> extends Expression<T> {
 		this.name = name;
 	}
 
-//	/**
-//	 * Initialize this new integer  with name 0.
-//	 *
-//	 * @effect This new integer  is initialized with 0
-//	 *         as its name.
-//	 *       | this(0)
-//	 */
-//	public Integer() {
-//		// We must explicitly initialize the final instance variable name in
-//		// this constructor, either in a direct way or in an indirect way.
-//		this(0);
-//	}
-//
-//	/**
-//	 * Constant referencing a predefined integer  with name 0.
-//	 * 
-//	 * @invar  The constant references an effective integer ,
-//	 *         whose name is 0.
-//	 *       | ZERO.getname() == 0
-//	 */
-//	public final static Integer ZERO = new Integer();
-
 	/**
 	 * Return the name of this integer .
 	 */
@@ -69,5 +47,11 @@ public class VariableName<T> extends Expression<T> {
 	public boolean equals(Object other) {
 		return (other instanceof VariableName<?>)
 				&& (getResult() == ((VariableName<T>) other).getResult());
+	}
+
+	@Override
+	public void execute() {
+		//niet nodig;
+		
 	}
 }
