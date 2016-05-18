@@ -13,9 +13,9 @@ import hillbillies.model.Objects;
 public abstract class Position<T> extends Expression<T> {
 	
 	// controleer bij uitvoer
-	public Integer[] get(Set<?> set){
+	public Object get(Set<?> set){
 		for (Object obj: set){
-			return IntToInteger(((Objects) obj).getCubeCoordinate());
+			return obj;
 		}
 		return null;
 	}

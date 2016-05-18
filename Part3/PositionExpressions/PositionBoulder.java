@@ -5,9 +5,23 @@ import hillbillies.model.*;
 import ogp.framework.util.ModelException;
 
 public class PositionBoulder<T> extends Position<T> {
+	
+	public T boulder;
+	
+	@Override
+	public T getResult() {
+		return this.boulder;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return (other instanceof PositionBoulder<?>)
+				&& (getResult() == ((PositionBoulder<T>) other).getResult());
+	}
 
-	public PositionBoulder(){
-		if (Faction.world.boulders.isEmpty())
+	@Override
+	public void execute() {
+		if (getUnit().world.boulders.isEmpty())
 			try {
 				throw new ModelException();
 			} catch (ModelException e) {
@@ -25,21 +39,8 @@ public class PositionBoulder<T> extends Position<T> {
 //				this.boulder = newArray;
 //				break;
 //			}
-			this.boulder = (T) get(Faction.world.boulders);
+			this.boulder = (T) get(getUnit().world.boulders);
 		}
-	}
-	
-	public T boulder;
-	
-	@Override
-	public T getResult() {
-		return this.boulder;
-	}
-	
-	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionBoulder<?>)
-				&& (getResult() == ((PositionBoulder<T>) other).getResult());
 	}
 	
 
