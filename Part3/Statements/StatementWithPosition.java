@@ -6,9 +6,7 @@ public class StatementWithPosition extends Statement {
 
 	public StatementWithPosition(Expression<?> position) {
 		setExpression(position);
-		setPosition((int[]) position.getResult());
 	}
-	
 	
 	public Expression<?> expression;
 	

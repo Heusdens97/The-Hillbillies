@@ -27,10 +27,12 @@ public class StatementWhile extends Statement {
 	@Override
 	public void execute() {
 		getCondition().unit = unit;
-		getBody().unit = unit;
 		getCondition().execute();
-		getBody().execute();
-		getUnit().getTask().sequence.add(this);	
+		if (condition.getResult().equals(true)){
+			getBody().unit = unit;
+			getUnit().getTask().sequence.add(getBody());
+			getUnit().getTask().sequence.add(this);
+		}
 	}
 	
 }

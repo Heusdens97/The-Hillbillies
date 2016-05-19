@@ -5,6 +5,7 @@ import javax.sound.midi.Sequence;
 import hillbillies.expressions.Expression;
 
 public class StatementIf extends Statement {
+	
 	public StatementIf(Expression<?> condition, Statement ifBody, Statement elseBody) {
 		setCondition(condition);
 		setIfbody(ifBody);
@@ -46,12 +47,10 @@ public class StatementIf extends Statement {
 		if (condition.getResult().equals(true)){
 			getIfbody().unit = unit;
 			getUnit().getTask().sequence.add(getIfbody());
-			//getIfbody().execute();
 		} else {
 			if (getElsebody() != null){
 				getElsebody().unit = unit;
 				getUnit().getTask().sequence.add(getElsebody());
-			//	getElsebody().execute();
 			}
 		}
 		

@@ -5,13 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import hillbillies.model.*;
-import hillbillies.part2.facade.Facade;
-import hillbillies.part2.listener.DefaultTerrainChangeListener;
-import ogp.framework.util.ModelException;
 
 public abstract class Statement implements Serializable {
 	

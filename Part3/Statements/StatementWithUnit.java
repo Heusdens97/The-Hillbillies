@@ -8,7 +8,6 @@ import hillbillies.model.Unit;
 public class StatementWithUnit extends Statement {
 
 	public StatementWithUnit(Expression<?> unitToFollow) {
-		setfollowUnit((Unit) unitToFollow.getResult());
 		setExpression(unitToFollow);
 	}
 	
@@ -34,9 +33,9 @@ public class StatementWithUnit extends Statement {
 		setfollowUnit((Unit) getExpression().getResult());
 		int[] posToGo = followUnit.getCubeCoordinate();
 		getUnit().setExecutingTask(true);
-		while (!Arrays.equals(getUnit().getCubeCoordinate(), followUnit.getCubeCoordinate())){
+		if (!Arrays.equals(getUnit().getCubeCoordinate(), posToGo)){
 			getUnit().moveTo(posToGo);
-			posToGo = followUnit.getCubeCoordinate();
+			getUnit().getTask().sequence.add(this);
 		}
 	}
 	

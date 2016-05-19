@@ -26,10 +26,16 @@ public class StatementSequence extends Statement {
 				if (!getUnit().isExecutingTask()){
 					Statement s = i.next();
 					s.unit = unit;
-					s.execute();
+//					if (!(s instanceof StatementSequence)) {
+//						s.execute();
+//					} else {
+//						getUnit().getTask().sequence.add(s);
+//					}
 					if (!(s instanceof StatementSequence)){
+						s.execute();
 						i.remove();
 					} else if (s instanceof StatementSequence){
+						getUnit().getTask().sequence.add(s);
 						if (((StatementSequence) s).getSequence().isEmpty()){
 							i.remove();
 						}
@@ -38,13 +44,5 @@ public class StatementSequence extends Statement {
 					break;
 				}
 			}
-//			for (Statement s: sequence){
-//				s.unit = unit;
-//				s.execute();
-//				if (!(s instanceof StatementSequence))
-//					sequence.remove(s);
-////				if (s instanceof StatementWithPosition || s instanceof StatementWithUnit )
-////					getUnit().getTask().setExecuting(s);
-//			}
 		}
 }

@@ -31,6 +31,7 @@ public class StatementAssignment extends Statement {
 	public void execute(){
 		getValue().unit = unit;
 		getValue().execute();
-		getUnit().getTask().assignment.put(getVariableName(), getValue());
+		getUnit().getTask().assignment.put(getVariableName(), getValue().getResult());
+		
 	}
 }
