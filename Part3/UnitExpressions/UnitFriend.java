@@ -13,11 +13,6 @@ public class UnitFriend<T> extends UnitExpression<T> {
 		return this.friend;
 	}
 
-	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
 	public void execute() {
@@ -32,21 +27,24 @@ public class UnitFriend<T> extends UnitExpression<T> {
 		else{
 			Unit unit = getUnit();
 			Faction faction = unit.getFaction();
+			double distance = Double.POSITIVE_INFINITY;
+			Unit min = null;
 			if (faction.members.size() > 1){
 				for (Unit u: faction.members){
-					if (u != unit){
-						this.friend = (T) u;
-						break;
+					if (u != unit && distanceOf(getUnit().getCubeCoordinate(), u.getCubeCoordinate())< distance){
+						distance = distanceOf(getUnit().getCubeCoordinate(), u.getCubeCoordinate());
+						min = u;
 					}
 				}
 			} else {
 				try {
 					throw new ModelException();
 				} catch (ModelException e) {
-					System.out.println("he is his own friend");
+					System.out.println("only one member in his faction, so he is his own friend");
 					e.printStackTrace();
 				}
 			}
+			this.friend = (T) unit;
 		}
 		
 	}

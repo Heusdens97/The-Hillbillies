@@ -6,16 +6,6 @@ import hillbillies.model.Unit;
 
 public class UnitEnemy<T> extends UnitExpression<T> {
 	
-	public UnitEnemy(){
-		Faction fac = (Faction) get(Faction.world.activeFactions);
-		Expression<T> unitthis = new UnitThis<T>();
-		Unit unit = (Unit) unitthis.getResult();
-		while (fac.equals(unit.getFaction())){
-			fac = (Faction) get(Faction.world.activeFactions);
-		}
-		this.unitEnemy = (T) get(fac.getUnitsOfFaction());
-	}
-	
 	private T unitEnemy;
 	
 	@Override
@@ -24,18 +14,15 @@ public class UnitEnemy<T> extends UnitExpression<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public void execute() {
-		Faction fac = (Faction) get(getUnit().world.activeFactions);
-		Unit unit = getUnit();
-		while (fac.equals(unit.getFaction())){
-			fac = (Faction) get(Faction.world.activeFactions);
+		double distance = Double.POSITIVE_INFINITY;
+		Unit min = null;
+		for (Unit unit: getUnit().getWorld().worldMembers){
+			if (distanceOf(getUnit().getCubeCoordinate(), unit.getCubeCoordinate())< distance && !unit.getFaction().equals(getUnit().getFaction())){
+				distance = distanceOf(getUnit().getCubeCoordinate(),unit.getCubeCoordinate());
+				min = unit;
+			}
 		}
-		this.unitEnemy = (T) get(fac.getUnitsOfFaction());
+		this.unitEnemy = (T) min;
 	}
 }

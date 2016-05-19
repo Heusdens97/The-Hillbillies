@@ -30,12 +30,6 @@ public class UnitAttribute<T> extends UnitExpression<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public void execute() {
 		getExpression().unit = unit;
 		getExpression().execute();

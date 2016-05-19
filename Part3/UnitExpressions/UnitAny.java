@@ -1,5 +1,7 @@
 package hillbillies.unitExpressions;
 
+import hillbillies.model.Unit;
+
 public class UnitAny<T> extends UnitExpression<T> {
 	
 	@Override
@@ -9,18 +11,20 @@ public class UnitAny<T> extends UnitExpression<T> {
 	
 	private T unitAny;
 	
-	public void setUnit(T unit){
+	public void setAnyUnit(T unit){
 		this.unitAny = unit;
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 	
 	@Override
 	public void execute() {
-		setUnit((T)get(getUnit().world.worldMembers));
+		Unit min = null;
+		double distance = Double.POSITIVE_INFINITY;
+		for (Unit unit: getUnit().getWorld().worldMembers){
+			if (distanceOf(getUnit().getCubeCoordinate(), unit.getCubeCoordinate())< distance){
+				distance = distanceOf(getUnit().getCubeCoordinate(),unit.getCubeCoordinate());
+				min = unit;
+			}
+		}
+		setAnyUnit((T)min);
 	}
 }

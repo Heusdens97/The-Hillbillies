@@ -17,12 +17,6 @@ public class UnitThis<T> extends UnitExpression<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public void execute() {
 		setUnit(getUnit());
 	}
