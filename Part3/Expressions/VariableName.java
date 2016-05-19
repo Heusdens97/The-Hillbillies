@@ -14,44 +14,38 @@ public class VariableName<T> extends Expression<T> {
 	 *         the given name.
 	 *       | new.getname() == name
 	 */
-	public VariableName(T name) {
+	public VariableName(String name) {
 		this.name = name;
 	}
-
+	
 	/**
 	 * Return the name of this integer .
 	 */
-	@Override
-	@Basic @Immutable
-	public T getResult() {
+	public String getName() {
 		return name;
 	}
 
 	/**
 	 * Variable registering the name of this integer .
 	 */
-	private final T name;
-
-	/**
-	 * Check whether this integer  is equal to the given
-	 * object.
-	 *
-	 * @returnTrue if and only if the other object is an effective
-	 *         integer , whose name is equal to the name
-	 *         of this integer .
-	 *       | result ==
-	 *       |   (other instanceof Integer) &&
-	 *       |   (this.getname() == ((Integer)other).getname())
-	 */
-	@Override
-	public boolean equals(Object other) {
-		return (other instanceof VariableName<?>)
-				&& (getResult() == ((VariableName<T>) other).getResult());
-	}
+	private final String name;
+	
+	private T result;
 
 	@Override
 	public void execute() {
-		//niet nodig;
+		if (getUnit().getTask().assignment.containsKey(getName())){
+			setResult((T)getUnit().getTask().assignment.get(getName()));
+		}
 		
+	}
+
+	public void setResult(T result) {
+		this.result = result;
+	}
+
+	@Override
+	public T getResult() {
+		return this.result;
 	}
 }

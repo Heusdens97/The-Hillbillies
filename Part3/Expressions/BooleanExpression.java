@@ -18,12 +18,6 @@ public class BooleanExpression<T> extends Expression<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		return (other instanceof BooleanExpression<?>)
-				&& (getResult() == ((BooleanExpression<T>) other).getResult());
-	}
-
-	@Override
 	public void execute() {
 		//niet nodig
 	}
