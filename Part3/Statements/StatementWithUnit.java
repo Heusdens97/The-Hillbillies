@@ -33,6 +33,7 @@ public class StatementWithUnit extends Statement {
 		getExpression().execute();
 		setfollowUnit((Unit) getExpression().getResult());
 		int[] posToGo = followUnit.getCubeCoordinate();
+		getUnit().setExecutingTask(true);
 		while (!Arrays.equals(getUnit().getCubeCoordinate(), followUnit.getCubeCoordinate())){
 			getUnit().moveTo(posToGo);
 			posToGo = followUnit.getCubeCoordinate();

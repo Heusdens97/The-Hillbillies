@@ -31,6 +31,7 @@ public class StatementWithPosition extends Statement {
 		getExpression().unit = unit;
 		getExpression().execute();
 		setPosition((int[]) getExpression().getResult());
+		getUnit().setExecutingTask(true);
 		getUnit().workAt(pos[0], pos[1], pos[2]);
 	}
 }

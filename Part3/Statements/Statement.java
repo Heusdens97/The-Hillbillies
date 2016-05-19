@@ -1,5 +1,10 @@
 package hillbillies.statements;	
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +13,7 @@ import hillbillies.part2.facade.Facade;
 import hillbillies.part2.listener.DefaultTerrainChangeListener;
 import ogp.framework.util.ModelException;
 
-public abstract class Statement{
+public abstract class Statement implements Serializable {
 	
 	public Unit unit;
 
@@ -22,6 +27,27 @@ public abstract class Statement{
 	
 	public abstract void execute();
 	
-	public Statement executing;
+	/**
+	 * 
+	 * Makes a deepclone of an object. We assume ....
+	 * 
+	 * source: http://alvinalexander.com/java/java-deep-clone-example-source-code
+	 * 
+	 * @return
+	 */
+	public Object deepClone() {
+		   try {
+		     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		     ObjectOutputStream oos = new ObjectOutputStream(baos);
+		     oos.writeObject(this);
+		     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		     ObjectInputStream ois = new ObjectInputStream(bais);
+		     return ois.readObject();
+		   }
+		   catch (Exception e) {
+		     e.printStackTrace();
+		     return null;
+		   }
+		 }
 	
 }
