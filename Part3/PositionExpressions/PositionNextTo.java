@@ -1,7 +1,8 @@
-	package hillbillies.positionExpressions;
+package hillbillies.positionExpressions;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import hillbillies.expressions.Expression;
 
@@ -28,18 +29,11 @@ public class PositionNextTo<T> extends Position<T> {
 	}
 	
 	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionNextTo<?>)
-				&& (getResult() == ((PositionNextTo<T>) other).getResult());
-	}
-
-	@Override
 	public void execute() {
 		getExpression().unit = unit;
 		getExpression().execute();
-		//System.out.println(getExpression().getResult());
 		int[] pos = (int[]) getExpression().getResult();
-		Set<int[]> neighbors = new HashSet<int[]>();
+		List<int[]> neighbors = new ArrayList<int[]>();
 		for (int i = -1; i<= 1; i++){
 			for (int j = -1; j<= 1; j++){
 				int[] poss = {pos[0]+i, pos[1]+j,pos[2]};
@@ -48,8 +42,8 @@ public class PositionNextTo<T> extends Position<T> {
 				}
 			}
 		}
-		int[] neigh =  (int[]) get(neighbors);
-		this.nextTo = (T) neigh;
+		int random = new Random().nextInt(neighbors.size());
+		this.nextTo = (T) neighbors.get(random);
 	}
 	
 

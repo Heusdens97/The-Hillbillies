@@ -21,11 +21,7 @@ public class PositionXYZ<T> extends Position<T> {
 	public T getResult() {
 		return this.position;
 	}
-	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionXYZ<?>)
-				&& (getResult() == ((PositionXYZ<T>) other).getResult());
-	}
+	
 	@Override
 	public void execute() {
 		this.position = (T)(getPos());

@@ -11,24 +11,7 @@ import hillbillies.model.Faction;
 import hillbillies.model.Objects;
 
 public abstract class Position<T> extends Expression<T> {
-	
-	// controleer bij uitvoer
-	public Object get(Set<?> set){
-		for (Object obj: set){
-			return obj;
-		}
-		return null;
-	}
-	
-//	public Integer[] IntToInteger(int[] pos){
-//		int[] oldArray = pos;
-//		Integer[] newArray = new Integer[oldArray.length];
-//		int i = 0;
-//		for (int value : oldArray) {
-//		    newArray[i++] = Integer.valueOf(value);
-//		}
-//		return newArray;
-//	}
+
 	
 	/**
 	 * 
@@ -43,15 +26,10 @@ public abstract class Position<T> extends Expression<T> {
 	 */			
 	@Raw
 	public boolean isValidPosition(int[] position){
-		return (position[0]< getMaxSize() && position[0] >= 0) && (position[1]< getMaxSize() && position[1] >= 0) && (position[2]< getMaxSize() && position[2] >= 0);
+		return (position[0]< getUnit().getWorld().getX() && position[0] >= 0) && (position[1]< getUnit().getWorld().getY() && position[1] >= 0) && (position[2]< getUnit().getWorld().getZ() && position[2] >= 0);
 	}
-
-	/**
-	 * Return the maximal size of the game world.
-	 * 
-	 */
-	@Basic
-	public int getMaxSize(){
-		return Math.max(Faction.world.getX(), Math.max(Faction.world.getY(),Faction.world.getZ()));
+	
+	public double distanceOf(int[] pos1, int[] pos2){
+		return Math.sqrt(Math.pow((pos2[0]-pos1[0]),2)+Math.pow((pos2[1]-pos1[1]),2)+Math.pow((pos2[2]-pos1[2]),2));
 	}
 }

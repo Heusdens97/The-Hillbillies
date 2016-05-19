@@ -16,12 +16,6 @@ public class PositionHere<T> extends Position<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionHere<?>)
-				&& (getResult() == ((PositionHere<T>) other).getResult());
-	}
-
-	@Override
 	public void execute() {
 		setHere((T)getUnit().getCubeCoordinate());
 		

@@ -12,12 +12,6 @@ public class PositionBoulder<T> extends Position<T> {
 	public T getResult() {
 		return this.boulder;
 	}
-	
-	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionBoulder<?>)
-				&& (getResult() == ((PositionBoulder<T>) other).getResult());
-	}
 
 	@Override
 	public void execute() {
@@ -29,17 +23,16 @@ public class PositionBoulder<T> extends Position<T> {
 				e.printStackTrace();
 			}
 		else{
-//			for (Boulder boulder: Faction.world.boulders){
-//				int[] oldArray = boulder.getCubeCoordinate();
-//				Integer[] newArray = new Integer[oldArray.length];
-//				int i = 0;
-//				for (int value : oldArray) {
-//				    newArray[i++] = Integer.valueOf(value);
-//				}
-//				this.boulder = newArray;
-//				break;
-//			}
-			this.boulder = (T) get(getUnit().world.boulders);
+			double distance = Double.POSITIVE_INFINITY;
+			Boulder boulder = null;
+			for (Boulder b : getUnit().world.boulders){
+				if (distanceOf(getUnit().getCubeCoordinate(), b.getCubeCoordinate())< distance){
+					distance = distanceOf(getUnit().getCubeCoordinate(),b.getCubeCoordinate());
+					boulder = b;
+				}
+			}
+			int[] oldArray = boulder.getCubeCoordinate();
+			this.boulder = (T)(oldArray);
 		}
 	}
 	

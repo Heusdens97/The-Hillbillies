@@ -31,12 +31,6 @@ public class PositionOf<T> extends Position<T> {
 	}
 	
 	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionOf<?>)
-				&& (getResult() == ((PositionOf<T>) other).getResult());
-	}
-
-	@Override
 	public void execute() {
 		Unit unitPos = getUnit();
 		setPosition((T)unitPos.getPosition());

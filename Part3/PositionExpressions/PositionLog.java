@@ -13,12 +13,6 @@ public class PositionLog<T> extends Position<T> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		return (other instanceof PositionLog<?>)
-				&& (getResult() == ((PositionLog<T>) other).getResult());
-	}
-
-	@Override
 	public void execute() {
 		if (getUnit().world.logs.isEmpty())
 			try {
@@ -28,11 +22,16 @@ public class PositionLog<T> extends Position<T> {
 				e.printStackTrace();
 			}
 		else{
-			for (Log log : getUnit().world.logs){
-				int[] oldArray = log.getCubeCoordinate();
-				this.log = (T)(oldArray);
-				break;
+			double distance = Double.POSITIVE_INFINITY;
+			Log log = null;
+			for (Log b : getUnit().world.logs){
+				if (distanceOf(getUnit().getCubeCoordinate(), b.getCubeCoordinate())< distance){
+					distance = distanceOf(getUnit().getCubeCoordinate(),b.getCubeCoordinate());
+					log = b;
+				}
 			}
+			int[] oldArray = log.getCubeCoordinate();
+			this.log = (T)(oldArray);
 		}
 	}
 	
