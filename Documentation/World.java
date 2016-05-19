@@ -11,7 +11,7 @@ import java.util.*;
 
 
 /**
- * 
+ * A class of a world involving the terrain.
  * 
  * @author	Bart Jacobs and Jordy Heusdens
  * @invar The time of the world must be a valid time for any world.
