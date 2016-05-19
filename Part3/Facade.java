@@ -367,8 +367,7 @@ public class Facade implements IFacade {
 	@Override @Deprecated
 	public Unit createUnit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Unit(name, initialPosition, weight, agility, strength, toughness, enableDefaultBehavior, null);
 	}
 
 }
