@@ -20,15 +20,15 @@ public abstract class Position<T> extends Expression<T> {
 		return null;
 	}
 	
-	public Integer[] IntToInteger(int[] pos){
-		int[] oldArray = pos;
-		Integer[] newArray = new Integer[oldArray.length];
-		int i = 0;
-		for (int value : oldArray) {
-		    newArray[i++] = Integer.valueOf(value);
-		}
-		return newArray;
-	}
+//	public Integer[] IntToInteger(int[] pos){
+//		int[] oldArray = pos;
+//		Integer[] newArray = new Integer[oldArray.length];
+//		int i = 0;
+//		for (int value : oldArray) {
+//		    newArray[i++] = Integer.valueOf(value);
+//		}
+//		return newArray;
+//	}
 	
 	/**
 	 * 

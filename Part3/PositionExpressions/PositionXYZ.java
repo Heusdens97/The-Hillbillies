@@ -28,7 +28,7 @@ public class PositionXYZ<T> extends Position<T> {
 	}
 	@Override
 	public void execute() {
-		this.position = (T) IntToInteger(getPos());
+		this.position = (T)(getPos());
 	}
 
 	

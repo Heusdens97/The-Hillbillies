@@ -30,7 +30,7 @@ public class PositionLog<T> extends Position<T> {
 		else{
 			for (Log log : getUnit().world.logs){
 				int[] oldArray = log.getCubeCoordinate();
-				this.log = (T) IntToInteger(oldArray);
+				this.log = (T)(oldArray);
 				break;
 			}
 		}

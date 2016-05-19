@@ -22,7 +22,7 @@ public class PositionWorkshop<T> extends Position<T> {
 				for (int k = 0; k < getUnit().world.getZ(); k++) {
 					if (World.TYPE_WORKSHOP == getUnit().world.getCubeType(i, j, k)){
 						int[] pos = {i,j,k};
-						this.position = (T) IntToInteger(pos);
+						this.position = (T)(pos);
 						break;
 					}
 				}
