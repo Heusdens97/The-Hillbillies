@@ -23,6 +23,7 @@ import java.util.*;
 public class World {
 	
 	/**
+	 * Initialize this new world with the next parameters
 	 * 
 	 * @param terrainTypes
 	 * 		A threedimensional matrix that saves the terrain type of each cube.	
