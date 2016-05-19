@@ -1,5 +1,6 @@
 package hillbillies.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,16 +12,20 @@ import hillbillies.positionExpressions.*;
 import hillbillies.statements.*;
 import hillbillies.unitExpressions.*;
 
-public class TaskFactory implements ITaskFactory<Expression<?>, Statement, Task>{
+public class TaskFactory implements Serializable,ITaskFactory<Expression<?>, Statement, Task>{
 
 	@Override
 	public List<Task> createTasks(String name, int priority, Statement activity, List<int[]> selectedCubes) {
 		
 		List<Task> adder = new ArrayList<Task>();
-		for (int[] pos: selectedCubes){	
-			adder.add(new Task(name,priority,activity,pos));
+		if (selectedCubes.size() > 0){
+			for (int[] pos: selectedCubes){	
+				Statement copyOfStatement = (Statement)activity.deepClone();
+				adder.add(new Task(name,priority,copyOfStatement,pos));
+			}
+		} else {
+			adder.add(new Task(name,priority, activity,null));
 		}
-		//zie comment selected
 		return adder;
 	}
 
@@ -64,8 +69,10 @@ public class TaskFactory implements ITaskFactory<Expression<?>, Statement, Task>
 				getExpression().unit = unit;
 				getExpression().execute();
 				setPosition((int[]) getExpression().getResult());
-				if (!Arrays.equals(pos, getUnit().getCubeCoordinate()))
+				if (!Arrays.equals(pos, getUnit().getCubeCoordinate())){
+					getUnit().setExecutingTask(true);
 					unit.moveTo(pos);
+				}
 			}
 		};
 	}
@@ -88,6 +95,7 @@ public class TaskFactory implements ITaskFactory<Expression<?>, Statement, Task>
 				getExpression().unit = unit;
 				getExpression().execute();
 				setfollowUnit((Unit) getExpression().getResult());
+				getUnit().setExecutingTask(true);
 				unit.fight(followUnit);
 			}
 		};

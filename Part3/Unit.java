@@ -7,6 +7,7 @@ import hillbillies.model.World;
 import hillbillies.positionExpressions.PositionHere;
 import hillbillies.positionExpressions.PositionSelected;
 import hillbillies.statements.Statement;
+import hillbillies.statements.StatementSequence;
 import hillbillies.statements.StatementWithPosition;
 import hillbillies.statements.StatementWithUnit;
 import hillbillies.expressions.Expression;
@@ -727,8 +728,6 @@ public class Unit {
 		if (isExecutingTask){
 			if (!isWorking()&&!isResting()&&!isMoving()&&!isAttacking()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
 				isExecutingTask = false;
-				if (getTask().isComplete())
-					getFaction().getScheduler().removeTask(getTask());
 			}
 		}
 	}
@@ -747,22 +746,36 @@ public class Unit {
 			
 			for (Iterator<Statement> i = sequenceToExcecute.iterator(); i.hasNext();) {
 			    Statement s = i.next();
-				if (!isExecutingTask && s!=null){
-					getTask().getStatement().executing = null;
-					s.execute();
-					this.isExecutingTask = true;
-					System.out.println("task");
-					if (getTask().isComplete())
+			    if (!this.isExecutingTask()){
+			    	s.unit = this;
+			    	s.execute();
+					if (!(s instanceof StatementSequence)){
 						i.remove();
-				} else{
-					break;
-				}
+					} else if (s instanceof StatementSequence){
+						if (((StatementSequence) s).getSequence().isEmpty()){
+							i.remove();
+						}
+					}
+			   }
+			}
+			
+			if (sequenceToExcecute.isEmpty()&&!isExecutingTask()){
+				getFaction().getScheduler().removeTask(getTask());
+				this.task = null;
 			}
 		}
 	}
 	
 	private boolean isExecutingTask;
 	
+	public boolean isExecutingTask() {
+		return isExecutingTask;
+	}
+
+	public void setExecutingTask(boolean isExecutingTask) {
+		this.isExecutingTask = isExecutingTask;
+	}
+
 	private final static double executingOneStatement = 0.001;
 	
 	private int[] workat;
@@ -1493,7 +1506,7 @@ public class Unit {
 	 * @throws ModelException 
 	 */
 	private void startDefaultBehaviour() {
-		if ((!isWorking())&& (!isResting())&&(!isMoving())&&(!isExecutingTask)){
+		if ((!isWorking())&& (!isResting())&&(!isMoving())&&(!isExecutingTask)&&getTask() == null){
 			if (this.getFaction().getScheduler().tasks.isEmpty()){
 				this.defaultBehaviour = true;
 				boolean checker = true;
@@ -1570,15 +1583,15 @@ public class Unit {
 					}
 				}
 			} else {
-			Iterator<Task> i = this.getFaction().getScheduler().getAllTasksIterator();
-			Task task = i.next();
-			while (!task.isAvailable() && i.hasNext()){
-				task = i.next();
-			}
-			task.setAvailable(false);
-			task.setUnit(this);
-			task.setWorld(getWorld());
-			this.setTask(task);
+				Iterator<Task> i = this.getFaction().getScheduler().getAllTasksIterator();
+				Task task = i.next();
+				while (!task.isAvailable() && i.hasNext()){
+					task = i.next();
+				}
+				task.setAvailable(false);
+				task.setUnit(this);
+				task.setWorld(getWorld());
+				this.setTask(task);
 			}
 		}
 	}

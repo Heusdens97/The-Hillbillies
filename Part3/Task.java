@@ -101,15 +101,7 @@ public class Task {
 	
 	public Map<String,Expression<?>> assignment = new HashMap<String,Expression<?>>();
 	public List<Statement> sequence = new ArrayList<Statement>();
-	private boolean complete;
-
-	public boolean isComplete() {
-		return complete;
-	}
-
-	public void setComplete(boolean complete) {
-		this.complete = complete;
-	}
+	
 	
 	
 	
