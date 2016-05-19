@@ -8,10 +8,6 @@ import java.util.List;
 
 
 public class Scheduler {
-
-	public Scheduler(){
-		
-	}
 	
 	public List<Task> tasks = new ArrayList<>();
 	
@@ -37,15 +33,15 @@ public class Scheduler {
 		return copy.iterator();
 	}
 	
-	private boolean less(int v, int w){
-		return v < w;
+	private boolean more(int v, int w){
+		return v > w;
 	}
 	
 	public List<Task> sort(){
 		List<Task> clone = cloneList(tasks);
 		int n = tasks.size();
 		for(int i = 0; i < n; i++){
-			for(int j = i; j > 0 && less(clone.get(j).getPriority(),clone.get(j-1).getPriority()); j--){
+			for(int j = i; j > 0 && more(clone.get(j).getPriority(),clone.get(j-1).getPriority()); j--){
 				exch(j,j-1);
 			}
 		}
@@ -81,9 +77,5 @@ public class Scheduler {
 		this.faction = faction;
 	}
 
-	
-	
-	
-	
 	
 }
