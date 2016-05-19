@@ -47,8 +47,7 @@ public class TaskFactory implements Serializable,ITaskFactory<Expression<?>, Sta
 
 	@Override
 	public Statement createBreak(SourceLocation sourceLocation) {
-		// TODO Auto-generated method stub
-		return null;
+		return new StatementBreak();
 	}
 
 	@Override
@@ -102,8 +101,8 @@ public class TaskFactory implements Serializable,ITaskFactory<Expression<?>, Sta
 	}
 
 	@Override
-	public Expression<String> createReadVariable(String variableName, SourceLocation sourceLocation) {
-		return new VariableName<String>(variableName);
+	public Expression<Object> createReadVariable(String variableName, SourceLocation sourceLocation) {
+		return new VariableName<Object>(variableName);
 	}
 
 	@Override

@@ -274,7 +274,7 @@ public class World {
 		setCubeType(x, y, z, TYPE_AIR);
 		border.changeSolidToPassable(x, y, z);
 		modelListener.notifyTerrainChanged(x, y, z);
-		double probability = 0.25;
+		double probability = 1;
 		Random rand = new Random();
 		if (rand.nextDouble() <= probability){
 			if (previousCubeType==World.TYPE_ROCK){

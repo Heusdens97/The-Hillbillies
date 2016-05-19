@@ -99,7 +99,7 @@ public class Task {
 		return schedulers;
 	}
 	
-	public Map<String,Expression<?>> assignment = new HashMap<String,Expression<?>>();
+	public Map<String,Object> assignment = new HashMap<String,Object>();
 	public List<Statement> sequence = new ArrayList<Statement>();
 	
 	

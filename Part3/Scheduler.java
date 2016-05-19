@@ -37,26 +37,25 @@ public class Scheduler {
 		return copy.iterator();
 	}
 	
+	private boolean less(int v, int w){
+		return v < w;
+	}
+	
 	public List<Task> sort(){
 		List<Task> clone = cloneList(tasks);
 		int n = tasks.size();
-		int sortJ = 0;
 		for(int i = 0; i < n; i++){
-			int max = tasks.get(i).getPriority();
-			//int sortJ = 0 hier of erboven?
-			for(int j = i+1; j < n; j++){
-				if(tasks.get(j).getPriority()> max){
-					max = tasks.get(j).getPriority();
-					sortJ = j;
-				}
+			for(int j = i; j > 0 && less(clone.get(j).getPriority(),clone.get(j-1).getPriority()); j--){
+				exch(j,j-1);
 			}
-			exch(i,sortJ);
 		}
 		for (int i = 0; i < clone.size() ; i++) {
 			tasks.set(i, clone.get(i));
 		}
 		return clone;
 	}
+	
+	
 	
 	private void exch(int i, int j){
 		Task temp = tasks.get(i);

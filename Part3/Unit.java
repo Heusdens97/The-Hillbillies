@@ -250,15 +250,6 @@ public class Unit {
 		this.position = position;
 	}
 	
-	/**
-	 * Return the maximal size of the game world.
-	 * 
-	 */
-	@Basic
-	public int getMaxSize(){
-		return Math.max(world.getX(), Math.max(world.getY(),world.getZ()));
-	}
-	
 	public boolean isEnemy(Unit unit){
 		return !this.getFaction().equals(unit.getFaction());
 	}
@@ -276,7 +267,7 @@ public class Unit {
 	 */			
 	@Raw
 	private boolean isValidPosition(double[] position){
-		return (position[0]< getMaxSize() && position[0] >= 0.5) && (position[1]< getMaxSize() && position[1] >= 0.5) && (position[2]< getMaxSize() && position[2] >= 0.5);
+		return (position[0]< getWorld().getX() && position[0] >= 0.5) && (position[1]< getWorld().getY() && position[1] >= 0.5) && (position[2]< getWorld().getZ() && position[2] >= 0.5);
 	}
 	/**
 	 * 
@@ -690,9 +681,9 @@ public class Unit {
 		if (this.timetillrest <= 0){
 			rest();
 		}
-		if (startfalling||isFalling()){
-			fall();
-		}
+//		if (startfalling||isFalling()){
+//			fall();
+//		}
 		advanceTime_Fight(dt);
 		if ((isResting())&&(!isWorking())){
 			if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
@@ -761,6 +752,7 @@ public class Unit {
 			
 			if (sequenceToExcecute.isEmpty()&&!isExecutingTask()){
 				getFaction().getScheduler().removeTask(getTask());
+				getTask().setAvailable(true);
 				this.task = null;
 			}
 		}
@@ -1124,7 +1116,7 @@ public class Unit {
 		}
 	}
 	
-	private World getWorld(){
+	public World getWorld(){
 		return this.world;
 	}	
 	
@@ -1523,15 +1515,15 @@ public class Unit {
 						}
 						break;
 					case 1:
-						int x = rand.nextInt(getMaxSize());
-						int y = rand.nextInt(getMaxSize());
-						int z = rand.nextInt(getMaxSize());
+						int x = rand.nextInt(getWorld().getX());
+						int y = rand.nextInt(getWorld().getY());
+						int z = rand.nextInt(getWorld().getZ());
 						int [] pos = {x,y,z};
 						calculatePathTo(pos);
 						while ((z== 0)||(path == null)){
-							x = rand.nextInt(getMaxSize());
-							y = rand.nextInt(getMaxSize());
-							z = rand.nextInt(getMaxSize());
+							x = rand.nextInt(getWorld().getX());
+							y = rand.nextInt(getWorld().getY());
+							z = rand.nextInt(getWorld().getZ());
 							pos[0] = x;
 							pos[1] = y;
 							pos[2] = z;
@@ -1542,15 +1534,15 @@ public class Unit {
 						checker = false;
 						break;
 					case 2:
-						int randomx = rand.nextInt(getMaxSize());
-						int randomy = rand.nextInt(getMaxSize());
-						int randomz = rand.nextInt(getMaxSize());
+						int randomx = rand.nextInt(getWorld().getX());
+						int randomy = rand.nextInt(getWorld().getY());
+						int randomz = rand.nextInt(getWorld().getZ());
 						int[] randompos = {randomx, randomy, randomz};
 						calculatePathTo(randompos);
 						while ((!world.isPassableTerrain(randompos))||(path==null)){
-							randomx = rand.nextInt(getMaxSize());
-							randomy = rand.nextInt(getMaxSize());
-							randomz = rand.nextInt(getMaxSize());
+							randomx = rand.nextInt(getWorld().getX());
+							randomy = rand.nextInt(getWorld().getY());
+							randomz = rand.nextInt(getWorld().getZ());
 							randompos[0] = randomx;
 							randompos[1] = randomy;
 							randompos[2] = randomz;
