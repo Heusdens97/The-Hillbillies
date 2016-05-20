@@ -7,11 +7,25 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
-
+/**
+ * 
+ * A class of the A* pathfinding algorithm
+ * 
+ * @author Bart Jacobs en Jordy Heusdens
+ * @version 1.0
+ *
+ */
 public class Pathfinding {
 	
-	
-	
+	/**
+	 * 
+	 * @param world
+	 * 		the world where the unit is living in
+	 * @post new.x = world.getX();
+	 * @post new.y = world.getY();
+	 * @post new.z = world.getZ();
+	 * @post new.world = world;
+	 */
 	public Pathfinding(World world){
 		X = world.getX();
 		Y = world.getY();
@@ -21,6 +35,17 @@ public class Pathfinding {
 	
 	private World world;
 	private int X, Y, Z;	
+	/**
+	 * 
+	 * @param start
+	 * 		the start position
+	 * @param end
+	 * 		the end position
+	 * @return
+	 * 		the path
+	 * @throws IOException
+	 * 			if the dimensions of the position are not equal to 3
+	 */
 	public List<int[]> searchPath(int[] start, int[] end) throws IOException{
 		
 		
@@ -91,34 +116,57 @@ public class Pathfinding {
 		}
 		return neighbours;
 	}
-	
+	/**
+	 * The unit who is searching a new path
+	 */
 	public static Unit unit;
-		
+	/**
+	 * A class of nodes
+	 * 
+	 * @author Bart Jacobs en Jordy Heusdens
+	 * @version 1.0
+	 *
+	 */
 	private class N{
 		
 		private final int[] position;
 		private final N previous;
 		
+		/**
+		 * 
+		 * @param pos
+		 * 			the position of the node
+		 * @param previous
+		 * 			the previous node
+		 * @throws IOException
+		 * 			if the dimensions of the position are not equal to 3
+		 */
 		public N(int[] pos, N previous) throws IOException{
 			if (pos.length != 3) throw new IOException("Invalid position length given to N");
 			position = pos;
 			this.previous = previous;
 		}
 
+		/**
+		 * 
+		 * @return the previous node
+		 */
 		public N getPrevious() {
 			return previous;
 		}
 
+		/**
+		 * 
+		 * @return the position of the node
+		 */
 		public int[] getPosition() {
 			return position;
 		}
-		
 		
 		@Override
 		public String toString(){
 			return Arrays.toString(position);
 		}
-		
 		
 		@Override
 		public boolean equals(Object obj){			

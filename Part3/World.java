@@ -11,10 +11,11 @@ import java.util.*;
 
 
 /**
- * 
+ * A class of a world involving the terrain.
  * 
  * @author	Bart Jacobs and Jordy Heusdens
- * @invar 
+ * @invar The time of the world must be a valid time for any world.
+ * 		|isValidTime(dt)
  * 
  * @version 1.0
  *
@@ -22,10 +23,12 @@ import java.util.*;
 public class World {
 	
 	/**
+	 * Initialize this new world with the next parameters
 	 * 
 	 * @param terrainTypes
+	 * 		A threedimensional matrix that saves the terrain type of each cube.	
 	 * @param modelListener
-	 * @throws ModelException 
+	 * 		A modelListener that will notice changes to the world.
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener){
 		this.terrain = terrainTypes;
@@ -38,39 +41,47 @@ public class World {
 		CheckTerrainWorld();
 		this.pathfinding = new Pathfinding(this);
 	}
+	
 	private int[][][] terrain;
 	
+	/**
+	 * A* pathfinding algorithm.
+	 */
 	public Pathfinding pathfinding;
 	
+	/**
+	 * 
+	 * @return the terrain of the world.
+	 */
 	public int[][][] getTerrain(){
 		return this.terrain;
 	}
 	
-	TerrainChangeListener modelListener;
+	private TerrainChangeListener modelListener;
 	
 	/**
-	 * 
+	 * We use a number to represent the type air in a matrix.
 	 */
 	public static final int TYPE_AIR = 0;
 	
 	/**
-	 * 
+	 * We use a number to represent the type rock in a matrix.
 	 */
 	public static final int TYPE_ROCK = 1;
 	
 	/**
-	 * 
+	 * We use a number to represent the type tree in a matrix.
 	 */
 	public static final int TYPE_TREE = 2;
 	
 	/**
-	 * 
+	 * We use a number to represent the type workshop in a matrix.
 	 */
 	public static final int TYPE_WORKSHOP = 3;
 	
 	/**
 	 * 
-	 * @return
+	 * @return the lenght of the world.
 	 */
 	@Basic @Raw
 	public int getX() {
@@ -79,7 +90,7 @@ public class World {
 	
 	/**
 	 * 
-	 * @return
+	 * @return the width of the world.
 	 */
 	@Basic @Raw
 	public int getY() {
@@ -88,44 +99,66 @@ public class World {
 	
 	/**
 	 * 
-	 * @return
+	 * @return the height of the world.
 	 */
 	@Basic @Raw
 	public int getZ() {
 		return this.z;
 	}
 	
-	/**
-	 * 
-	 */
 	private int x;
 	
-	/**
-	 * 
-	 */
 	private int y;
 	
-	/**
-	 * 
-	 */
 	private int z;
 	
 	/**
 	 * 
 	 * @param x
+	 * 		the x-position
 	 * @param y
+	 * 		the y-position
 	 * @param z
-	 * @return
+	 * 		the z-position
+	 * @return The cubetype of position[x][y][z].
 	 */
 	@Basic @Raw
 	public int getCubeType(int x, int y, int z){
 		return this.terrain[x][y][z];
 	}
 
+	/**
+	 * 
+	 * @param x
+	 * 		the x-position
+	 * @param y
+	 * 		the y-position
+	 * @param z
+	 * 		the z-position
+	 * @param value
+	 * 		The cubetype we want to assign to a position.
+	 * @post
+	 * 		|position[x][y][z] == Value.
+	 * 
+	 */
 	public void setCubeType(int x, int y, int z, int value){
 		this.terrain[x][y][z] = value;
 	}
 	
+	/**
+	 * 
+	 * @param enabledefaultbehaviour
+	 * 			Determines whether defaultbehaviour should be enabled or not.
+	 * @return A random unit with
+	 * 			the name "Hillbilly".
+	 * 			a random validposition.
+	 * 			a random weight between 25 and 100.
+	 * 			a random agility between 25 and 100.
+	 * 			a random strength between 25 and 100.
+	 * 			a random toughness between 25 and 100.
+	 * @throws ModelException
+	 * 			When the name isn't valid.
+	 */
 	public Unit randomUnit(boolean enabledefaultbehaviour) throws ModelException{
 		Random rand = new Random();
 		String name = "HillBilly";
@@ -137,6 +170,15 @@ public class World {
 		return new Unit(name,position,weight,agility,strength,toughness, enabledefaultbehaviour, this);
 	}
 
+	/**
+	 * 
+	 * @param rand
+	 * 			java.util random generator.
+	 * @return a random valid position for a unit
+	 * 			Which means that the position under the unit is solid
+	 * 			and the position itself is passable.
+	 * 			
+	 */
 	private int[] randomPositionUnit(Random rand) {
 		int randomx = rand.nextInt(this.getX());
 		int randomy = rand.nextInt(this.getY());
@@ -161,6 +203,16 @@ public class World {
 		return new int[] {randomx, randomy, randomz};
 	}
 	
+	/**
+	 * 
+	 * @param unit
+	 * 			The unit we want to add to the world.
+	 * @post	
+	 * 			|if(world != full)
+	 * 			|	add unit to the world
+	 * @throws ModelException
+	 * 			|if world == full
+	 */
 	public void addUnit(Unit unit) throws ModelException{
 		if (isFull())
 			throw new ModelException("World is full");
@@ -171,26 +223,47 @@ public class World {
 		return this.maxMembersWorld == this.worldMembers.size();
 	}
 	
-	public Set<Unit> getUnits(){
+	/**
+	 * 
+	 * @return a hashset of all the living units.
+	 */
+	public Set<Unit> getWorldMembers(){
 		return this.worldMembers;
 	}
 	
 	private final int maxMembersWorld = 100;
-	public Set<Unit> worldMembers = new HashSet<Unit>(maxMembersWorld);
+	
+	private Set<Unit> worldMembers = new HashSet<Unit>(maxMembersWorld);
 
 	private int UPPER = 100;
+	
 	private int LOWER = 25;
 	
 	
-	
+	/**
+	 * 
+	 * @return a hashset of the active factions (with living units). 
+	 */
 	public Set<Faction> getActiveFactions() {
 		return this.activeFactions;
 	}
 	
-	public Set<Faction> activeFactions = new HashSet<Faction>(Faction.maxFactions);
+	private Set<Faction> activeFactions = new HashSet<Faction>(Faction.maxFactions);
 	
 	private ConnectedToBorder border;
 	
+	/**
+	 * 
+	 * @param x
+	 * 		the x-position
+	 * @param y
+	 * 		the y-position
+	 * @param z
+	 * 		the z-position
+	 * 		 parameters of the position[x][y][z].
+	 * @return
+	 * 		 a recursive method that will check if the neighbours of the current position are connected to a border.
+	 */
 	public boolean isSolidConnectedToBorder(int x, int y, int z){
 		return border.isSolidConnectedToBorder(x, y, z);
 	}
@@ -210,6 +283,21 @@ public class World {
 		return ((dt >= 0) && (dt <= 0.2));		
 	}
 	
+	/**
+	 * 
+	 * @param dt
+	 * 		 Time that passed since the last advancetime call.
+	 * @throws ModelException
+	 * 		| if((dt <= 0) && (dt >= 0.2))
+	 * @post
+	 * 		| if(gameovertimer >= 0)
+	 * 		|	update gameovertimer
+	 * 		|	for(all units)
+	 * 		|		if(unit == dead)
+	 * 		|			remove unit
+	 * 		|	for(all boulders and logs)
+	 * 		|		call their advance time
+	 */
 	public void advanceTime(double dt) throws ModelException{
 		if (!isValidTime(dt)){
 			throw new ModelException();
@@ -269,6 +357,19 @@ public class World {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param x
+	 * 		the x-position
+	 * @param y
+	 * 		the y-position
+	 * @param z
+	 * 		the z-position
+	 * @post
+	 * 		 Destroys the block on the current position
+	 * 		 and has a 25% chance to create a boulder or a log
+	 * 		 depending on the TYPE.
+	 */
 	public void collapse(int x, int y, int z){
 		int[] position = {x,y,z};
 		int previousCubeType = this.getCubeType(x, y, z);
@@ -310,22 +411,36 @@ public class World {
 	
 	public Set<Log> logs = new HashSet<Log>();
 	
-	public Boulder createBoulder(World world, int[] position){
+	private Boulder createBoulder(World world, int[] position){
 		return new Boulder(world, position);
 	}
 	
-	public Log createLog(World world, int[] position){
+	private Log createLog(World world, int[] position){
 		return new Log(world, position);
 	}
 	
+	/**
+	 * 
+	 * @return the hashset that contains the world's boulders.
+	 */
 	public Set<Boulder> getBoulders(){
 		return this.boulders;
 	}
 	
+	/**
+	 * 
+	 * @return the hashset that contains the world's logs.
+	 */
 	public Set<Log> getLogs(){
 		return this.logs;
 	}
 	
+	/**
+	 * 
+	 * @param position 
+	 * 		 The position of the log that needs to be removed.
+	 * @return the log that was just removed .
+	 */
 	public Log removeLog(double[] position){
 		for (Log log: this.logs){
 			if (Arrays.equals(log.getPosition(), position)){
@@ -336,6 +451,12 @@ public class World {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param position 
+	 * 		 The position of the boulder that needs to be removed.
+	 * @return the boulder that was just removed.
+	 */
 	public Boulder removeBoulder(double[] position){
 		for (Boulder boulder: this.boulders){
 			if (Arrays.equals(boulder.getPosition(), position)){
@@ -346,10 +467,24 @@ public class World {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param position
+	 * 		 position that needs to be checked.
+	 * @return whether the position is passable or not.
+	 * 		 TYPE_AIR && TYPE_WORKSHOP are passable.
+	 */
 	public boolean isPassableTerrain(int[] position){
 		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_AIR)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_WORKSHOP)); 
 	}
 	
+	/**
+	 * 
+	 * @param position
+	 * 		 position that needs to be checked.
+	 * @return whether the position is impassable or not.
+	 * 		 TYPE_ROCK && TYPE_TREE are impassable.
+	 */
 	public boolean isImpassableTerrain(int[] position){
 		return ((this.getCubeType(position[0], position[1], position[2])==World.TYPE_ROCK)||(this.getCubeType(position[0], position[1], position[2])==World.TYPE_TREE)); 
 	}

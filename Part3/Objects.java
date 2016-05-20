@@ -7,8 +7,23 @@ import be.kuleuven.cs.som.annotate.Basic;
 import be.kuleuven.cs.som.annotate.Raw;
 import ogp.framework.util.ModelException;
 
+/**
+ * 
+ * A class of objects, this the super class of Boulder and Log.
+ *
+ * @author  Bart Jacobs and Jordy Heusdens
+ * @version 1.0
+ */
 public abstract class Objects {
-
+	
+	/**
+	 * Create an object with the following parameters
+	 * 
+	 * @param world
+	 * 		The world we are currently using
+	 * @param position
+	 * 		The position where the object should be
+	 */
 	protected Objects(World world, int[] position){
 		this.world = world;
 		double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
@@ -20,12 +35,25 @@ public abstract class Objects {
 	private World getWorld(){
 		return this.world;
 	}
+	
+	/**
+	 * 
+	 * @param position
+	 *		The position where the object should be.
+	 * @post
+	 * 		|if(!isValidPosition(position))
+	 * 		|	fall()
+	 */
 	public void setPosition(double[] position){
 		this.position = position;
 		if (!isValidPosition(position))
 			this.fall();
 	}
 	
+	/**
+	 * 
+	 * @return the position of the object.
+	 */
 	public double[] getPosition(){
 		return this.position;
 	}
@@ -45,7 +73,10 @@ public abstract class Objects {
 		return false;
 
 	}
-	
+	/**
+	 * 
+	 * @return the weight of an object.
+	 */
 	public int getWeight(){
 		return this.weight;
 	}
@@ -55,6 +86,18 @@ public abstract class Objects {
 	
 	private final int weight = new Random().nextInt((max - min) + 1) + min;
 	
+	/**
+	 * 
+	 * @param dt
+	 * 		Time that passed since the last advancetime call.
+	 * @post
+	 * 		|if(isFalling() || (!isValidPosition(getPosition()))
+	 * 		|	fall()
+	 * 		|if(getPosition()!=getDestiny())
+	 * 		|	continue falling
+	 * 		|else
+	 * 		|	stop falling
+	 */
 	public void advanceTime(double dt) {
 		if ((isFalling())||(!isValidPosition(this.getPosition()))){
 			fall();
@@ -79,6 +122,10 @@ public abstract class Objects {
 		return this.falling;
 	}
 	
+	/**
+	 * 
+	 * @return the int coordinate of an object.
+	 */
 	@Basic @Raw
 	public int[] getCubeCoordinate() {
 		return new int[] {(int) this.getPosition()[0],(int) this.getPosition()[1],(int) this.getPosition()[2]};

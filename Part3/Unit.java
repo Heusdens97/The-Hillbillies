@@ -99,7 +99,7 @@ public class Unit {
 	 * @post   	The orientation is equal to math.pi/2
 	 * 			| new.getorientation() == math.pi/2
 	 * @throws	ModelException
-	 * 			Throws an exception if it isnt't valid
+	 * 			Throws an exception if it isnt't a valid position
 	 * 			| ! canHaveAsPosition(initialposition)
 	 */
 	public Unit(String name, int[] initialposition, int weight, int agility, int strength, int toughness, boolean enableDefaultBehavior, World world) throws ModelException{
@@ -133,24 +133,45 @@ public class Unit {
 	}
 	
 	private int experience;
-	
+	/**
+	 * Returns the experience points of a unit
+	 * 
+	 * @return this.experience
+	 */
 	public int getExperiencePoints(){
 		return this.experience;
 	}
 	
+	/**
+	 * 
+	 * Variable registering the faction of this Unit.
+	 * 
+	 */
 	public Faction faction;
+	
+	/**
+	 * 
+	 * Variable registering the world of this Unit.
+	 * 
+	 */
 	public World world;
 
 	/**
+	 * returns whether the unit is alive
 	 * 
-	 * @return
+	 * @return if (this.getHitpoints() != 0)
+	 * 				then result == true
+	 * 				else result == false
+	 * 
 	 */
 	public boolean isAlive(){
 		return (this.getHitpoints() != 0);
 	}
-	
-
-	
+	/**
+	 * Returns the faction of the unit
+	 * 
+	 * @return this.faction
+	 */
 	public Faction getFaction(){
 		return this.faction;
 	}
@@ -235,7 +256,15 @@ public class Unit {
 	private void setPosition(double[] position){
 		this.position = position;
 	}
-	
+	/**
+	 * 
+	 * @param unit
+	 * 		the enemy or friend of the unit
+	 * @return if (this.getFaction().equals(unit.getFaction())
+	 * 			then result == false
+	 * 			else result == true
+	 * 
+	 */
 	public boolean isEnemy(Unit unit){
 		return !this.getFaction().equals(unit.getFaction());
 	}
@@ -661,7 +690,13 @@ public class Unit {
 	 */
 	private double speed;
 	
-	
+	/**
+	 * 
+	 * advance the time for a unit
+	 * 
+	 * @param dt
+	 * 			the time
+	 */
 	public void advanceTime(double dt){
 		this.timetillrest -= dt;
 		if (this.timetillrest <= 0){
@@ -713,7 +748,7 @@ public class Unit {
 				isExecutingTask = false;
 				if (getTask().sequence.isEmpty()){
 					getFaction().getScheduler().removeTask(getTask());
-					for(Faction fac: getWorld().activeFactions){
+					for(Faction fac: getWorld().getActiveFactions()){
 						for (Task t: fac.getScheduler().tasks){
 							if (getTask().getname().equals(t.getname())){
 								t.setAvailable(true);
@@ -759,22 +794,26 @@ public class Unit {
 					}
 			   }
 			}
-			
-//			if (sequenceToExcecute.isEmpty()&&!isExecutingTask()){
-//				getFaction().getScheduler().removeTask(getTask());
-//				getTask().setAvailable(true);
-//				this.TaskFromStatement = false;
-//				this.task = null;
-//			}
 		}
 	}
 	
 	private boolean isExecutingTask;
-	
+	/**
+	 * returns whether a unit is executing a task
+	 * 
+	 * @return if (isexecutingTask)
+	 * 			then result == true
+	 * 			else result == false 
+	 */
 	public boolean isExecutingTask() {
 		return isExecutingTask;
 	}
 
+	/**
+	 * set a new task which the unit has to execute
+	 * 
+	 * @post new.isexecutintask = isexecutingtask
+	 */
 	public void setExecutingTask(boolean isExecutingTask) {
 		this.isExecutingTask = isExecutingTask;
 	}
@@ -856,7 +895,6 @@ public class Unit {
 			if ((defender != null)&&(this.fighttime == 1)){
 				if ((defender!=this)&&(!this.isMoving())){
 					if ((!isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate()))&&(!Arrays.equals(this.getPosition(),defender.getPosition()))&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
-						
 						moveTo(defender.getCubeCoordinate());
 					}
 				}
@@ -882,7 +920,7 @@ public class Unit {
 	/**
 	 * 
 	 */
-	public void advanceTime_levelUp(){
+	private void advanceTime_levelUp(){
 		if (this.getExperiencePoints() >= experienceLevelUp){
 			setExperiencePoints(this.getExperiencePoints()- experienceLevelUp);
 			Random rand = new Random();
@@ -1127,7 +1165,11 @@ public class Unit {
 			}
 		}
 	}
-	
+	/**
+	 * returns the world of the unit
+	 * 
+	 * @return this.world
+	 */
 	public World getWorld(){
 		return this.world;
 	}	
@@ -1154,7 +1196,7 @@ public class Unit {
 	}
 	/**
 	 * 
-	 * the unit starts working.
+	 * the unit starts working at position x,y,z
 	 */
 	public void workAt(int x, int y, int z){ 
 		try {
@@ -1226,7 +1268,13 @@ public class Unit {
 			}
 		}
 	}
-	
+	/**
+	 * 
+	 * removes the boulder and add it to the unit inventory
+	 * 
+	 * @param posWork
+	 * 			pos where the unit has to work
+	 */
 	public void removeBoulderAndAddToInventory(double[] posWork){
 		for (Boulder boulder: carryingBoulder){
 			boulder.setPosition(posWork); // mss xyz van work
@@ -1236,6 +1284,13 @@ public class Unit {
 		}
 	}
 	
+	/**
+	 * 
+	 * removes the log and add it to the unit inventory
+	 * 
+	 * @param posWork
+	 * 			pos where the unit has to work
+	 */
 	public void removeLogAndAddToInventory(double[] posWork){
 		for (Log log: carryingLog){
 			log.setPosition(posWork);
@@ -1266,12 +1321,28 @@ public class Unit {
 	
 	private Set<Boulder> carryingBoulder = new HashSet<Boulder>();
 	
+	/**
+	 * 
+	 * returns whether the unit is carrying a boulder
+	 * 
+	 * @return if (this.carryingboulder.size() != 0)
+	 * 				then result == true
+	 * 				else result == false
+	 */
 	public boolean isCarryingBoulder(){
 		return (this.carryingBoulder.size() != 0);
 	}
 	
 	private Set<Log> carryingLog = new HashSet<Log>();
 	
+	/**
+	 * 
+	 * returns whether the unit is carrying a log
+	 * 
+	 * @return if (this.carryingboulder.size() != 0)
+	 * 				then result == true
+	 * 				else result == false
+	 */
 	public boolean isCarryingLog(){
 		return (this.carryingLog.size() != 0);
 	}
@@ -1340,7 +1411,6 @@ public class Unit {
 	 */
 	private void attack(Unit attacker,Unit defender){
 		attacker.attacking = true;	
-		// mogelijkheid met een parameter
 	}
 	/**
 	 * 
@@ -1352,10 +1422,8 @@ public class Unit {
 	 * 			the defender
 	 */
 	private void defend(Unit defender,Unit attacker){
-		// mogelijkheid met een parameter
 		defender.attacking = false;
 		attacker.defender = defender;
-	//	defender.defender = defender;
 		double probability_dodge = (0.20)*((defender.getAgility())/((double)attacker.getAgility()));
 		double probability_block = (0.25)*((defender.getStrength()+defender.getAgility())/((double)attacker.getStrength()+attacker.getAgility()));
 		Random rand = new Random();
@@ -1411,11 +1479,10 @@ public class Unit {
 		
 		
 		defender.moveTo(positionToGo);
-	  //  defender.moveToAdjacent(random_x, random_y, 0);
 	}
 	/**
 	 * 
-	 * returns whetehr the unit me is a neighbour of other.
+	 * returns whether the unit me is a neighbour of the other unit
 	 * 
 	 * @param	me
 	 * 			a unit
@@ -1429,26 +1496,15 @@ public class Unit {
 				&&((Math.abs(me[2]-other[2]) == 1)||(me[2]-other[2]) == 0));
 	}
 	
-	public boolean isNeighbouringPassableTerrain(int[] position){
-//		int[] cube = Arrays.copyOf(position, 3);
-//		for (int i=0; i < 200; i++){
-//			position = Arrays.copyOf(cube, 3);
-//			Random rand = new Random();
-//			int max = 1;
-//			int min = -1;
-//			int x = rand.nextInt((max - min) + 1) + min;
-//			int y = rand.nextInt((max - min) + 1) + min;
-//			int z = rand.nextInt((max - min) + 1) + min;
-//			position[0] += x;
-//			position[1] += y;
-//			position[2] += z;
-//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-//			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
-//				return false;
-//			}
-//		}
-//		return true;
-		
+	
+	/**
+	 * 
+	 * @param position
+	 * 			the position to check
+	 * @return
+	 * 			
+	 */
+	public boolean isNeighbouringPassableTerrain(int[] position){		
 		for (int i = -1; i<=1;i++){
 			for (int j = -1; j<= 1;j++){
 				for (int k = -1; k<=1; k++){
@@ -1462,27 +1518,13 @@ public class Unit {
 		}
 		return false;
 	}
-	
-	public boolean isNeighbouringImPassableTerrain(int[] position){
-//		int[] cube = Arrays.copyOf(position, 3);
-//		for (int i=0; i < 200; i++){
-//			position = Arrays.copyOf(cube, 3);
-//			Random rand = new Random();
-//			int max = 1;
-//			int min = -1;
-//			int x = rand.nextInt((max - min) + 1) + min;
-//			int y = rand.nextInt((max - min) + 1) + min;
-//			int z = rand.nextInt((max - min) + 1) + min;
-//			position[0] += x;
-//			position[1] += y;
-//			position[2] += z;
-//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-//			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
-//				return false;
-//			}
-//		}
-//		return true;
-		
+	/**
+	 * 
+	 * @param position
+	 * 			the position to check
+	 * @return
+	 */
+	public boolean isNeighbouringImPassableTerrain(int[] position){		
 		for (int i = -1; i<=1;i++){
 			for (int j = -1; j<= 1;j++){
 				for (int k = -1; k<=1; k++){
@@ -1607,7 +1649,7 @@ public class Unit {
 						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
 						break;
 					case 3:
-						for (Unit unit: world.worldMembers){
+						for (Unit unit: world.getWorldMembers()){
 							if (unit.faction != this.faction){
 								int[] cube = unit.getCubeCoordinate();
 								this.defender = unit;
@@ -1639,7 +1681,7 @@ public class Unit {
 					task.setWorld(getWorld());
 					this.setTask(task);
 				}
-				for(Faction fac: getWorld().activeFactions){
+				for(Faction fac: getWorld().getActiveFactions()){
 					for (Task t: fac.getScheduler().tasks){
 						if (task.getname().equals(t.getname())){
 							t.setAvailable(false);
