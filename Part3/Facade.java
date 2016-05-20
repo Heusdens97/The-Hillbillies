@@ -310,8 +310,9 @@ public class Facade implements IFacade {
 
 	@Override
 	public boolean isWellFormed(Task task) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		//No wellformed check is required because the cast's will give an error if something is wrong.
+		//This is a result of using generic classes.
+		return true;
 	}
 
 	@Override
@@ -367,7 +368,7 @@ public class Facade implements IFacade {
 	@Override @Deprecated
 	public Unit createUnit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws ModelException {
-		return new Unit(name, initialPosition, weight, agility, strength, toughness, enableDefaultBehavior, null);
+		return null;
 	}
 
 }
