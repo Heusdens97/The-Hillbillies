@@ -692,10 +692,16 @@ public class Unit {
 	
 	/**
 	 * 
-	 * advance the time for a unit
+	 * Advance the time for a unit.
 	 * 
 	 * @param dt
-	 * 			the time
+	 * 			The time that has passed since the last advanceTime call.
+	 * This method controls the flow of the game.
+	 * It will update:
+	 * 		The unit's position (also whether he has to fall)
+	 * 		The time until he has to rest again
+	 * 		The fighting
+	 * 		Experience and level-ups
 	 */
 	public void advanceTime(double dt){
 		this.timetillrest -= dt;
@@ -801,18 +807,18 @@ public class Unit {
 	/**
 	 * returns whether a unit is executing a task
 	 * 
-	 * @return if (isexecutingTask)
-	 * 			then result == true
-	 * 			else result == false 
+	 * @return 
+	 * 			|result == isExecutingTask 
 	 */
 	public boolean isExecutingTask() {
 		return isExecutingTask;
 	}
 
 	/**
-	 * set a new task which the unit has to execute
+	 * Set a new task which the unit has to execute.
 	 * 
-	 * @post new.isexecutintask = isexecutingtask
+	 * @post 
+	 * 		|new.isexecutintask = isexecutingtask
 	 */
 	public void setExecutingTask(boolean isExecutingTask) {
 		this.isExecutingTask = isExecutingTask;
@@ -884,12 +890,7 @@ public class Unit {
 			finaldest[2] = (int)this.getPosition()[2];
 		}
 	}
-	
-	/**
-	 * 
-	 * @param dt
-	 * @throws ModelException
-	 */
+
 	private void advanceTime_Fight(double dt) {
 		if (isDefaultBehaviourEnabled()){
 			if ((defender != null)&&(this.fighttime == 1)){
@@ -917,9 +918,7 @@ public class Unit {
 		}
 	}
 	
-	/**
-	 * 
-	 */
+
 	private void advanceTime_levelUp(){
 		if (this.getExperiencePoints() >= experienceLevelUp){
 			setExperiencePoints(this.getExperiencePoints()- experienceLevelUp);
@@ -1027,7 +1026,8 @@ public class Unit {
 		this.speed = speed;
 	}
 	/**
-	 * Return the speed of this unit.
+	 * @return the speed of this unit.
+	 * 		|result == speed
 	 */
 	@Basic @Raw
 	public double getSpeed(){
@@ -1035,14 +1035,16 @@ public class Unit {
 	}
 	
 	/**
-	 * Return whether the unit is sprinting.
+	 * @return whether the unit is sprinting.
+	 * 		|result == sprinting
 	 */
 	public boolean isSprinting(){
 		return this.sprinting;
 	}
 	
 	/**
-	 * Return the destiny of this unit.
+	 * @return the destiny of this unit.
+	 * 		|result == destiny
 	 */
 	@Basic @Raw
 	private double[] getDestiny(){
@@ -1131,7 +1133,15 @@ public class Unit {
 	private Boolean arrowKeys;
 
 	private List<int[]> path;
-	
+	/**
+	 * The unit moves to the desired cube position.
+	 * This is based on the A* path finding algorithm
+	 * 
+	 * @param cube
+	 * 		the desired cube position
+	 * @post
+	 * 		|new.getCubeCoordinate == cube
+	 */
 	public void moveTo(int[] cube){
 		double[] doublepos = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
 		if (isValidPosition(doublepos)){
@@ -1166,9 +1176,10 @@ public class Unit {
 		}
 	}
 	/**
-	 * returns the world of the unit
+	 * returns the world of the unit.
 	 * 
-	 * @return this.world
+	 * @return the unit's world.
+	 * 		|result == new.world
 	 */
 	public World getWorld(){
 		return this.world;
@@ -1179,8 +1190,10 @@ public class Unit {
 	 */
 	private boolean working;
 	/**
+	 * Checks if the unit is working.
 	 * 
-	 * returns whether the unit is working.
+	 * @return whether the unit is working.
+	 * 		|result == working
 	 * 
 	 */
 	public boolean isWorking(){
@@ -1194,9 +1207,23 @@ public class Unit {
 				&&((Math.abs(me[1]-other[1]) == 1)||((me[1]-other[1]) == 0))
 				&&(((me[0]-other[0]) != 0)||((me[1]-other[1]) != 0)));
 	}
+
 	/**
+	 * It will move to a neighbour of the position x,y,z and start working.
+	 * This will allow the unit to: 
+	 * 		break blocks
+	 * 		pick up boulders and logs
+	 * 		work at a workshop
+	 * He will also gain experience from this when he's finished.
 	 * 
-	 * the unit starts working at position x,y,z
+	 * @param x
+	 * @param y
+	 * @param z
+	 * 		|new.position(x,y,z)
+	 * @post
+	 * 		|new.getPosition == position(x,y,z)
+	 * 		|new.working == true
+	 * 		|new.worktime = (500/(double)new.getStrength())
 	 */
 	public void workAt(int x, int y, int z){ 
 		try {
@@ -1270,10 +1297,13 @@ public class Unit {
 	}
 	/**
 	 * 
-	 * removes the boulder and add it to the unit inventory
+	 * removes the boulder from the inventor and adds it to the world.
 	 * 
 	 * @param posWork
-	 * 			pos where the unit has to work
+	 * 			position where the unit has to work.
+	 * @post
+	 * 		|new.carryingboulder == null
+	 * 		|new.world.position(posWork) == boulder
 	 */
 	public void removeBoulderAndAddToInventory(double[] posWork){
 		for (Boulder boulder: carryingBoulder){
@@ -1286,10 +1316,13 @@ public class Unit {
 	
 	/**
 	 * 
-	 * removes the log and add it to the unit inventory
+	 * removes the log from the inventor and adds it to the world.
 	 * 
 	 * @param posWork
-	 * 			pos where the unit has to work
+	 * 			position where the unit has to work.
+	 * @post
+	 * 		|new.carryingLog == null
+	 * 		|new.world.position(posWork) == log
 	 */
 	public void removeLogAndAddToInventory(double[] posWork){
 		for (Log log: carryingLog){
@@ -1325,9 +1358,10 @@ public class Unit {
 	 * 
 	 * returns whether the unit is carrying a boulder
 	 * 
-	 * @return if (this.carryingboulder.size() != 0)
-	 * 				then result == true
-	 * 				else result == false
+	 * @return   if (this.carryingboulder.size() != 0)
+	 * 			|	result == true
+	 * 			|else 
+	 * 			|	result == false
 	 */
 	public boolean isCarryingBoulder(){
 		return (this.carryingBoulder.size() != 0);
@@ -1340,21 +1374,24 @@ public class Unit {
 	 * returns whether the unit is carrying a log
 	 * 
 	 * @return if (this.carryingboulder.size() != 0)
-	 * 				then result == true
-	 * 				else result == false
+	 * 				|then result == true
+	 * 				|else result == false
 	 */
 	public boolean isCarryingLog(){
 		return (this.carryingLog.size() != 0);
 	}
 	
 	private static final int workExperience = 10;
+	
 	/**
 	 * Variable registering the worktime of this unit.
 	 */
 	private double worktime;
 	/**
+	 * Get this units current maximum stamina and hitpoints.
 	 * 
-	 * returns the max stamina and hitpoints.
+	 * @return The max stamina and hitpoints.
+	 * 			|result == (int)(200*(new.getWeight()/(double)100)*(new.getToughness()/(double)100))
 	 */
 	@Basic @Raw
 	public int getMaxStaminaAndHitPoints(){
@@ -1362,8 +1399,10 @@ public class Unit {
 	}
 	
 	/**
+	 * Get the int version of the position.
 	 * 
-	 * returns the cubecoordinates.
+	 * @return the cubecoordinates.
+	 * 		result == {(int) getPosition[0], (int) getPosition[1], (int) getPosition[2]}
 	 */
 	@Basic @Raw
 	public int[] getCubeCoordinate() {
@@ -1381,10 +1420,13 @@ public class Unit {
 	private double fighttime;
 	/**
 	 * 
-	 * the unit start to fight.
+	 * The unit starts to fight the defending unit.
 	 * 
 	 * @param 	defender
-	 * 			the defending unit
+	 * 			The unit who's defending itself.
+	 * @post
+	 * 			|new.working == false
+	 * 			|new.attacking == true
 	 */
 	public void fight(Unit defender){ 
 		this.working = false;
@@ -1482,12 +1524,18 @@ public class Unit {
 	}
 	/**
 	 * 
-	 * returns whether the unit me is a neighbour of the other unit
+	 * check whether the unit me is a neighbour of the other unit.
 	 * 
 	 * @param	me
-	 * 			a unit
+	 * 			The first unit to check.
 	 * @param	other
-	 * 			a unit
+	 * 			The second unit to check.
+	 * @return whether the units are neighbours.
+	 * 		|if(me.isneibourof(other))
+	 * 		|	result == true
+	 * 		|else
+	 * 		| 	result == false
+	 * 
 	 */
 	public boolean isNeighbour (int[] me, int[] other){
 		return (((Math.abs(me[0]-other[0]) == 1)||(me[0]-other[0]) == 0)
@@ -1498,11 +1546,15 @@ public class Unit {
 	
 	
 	/**
+	 * Checks if their is a non solid cube near the unit.
 	 * 
 	 * @param position
-	 * 			the position to check
+	 * 			the position of the unit to check.
 	 * @return
-	 * 			
+	 * 		if(isvalidposition(neighbour) && isImpassableTerrain(neighbour))
+	 * 			result == false
+	 * 		else
+	 * 			result == true
 	 */
 	public boolean isNeighbouringPassableTerrain(int[] position){		
 		for (int i = -1; i<=1;i++){
@@ -1519,10 +1571,15 @@ public class Unit {
 		return false;
 	}
 	/**
+	 * Checks if their is a solid cube near the unit.
 	 * 
 	 * @param position
-	 * 			the position to check
+	 * 			the position of the unit to check.
 	 * @return
+	 * 		if(isvalidposition(neighbour) && isImpassableTerrain(neighbour))
+	 * 			result == true
+	 * 		else
+	 * 			result == false
 	 */
 	public boolean isNeighbouringImPassableTerrain(int[] position){		
 		for (int i = -1; i<=1;i++){
@@ -1549,8 +1606,14 @@ public class Unit {
 	private double timetillrest;
 	/**
 	 * 
-	 * the unit starts resting.
-	 * 
+	 * The unit stops what he's doing to start resting.
+	 * @post
+	 * 		|if(new.getStamina() < new.getMaxStaminaAndHitPoints()) || (new.getHitpoints() < new.getMaxStaminaAndHitPoints()
+	 * 		| 	new.sprinting = false
+	 * 		|	new.resting = true
+	 * 		|	new.working = false
+	 * 		|	new.timetillrest = initial_timetillrest
+	 * 		
 	 */
 	public void rest(){
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
@@ -1566,13 +1629,20 @@ public class Unit {
 	 * Variable registering whether the unit is resting.
 	 */
 	private boolean resting;
-	
+	/**
+	 * Check if this unit is resting
+	 * 
+	 * @return whether the unit is resting.
+	 * 		|result == resting
+	 */
 	public boolean isResting(){
 		return this.resting;	
 	}
 	/**
+	 * Check if this unit is attacking
 	 * 
-	 * returns whether the unit is attacking.
+	 * @return whether the unit is attacking.
+	 * 		|result == attacking
 	 */
 	public boolean isAttacking(){
 		return this.attacking;
@@ -1581,11 +1651,7 @@ public class Unit {
 	 * Variable registering whether the unit is attacking.
 	 */
 	private boolean attacking;
-	/**
-	 * 
-	 * start defaultbehaviour
-	 * @throws ModelException 
-	 */
+
 	private void startDefaultBehaviour() {
 		Boolean executeTask = false;
 		for(Task t:getFaction().getScheduler().tasks){
@@ -1649,7 +1715,7 @@ public class Unit {
 						System.out.println("move to"+randompos[0]+","+randompos[1]+","+randompos[2]);
 						break;
 					case 3:
-						for (Unit unit: world.getWorldMembers()){
+						for (Unit unit: world.getUnits()){
 							if (unit.faction != this.faction){
 								int[] cube = unit.getCubeCoordinate();
 								this.defender = unit;
@@ -1694,11 +1760,17 @@ public class Unit {
 	
 	private Task task;
 
+	/**
+	 * Get the task assigned to this unit.
+	 * 
+	 * @return the task assigned to this unit.
+	 * 		|result == task
+	 */
 	public Task getTask() {
 		return task;
 	}
 
-	public void setTask(Task task) {
+	private void setTask(Task task) {
 		this.task = task;
 	}
 
@@ -1720,7 +1792,7 @@ public class Unit {
 		}
 	}
 	
-	public int[] positionNearCube(int[] cube) {
+	private int[] positionNearCube(int[] cube) {
 		Random rand = new Random();
 		boolean validposition = false;
 		int random = rand.nextInt(2);
@@ -1747,16 +1819,13 @@ public class Unit {
 	}
 	
 	private boolean isAttackingDefaultBehaviour;
-	/**
-	 * 
-	 * start defaultbehaviour
-	 */
+
 	private void stopDefaultBehaviour(){
 		this.defaultBehaviour = false;
 	}
 	/**
-	 * 
-	 * returns the defaultbehaviour
+	 * returns the defaultbehaviour.
+	 * 		|result == defaultBehaviour
 	 */
 	public boolean isDefaultBehaviourEnabled(){
 		return this.defaultBehaviour;
@@ -1764,8 +1833,13 @@ public class Unit {
 	/**
 	 * Set the defaultbehaviour of the unit on the value.
 	 * 
-	 * @param  	 value
-	 * 			the value of defaultbehaviour
+	 * @param value
+	 * 		the value of defaultbehaviour.
+	 * @post Either enables or disables defaultbehaviour.
+	 * 		|if(value == true)
+	 * 		| 	result == true
+	 * 		|else
+	 * 		|	result == false
 	 *	
 	 */
 	public void setDefaultBehaviourEnabled(boolean value){
@@ -1776,7 +1850,16 @@ public class Unit {
 			stopDefaultBehaviour();
 		}
 	}
-	
+	/**
+	 * Round a double to the desired amount of place.
+	 * 
+	 * @param value
+	 * 		The value we want to round.
+	 * @param places
+	 * 		The amount of places we want to round to.
+	 * @return The rounded double.
+	 * 		|result == value.rounded
+	 */
 	public static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
 
