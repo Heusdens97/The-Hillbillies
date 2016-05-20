@@ -5,55 +5,32 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import hillbillies.model.Scheduler;
 import hillbillies.model.Task;
-import hillbillies.statements.Statement;
 
-public class SchedulerTest {
+public class schedulerTest {
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
-	public void Sorttest() {
-		List<Task> test = new ArrayList<Task>();
-		Scheduler s = new Scheduler();
-		for (int i = 0; i < 10; i++) {
-			String name = "test";
-			int[] pos = {0,0,0};
-			Task t =new Task(name, i, new Statement(), pos);
-			test.add(t);
-			s.AddTask(t);
-		}
-		print(s.tasks);
-		List<Task> t = s.sort();
-		System.out.println("\n");
-		print(t);
-	}
-	
-	public void print(List<Task> list){
-		for (int i = 0; i < list.size(); i++) {
-			System.out.println(list.get(i).getPriority());
-		}
+	public void testSchedule() {
+		Task task = new Task("name", 8, null, null);
+		Task task2 = new Task("name2", 6, null, null);
+		Scheduler schedule = new Scheduler();
+		schedule.addTask(task);
+		assertTrue(schedule.tasks.size() == 1);
+		
+		schedule.replaceTask(schedule.tasks, task, task2);
+		assertTrue(schedule.tasks.get(0) == task2);
+		
+		schedule.addTask(task);
+		List <Task> taskss = new ArrayList<>();
+		taskss.add(task2);taskss.add(task);
+		assertTrue(schedule.areTasksPartOf(taskss));
+		
+		schedule.sort();
+		assertTrue(schedule.tasks.get(0) == task);
 	}
 
 }
