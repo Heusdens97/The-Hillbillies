@@ -26,12 +26,13 @@ public class StatementWhile extends Statement {
 	}
 	@Override
 	public void execute() {
+		Statement copy = (Statement) this.deepClone();
 		getCondition().unit = unit;
 		getCondition().execute();
 		if (condition.getResult().equals(true)){
 			getBody().unit = unit;
 			getUnit().getTask().sequence.add(getBody());
-			getUnit().getTask().sequence.add(this);
+			getUnit().getTask().sequence.add(copy);
 		}
 	}
 	

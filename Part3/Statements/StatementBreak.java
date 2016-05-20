@@ -9,8 +9,12 @@ public class StatementBreak extends Statement {
 		List<Statement> sequence = getUnit().getTask().sequence;
 		for (Statement s: sequence){
 			if (s instanceof StatementBreak){
-				int index = sequence.indexOf(s);
-				sequence.remove(index+1);
+				for (Statement stat: sequence){
+					if (stat instanceof StatementWhile){
+						int index = sequence.indexOf(stat);
+						sequence.remove(index);
+					}
+				}
 			}
 		}
 	}
