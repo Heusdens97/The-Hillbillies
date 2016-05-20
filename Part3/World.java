@@ -223,8 +223,8 @@ public class World {
 						//this.worldMembers.remove(unit);
 						Faction fac = unit.getFaction();
 						fac.members.remove(unit);
-						unit.removeBoulderAndAddToInventory();
-						unit.removeLogAndAddToInventory();
+						unit.removeBoulderAndAddToInventory(unit.getPosition());
+						unit.removeLogAndAddToInventory(unit.getPosition());
 						// dit hieronder weglaten ==> eigen faction na dood is onbestuurbaar
 						if (fac.members.size() == 0) {
 							this.activeFactions.remove(fac);

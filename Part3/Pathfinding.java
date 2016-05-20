@@ -49,12 +49,12 @@ public class Pathfinding {
 		positionQueue.add(new N(start, null));		
 		while (!positionQueue.isEmpty()){			
 			N p = positionQueue.remove();			
-			int[] pos = p.getPosition();			
-			if (pos[0] == end[0] && pos[1] == end[1] && pos[2] == end[2]){
+			int[] pos = p.getPosition();	
+			if (Arrays.equals(pos, end)){
 				lastN = p;
 				break;
-			}			
-			Set<int[]> neighbours = getNeighbours(p.getPosition());			
+			}
+			List<int[]> neighbours = getNeighbours(p.getPosition());			
 			for (int[] i : neighbours){				
 				N n = new N(i, p);				
 				if (!Checked.contains(n) && !positionQueue.contains(n)){					
@@ -63,7 +63,6 @@ public class Pathfinding {
 			}			
 			Checked.add(p);
 		}
-		
 		
 		if (lastN != null){			
 			ArrayList<int[]> path = new ArrayList<int[]>();			
@@ -82,35 +81,23 @@ public class Pathfinding {
 	}
 
 	
-	private Set<int[]> getNeighbours(int[] currentPos){		
-		Set<int[]> neighbours = new HashSet<int[]>();
-		int x = currentPos[0], y = currentPos[1], z = currentPos[2]; 
-		int[][] Possibilities = new int[28][3];		
-		int k = 0;
+	private List<int[]> getNeighbours(int[] currentPos){		
+		List<int[]> neighbours = new ArrayList<int[]>();
 		for(int i = -1; i <= 1; i++){
 			for (int j = -1; j <= 1; j++){
-				for (int q = -1; q <= 1; q++){
-					Possibilities[k++] = new int[]{x+q,y+j,z+i};	
+				for (int k= -1; k <= 1; k++){
+					int[] pos = new int[]{currentPos[0]+i,currentPos[1]+j,currentPos[2]+k};
+					if (0 <= pos[0] && pos[0] < X && 0 <= pos[1] && pos[1] < Y && 0 <= pos[2] && pos[2] < Z && (world.isPassableTerrain(pos)||pos[2]==0) && unit.isNeighbouringImPassableTerrain(pos)&& unit.isNeighbour(pos, currentPos)){
+						neighbours.add(pos);
+					}
 				}
 			}
 		}
-		
-		
-		for (int[] i : Possibilities)
-			if (0 <= i[0] && i[0] < X && 0 <= i[1] && i[1] < Y && 0 <= i[2] && i[2] < Z && isPassable(i) && !unit.isNeighbouringPassableTerrain(i)){
-				neighbours.add(i);
-			}
-		
 		return neighbours;
 	}
 	
 	public static Unit unit;
-	
-	private boolean isPassable(int[] pos){
-		return world.isPassableTerrain(pos)||pos[2]==0;
-	}
-	
-	
+		
 	private class N{
 		
 		private final int[] position;

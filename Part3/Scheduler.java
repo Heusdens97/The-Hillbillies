@@ -40,8 +40,9 @@ public class Scheduler {
 	public List<Task> sort(){
 		List<Task> clone = cloneList(tasks);
 		int n = tasks.size();
-		for(int i = 0; i < n; i++){
-			for(int j = i; j > 0 && more(clone.get(j).getPriority(),clone.get(j-1).getPriority()); j--){
+		for(int i = 1; i < n; i++){
+			int temp = clone.get(i).getPriority();
+			for(int j = i-1; j >= 0 && more(temp,clone.get(j).getPriority()); j--){
 				exch(j,j-1);
 			}
 		}

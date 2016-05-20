@@ -4,6 +4,7 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
+import hillbillies.part3.programs.internal.generated.HillbilliesTaskLangParser.PositionOfPositionContext;
 import hillbillies.positionExpressions.PositionHere;
 import hillbillies.positionExpressions.PositionSelected;
 import hillbillies.statements.Statement;
@@ -681,9 +682,9 @@ public class Unit {
 		if (this.timetillrest <= 0){
 			rest();
 		}
-//		if (startfalling||isFalling()){
-//			fall();
-//		}
+		if (startfalling||isFalling()){
+			fall();
+		}
 		advanceTime_Fight(dt);
 		if ((isResting())&&(!isWorking())){
 			if (this.getHitpoints() != this.getMaxStaminaAndHitPoints()){
@@ -691,7 +692,6 @@ public class Unit {
 				if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
 					this.setHitpoints(this.getMaxStaminaAndHitPoints());
 				this.setHitpoints((int)(this.hitpoints_double));
-				// soms nog een error?
 			}
 			else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
 				this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
@@ -715,12 +715,17 @@ public class Unit {
 			workAt(x, y, z);
 		}
 		advanceTime_levelUp();
-		taskExecute(dt);
 		if (isExecutingTask){
 			if (!isWorking()&&!isResting()&&!isMoving()&&!isAttacking()&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
 				isExecutingTask = false;
+				if (getTask().sequence.isEmpty()){
+					getFaction().getScheduler().removeTask(getTask());
+					getTask().setAvailable(true);
+					this.task = null;
+				}
 			}
 		}
+		taskExecute(dt);
 	}
 	
 	private boolean CheckExecuteDefaultBeh(){
@@ -845,6 +850,7 @@ public class Unit {
 			if ((defender != null)&&(this.fighttime == 1)){
 				if ((defender!=this)&&(!this.isMoving())){
 					if ((!isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate()))&&(!Arrays.equals(this.getPosition(),defender.getPosition()))&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])){
+						
 						moveTo(defender.getCubeCoordinate());
 					}
 				}
@@ -961,7 +967,7 @@ public class Unit {
 	    	speed = 3;
 	    } else {
 	    	if ((isMoving()) && (this.getDestiny() != null)){
-				if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) < 0) //verandert in part 2!
+				if (((int)this.getPosition()[2]- (int)this.getDestiny()[2]) < 0) 
 					speed = (1/(double)2)*speed;
 				else if (((int)this.getPosition()[2]-(int)this.getDestiny()[2]) > 0)
 					speed = (1.2)*speed;
@@ -1180,12 +1186,11 @@ public class Unit {
 		}else{
 			if ((this.worktime <=0)&&(!isMovingToWork)){
 				this.working = false;
-				//mogelijkheid om associatie tussen unit en objects toe te voegen
 				if ((this.isCarryingBoulder())||(this.isCarryingLog())){
 					if (this.isCarryingBoulder()){
-						removeBoulderAndAddToInventory();
+						removeBoulderAndAddToInventory(doubleposition);
 					} else if (this.isCarryingLog()){
-						removeLogAndAddToInventory();
+						removeLogAndAddToInventory(doubleposition);
 					}
 				}
 				else if ((world.getCubeType(x, y, z) == World.TYPE_WORKSHOP)&&(logAvailable(doubleposition)&&(boulderAvailable(doubleposition)))){
@@ -1212,18 +1217,18 @@ public class Unit {
 		}
 	}
 	
-	public void removeBoulderAndAddToInventory(){
+	public void removeBoulderAndAddToInventory(double[] posWork){
 		for (Boulder boulder: carryingBoulder){
-			boulder.setPosition(this.getPosition()); // mss xyz van work
+			boulder.setPosition(posWork); // mss xyz van work
 			carryingBoulder.remove(boulder);
 			setWeight(this.getWeight()-boulder.getWeight(), 1, 200);
 			world.boulders.add(boulder);
 		}
 	}
 	
-	public void removeLogAndAddToInventory(){
+	public void removeLogAndAddToInventory(double[] posWork){
 		for (Log log: carryingLog){
-			log.setPosition(this.getPosition());
+			log.setPosition(posWork);
 			carryingLog.remove(log);
 			setWeight(this.getWeight()-log.getWeight(), 1, 200);
 			world.logs.add(log);
@@ -1372,46 +1377,68 @@ public class Unit {
 	 * 			the defender
 	 */
 	private void dodge(Unit defender,Unit attacker){
-		int random_x = 0;
-		int random_y = 0;
-		Random rand = new Random();
-		int randomNumber = rand.nextInt(8);
-		// wat als hem dodget naar buiten de wereld? while adden met passable etc
-		switch (randomNumber){
-			case 0:
-				random_x=1;
-				random_y=-1;
-				break;
-			case 1:
-				random_x=0;
-				random_y=-1;
-				break;
-			case 2:
-				random_x=-1;
-				random_y=-1;
-				break;
-			case 3:
-				random_x=-1;
-				random_y=0;
-				break;
-			case 4:
-				random_x=1;
-				random_y=0;
-				break;
-			case 5:
-				random_x=-1;
-				random_y=1;
-				break;
-			case 6:
-				random_x=0;
-				random_y=1;
-				break;
-			case 7:
-				random_x=1;
-				random_y=1;	
-				break;
+//		int random_x = 0;
+//		int random_y = 0;
+//		Random rand = new Random();
+//		int randomNumber = rand.nextInt(8);
+//		// wat als hem dodget naar buiten de wereld? while adden met passable etc
+//		switch (randomNumber){
+//			case 0:
+//				random_x=1;
+//				random_y=-1;
+//				break;
+//			case 1:
+//				random_x=0;
+//				random_y=-1;
+//				break;
+//			case 2:
+//				random_x=-1;
+//				random_y=-1;
+//				break;
+//			case 3:
+//				random_x=-1;
+//				random_y=0;
+//				break;
+//			case 4:
+//				random_x=1;
+//				random_y=0;
+//				break;
+//			case 5:
+//				random_x=-1;
+//				random_y=1;
+//				break;
+//			case 6:
+//				random_x=0;
+//				random_y=1;
+//				break;
+//			case 7:
+//				random_x=1;
+//				random_y=1;	
+//				break;
+//		}
+		int[] positionDefender = defender.getCubeCoordinate();
+		List<int[]> ValidDodgeableneighbors = new ArrayList<int[]>();
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <=1; j++) {
+				int[] pos = {positionDefender[0],positionDefender[1],positionDefender[2]};
+				double[] doublepos = {pos[0]+0.5,pos[1]+0.5,pos[2]+0.5};
+				if (isValidPosition(doublepos) && (getWorld().isPassableTerrain(pos)||pos[2]==0) && isNeighbour(positionDefender, pos)){
+					ValidDodgeableneighbors.add(pos);
+				}
+			}
 		}
-	    defender.moveToAdjacent(random_x, random_y, 0);
+		int[] positionToGo;
+		if (!ValidDodgeableneighbors.isEmpty()){
+			int random = new Random().nextInt(ValidDodgeableneighbors.size());
+			positionToGo = ValidDodgeableneighbors.get(random);
+			
+		} else {
+			positionToGo = attacker.getCubeCoordinate();
+		}
+		
+		
+		defender.moveTo(positionToGo);
+	  //  defender.moveToAdjacent(random_x, random_y, 0);
 	}
 	/**
 	 * 
@@ -1422,7 +1449,7 @@ public class Unit {
 	 * @param	other
 	 * 			a unit
 	 */
-	private boolean isNeighbour (int[] me, int[] other){
+	public boolean isNeighbour (int[] me, int[] other){
 		return (((Math.abs(me[0]-other[0]) == 1)||(me[0]-other[0]) == 0)
 				&&((Math.abs(me[1]-other[1]) == 1)||((me[1]-other[1]) == 0))
 				&&(((me[0]-other[0]) != 0)||((me[1]-other[1]) != 0)||((me[2]-other[2]) != 0))
@@ -1430,26 +1457,72 @@ public class Unit {
 	}
 	
 	public boolean isNeighbouringPassableTerrain(int[] position){
-		int[] cube = Arrays.copyOf(position, 3);
-		for (int i=0; i < 200; i++){
-			position = Arrays.copyOf(cube, 3);
-			Random rand = new Random();
-			int max = 1;
-			int min = -1;
-			int x = rand.nextInt((max - min) + 1) + min;
-			int y = rand.nextInt((max - min) + 1) + min;
-			int z = rand.nextInt((max - min) + 1) + min;
-			position[0] += x;
-			position[1] += y;
-			position[2] += z;
-			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
-			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
-				return false;
+//		int[] cube = Arrays.copyOf(position, 3);
+//		for (int i=0; i < 200; i++){
+//			position = Arrays.copyOf(cube, 3);
+//			Random rand = new Random();
+//			int max = 1;
+//			int min = -1;
+//			int x = rand.nextInt((max - min) + 1) + min;
+//			int y = rand.nextInt((max - min) + 1) + min;
+//			int z = rand.nextInt((max - min) + 1) + min;
+//			position[0] += x;
+//			position[1] += y;
+//			position[2] += z;
+//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+//			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
+//				return false;
+//			}
+//		}
+//		return true;
+		
+		for (int i = -1; i<=1;i++){
+			for (int j = -1; j<= 1;j++){
+				for (int k = -1; k<=1; k++){
+					int[] cube = {position[0]+i,position[1]+j,position[2]+k};
+					double[] doublecube = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+					if ((isValidPosition(doublecube))&&(world.isPassableTerrain(cube)||(cube[2]==0)) && (isNeighbour(cube, position))){
+						return true;
+					}
+				}
 			}
 		}
-		return true;
+		return false;
 	}
 	
+	public boolean isNeighbouringImPassableTerrain(int[] position){
+//		int[] cube = Arrays.copyOf(position, 3);
+//		for (int i=0; i < 200; i++){
+//			position = Arrays.copyOf(cube, 3);
+//			Random rand = new Random();
+//			int max = 1;
+//			int min = -1;
+//			int x = rand.nextInt((max - min) + 1) + min;
+//			int y = rand.nextInt((max - min) + 1) + min;
+//			int z = rand.nextInt((max - min) + 1) + min;
+//			position[0] += x;
+//			position[1] += y;
+//			position[2] += z;
+//			double[] doubleposition = {position[0]+0.5,position[1]+0.5,position[2]+0.5};
+//			if ((isValidPosition(doubleposition))&&(world.isImpassableTerrain(position)||(position[2]==0)) && (isNeighbour(cube, position))){
+//				return false;
+//			}
+//		}
+//		return true;
+		
+		for (int i = -1; i<=1;i++){
+			for (int j = -1; j<= 1;j++){
+				for (int k = -1; k<=1; k++){
+					int[] cube = {position[0]+i,position[1]+j,position[2]+k};
+					double[] doublecube = {cube[0]+0.5,cube[1]+0.5,cube[2]+0.5};
+					if ((isValidPosition(doublecube))&&(world.isImpassableTerrain(cube)||(cube[2]==0)) && (isNeighbour(cube, position))){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Variable registering the initial time till rest of this unit.
@@ -1502,9 +1575,9 @@ public class Unit {
 			if (this.getFaction().getScheduler().tasks.isEmpty()){
 				this.defaultBehaviour = true;
 				boolean checker = true;
-				Random rand = new Random();
 				while (checker){
-					int randomNumber = rand.nextInt(4);
+					Random rand = new Random();
+					int randomNumber = new Random().nextInt(4);
 					switch (randomNumber){
 					case 0:
 						if ((getStamina() < getMaxStaminaAndHitPoints()) || (getHitpoints() < getMaxStaminaAndHitPoints())){
@@ -1520,7 +1593,7 @@ public class Unit {
 						int z = rand.nextInt(getWorld().getZ());
 						int [] pos = {x,y,z};
 						calculatePathTo(pos);
-						while ((z== 0)||(path == null)){
+						while ((z== 0)||(path == null)|| getWorld().isImpassableTerrain(pos)){
 							x = rand.nextInt(getWorld().getX());
 							y = rand.nextInt(getWorld().getY());
 							z = rand.nextInt(getWorld().getZ());
@@ -1561,7 +1634,7 @@ public class Unit {
 								int[] positionToGo = positionNearCube(cube);
 								calculatePathTo(positionToGo);
 								if (path == null){
-									continue;
+									break;
 								}
 								this.moveTo(positionToGo);
 								randomSprinting(rand);
@@ -1682,7 +1755,7 @@ public class Unit {
 	}
 	
 	private boolean isFalling(){
-		return isNeighbouringPassableTerrain(this.getCubeCoordinate());
+		return !isNeighbouringImPassableTerrain(getCubeCoordinate());
 		
 	}
 	
