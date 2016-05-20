@@ -148,9 +148,9 @@ public abstract class Objects {
 	 * @param 	dz
 	 * 			position will be the position + dz
 	 * @throws 	ModelException
-	 * 			if it's not a valid position.
+	 * 			If it's not a valid position.
 	 */
-	public void moveDown(int dz){
+	private void moveDown(int dz){
 		if (!isFalling()){
 			double[] Adjacent = {this.getPosition()[0],this.getPosition()[1],this.getPosition()[2]+dz};
 			int[] intAdjacent = {(int)Adjacent[0],(int)Adjacent[1],(int)Adjacent[2]};
