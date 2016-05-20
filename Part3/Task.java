@@ -2,7 +2,6 @@ package hillbillies.model;
 
 import java.util.*;
 
-import hillbillies.expressions.Expression;
 import hillbillies.statements.Statement;
 
 public class Task {

@@ -5,25 +5,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 public class Pathfinding {
 	
 	
 	
 	public Pathfinding(World world){
-		this.terrain = world.getTerrain();
 		X = world.getX();
 		Y = world.getY();
 		Z = world.getZ();
 		this.world = world;
 	}
 	
-	private World world;	
-	private int[][][] terrain;
+	private World world;
 	private int X, Y, Z;	
 	public List<int[]> searchPath(int[] start, int[] end) throws IOException{
 		

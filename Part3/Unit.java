@@ -4,28 +4,13 @@ package hillbillies.model;
 import be.kuleuven.cs.som.annotate.*;
 import ogp.framework.util.*;
 import hillbillies.model.World;
-import hillbillies.part3.programs.internal.generated.HillbilliesTaskLangParser.PositionOfPositionContext;
-import hillbillies.positionExpressions.PositionHere;
-import hillbillies.positionExpressions.PositionSelected;
 import hillbillies.statements.Statement;
 import hillbillies.statements.StatementSequence;
-import hillbillies.statements.StatementWithPosition;
-import hillbillies.statements.StatementWithUnit;
-import hillbillies.expressions.Expression;
 import hillbillies.model.Faction;
 
 import java.io.IOException;
 import java.math.*;
 import java.util.*;
-
-
-/**
- * TO DO: 	- opdelen in classes?
- * 			- documentatie aanvullen
- * 			- tests schrijven
- * 			- "spaghetti" code verwijderen
- * 			- getters toevoegen
- */
 
 /**
  * A class of a unit involving a name, initial position, weight, agility, strength, toughness and the
@@ -691,13 +676,21 @@ public class Unit {
 				this.hitpoints_double = this.hitpoints_double + dt * (this.getToughness()/((double)(200)*0.2));
 				if (this.hitpoints_double > this.getMaxStaminaAndHitPoints())
 					this.setHitpoints(this.getMaxStaminaAndHitPoints());
-				this.setHitpoints((int)(this.hitpoints_double));
+				else if (this.hitpoints_double < 0){
+					this.setHitpoints(0);
+				} else {
+					this.setHitpoints((int)(this.hitpoints_double));
+				}
 			}
 			else if(this.getStamina() != this.getMaxStaminaAndHitPoints()){
 				this.stamina_double = this.stamina_double + dt * (this.getToughness()/((double)(100)*0.2));
 				if (this.stamina_double > this.getMaxStaminaAndHitPoints())
 					this.setStamina(this.getMaxStaminaAndHitPoints());
-				this.setStamina((int)(this.stamina_double));
+				else if (this.stamina_double < 0){
+					this.setStamina(0);
+				} else {
+					this.setStamina((int)(this.stamina_double));
+				}
 			}
 			else{
 				this.resting = false;
@@ -720,13 +713,23 @@ public class Unit {
 				isExecutingTask = false;
 				if (getTask().sequence.isEmpty()){
 					getFaction().getScheduler().removeTask(getTask());
+					for(Faction fac: getWorld().activeFactions){
+						for (Task t: fac.getScheduler().tasks){
+							if (getTask().getname().equals(t.getname())){
+								t.setAvailable(true);
+							}
+						}
+					}
 					getTask().setAvailable(true);
+					this.TaskFromStatement = false;
 					this.task = null;
 				}
 			}
 		}
 		taskExecute(dt);
 	}
+	
+	private boolean TaskFromStatement = false;
 	
 	private boolean CheckExecuteDefaultBeh(){
 		return ((!isMoving())&&(!isMovingToWork)&&(!isWorking())&&(!isAttackingDefaultBehaviour)&&(!isAttacking())&&((int)this.getPosition()[0]==this.finaldest[0])&&((int)this.getPosition()[1]==this.finaldest[1])&&((int)this.getPosition()[2]==this.finaldest[2])&&(!isAttacking()));
@@ -736,9 +739,11 @@ public class Unit {
 		int AmountOfStatement = (int) ((int) dt/executingOneStatement);
 		if (this.getTask() != null){
 			Statement statement = this.getTask().getStatement();
+			this.TaskFromStatement = true;
 			if (getTask().sequence.isEmpty())
 				statement.execute();
 			List<Statement> sequenceToExcecute = getTask().sequence;
+			
 			
 			for (Iterator<Statement> i = sequenceToExcecute.iterator(); i.hasNext();) {
 			    Statement s = i.next();
@@ -755,11 +760,12 @@ public class Unit {
 			   }
 			}
 			
-			if (sequenceToExcecute.isEmpty()&&!isExecutingTask()){
-				getFaction().getScheduler().removeTask(getTask());
-				getTask().setAvailable(true);
-				this.task = null;
-			}
+//			if (sequenceToExcecute.isEmpty()&&!isExecutingTask()){
+//				getFaction().getScheduler().removeTask(getTask());
+//				getTask().setAvailable(true);
+//				this.TaskFromStatement = false;
+//				this.task = null;
+//			}
 		}
 	}
 	
@@ -1108,7 +1114,7 @@ public class Unit {
 				} catch (ModelException e) {
 					System.out.println("no pad available");
 					this.finaldest = this.getCubeCoordinate();
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 				if (path != null){
 					int [] first = path.get(0);
@@ -1160,8 +1166,7 @@ public class Unit {
 		}
 		int[] position = {x,y,z};
 		double[] doubleposition = {x+0.5, y+0.5, z+0.5};
-		this.workat = position;
-		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isWorking())&&(!isMovingToWork)){
+		if ((!isAdjacent(this.getCubeCoordinate(), position)&&(!Arrays.equals(this.getPosition(), doubleposition)))&&(!isMoving())&&(!isMovingToWork)){
 			for (int i = x-1; i <= x+1;i++){
 				for (int j = y-1; j <= y+1;j++){
 					int[] pos = {i,j,z};
@@ -1170,15 +1175,20 @@ public class Unit {
 						System.out.println(pos);
 						moveTo(pos);
 						this.isMovingToWork = true;
+						this.workat = position;
 						break;
 					}
 				}
 			}
 		} else{
+			if (isNeighbour(this.getCubeCoordinate(), position)){
+				this.workat = position;
+			}
 			this.isMovingToWork = false;
 		}
-		if ((!isWorking())&&(!isMovingToWork)&&(isAdjacent(this.getCubeCoordinate(), position))){
+		if ((!isWorking())&&(!isMovingToWork)&&(!isMoving())&&(isAdjacent(this.getCubeCoordinate(), position))){
 			this.setOrientation((Math.atan2((doubleposition[1]-this.getPosition()[1]),(doubleposition[0]-this.getPosition()[0]))));
+			reducePriority();
 			this.resting = false;
 			this.worktime = (500/(double)this.getStrength());
 			this.working = true;
@@ -1307,8 +1317,10 @@ public class Unit {
 	 */
 	public void fight(Unit defender){ 
 		this.working = false;
-		if (!isAttacking())
+		if (!isAttacking()){
+			reducePriority();
 			this.fighttime = 1;
+		}
 		if ((!isMoving())&&(defender != null)&&(defender != this)&&(this.faction != defender.faction)&&((Arrays.equals(this.getPosition(),defender.getPosition()))||(isNeighbour(this.getCubeCoordinate(),defender.getCubeCoordinate())))){
 			attack(this,defender); 
 			defend(defender,this);
@@ -1377,50 +1389,11 @@ public class Unit {
 	 * 			the defender
 	 */
 	private void dodge(Unit defender,Unit attacker){
-//		int random_x = 0;
-//		int random_y = 0;
-//		Random rand = new Random();
-//		int randomNumber = rand.nextInt(8);
-//		// wat als hem dodget naar buiten de wereld? while adden met passable etc
-//		switch (randomNumber){
-//			case 0:
-//				random_x=1;
-//				random_y=-1;
-//				break;
-//			case 1:
-//				random_x=0;
-//				random_y=-1;
-//				break;
-//			case 2:
-//				random_x=-1;
-//				random_y=-1;
-//				break;
-//			case 3:
-//				random_x=-1;
-//				random_y=0;
-//				break;
-//			case 4:
-//				random_x=1;
-//				random_y=0;
-//				break;
-//			case 5:
-//				random_x=-1;
-//				random_y=1;
-//				break;
-//			case 6:
-//				random_x=0;
-//				random_y=1;
-//				break;
-//			case 7:
-//				random_x=1;
-//				random_y=1;	
-//				break;
-//		}
 		int[] positionDefender = defender.getCubeCoordinate();
 		List<int[]> ValidDodgeableneighbors = new ArrayList<int[]>();
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <=1; j++) {
-				int[] pos = {positionDefender[0],positionDefender[1],positionDefender[2]};
+				int[] pos = {positionDefender[0]+i,positionDefender[1]+j,positionDefender[2]};
 				double[] doublepos = {pos[0]+0.5,pos[1]+0.5,pos[2]+0.5};
 				if (isValidPosition(doublepos) && (getWorld().isPassableTerrain(pos)||pos[2]==0) && isNeighbour(positionDefender, pos)){
 					ValidDodgeableneighbors.add(pos);
@@ -1539,6 +1512,7 @@ public class Unit {
 	 */
 	public void rest(){
 		if ((this.getStamina() < this.getMaxStaminaAndHitPoints()) || (this.getHitpoints() < this.getMaxStaminaAndHitPoints())){
+			reducePriority();
 			this.sprinting = false;
 			this.resting = true;
 			this.working = false;
@@ -1571,8 +1545,14 @@ public class Unit {
 	 * @throws ModelException 
 	 */
 	private void startDefaultBehaviour() {
-		if ((!isWorking())&& (!isResting())&&(!isMoving())&&(!isExecutingTask)&&getTask() == null){
-			if (this.getFaction().getScheduler().tasks.isEmpty()){
+		Boolean executeTask = false;
+		for(Task t:getFaction().getScheduler().tasks){
+			if (t.isAvailable()){
+				executeTask = true;
+			}
+		}
+		if ((!isWorking())&& (!isResting())&&(!isMoving())&&(!isExecutingTask)&&this.getTask()== null){
+			if (this.getFaction().getScheduler().tasks.isEmpty()||!executeTask){
 				this.defaultBehaviour = true;
 				boolean checker = true;
 				while (checker){
@@ -1653,10 +1633,19 @@ public class Unit {
 				while (!task.isAvailable() && i.hasNext()){
 					task = i.next();
 				}
-				task.setAvailable(false);
-				task.setUnit(this);
-				task.setWorld(getWorld());
-				this.setTask(task);
+				
+				if (task.isAvailable()){
+					task.setUnit(this);
+					task.setWorld(getWorld());
+					this.setTask(task);
+				}
+				for(Faction fac: getWorld().activeFactions){
+					for (Task t: fac.getScheduler().tasks){
+						if (task.getname().equals(t.getname())){
+							t.setAvailable(false);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1758,6 +1747,17 @@ public class Unit {
 		return !isNeighbouringImPassableTerrain(getCubeCoordinate());
 		
 	}
+	
+	private void reducePriority(){
+		if (getTask() != null && isExecutingTask && !TaskFromStatement){
+			Task task = getTask();
+			int priority = (int) (task.getPriority() * reducePriority);
+			task.setPriotity(priority);
+			getFaction().getScheduler().addTask(task);
+		}
+	}
+	
+	private final static double reducePriority = 0.90;
 	
 	
 }

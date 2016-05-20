@@ -259,7 +259,8 @@ public class World {
 		for (int i = 0; i < this.getX();i++){
 			for (int j = 0; j < this.getY();j++){
 				for (int k = 0; k < this.getZ();k++){
-					if (!this.isSolidConnectedToBorder(i, j, k)){
+					int[] position = {i,j,k};
+					if (isImpassableTerrain(position)&&!this.isSolidConnectedToBorder(i, j, k) ){
 						collapse(i, j, k);
 						System.out.println("collapse");
 					}
@@ -285,7 +286,7 @@ public class World {
 				System.out.println("spawn log");
 			}
 		}
-		//collapse();
+		CheckTerrainWorld();
 	}
 	
 	private static double gameOverTimer = 300;

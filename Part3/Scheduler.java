@@ -1,7 +1,6 @@
 package hillbillies.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -19,9 +18,9 @@ public class Scheduler {
 		tasks.remove(task);
 	}
 	
-	public void replaceTask(Task orignal, Task replacement){
-		int i = tasks.indexOf(orignal);
-		tasks.set(i, replacement);
+	public void replaceTask(List<Task> list,Task orignal, Task replacement){
+		int i = list.indexOf(orignal);
+		list.set(i, replacement);
 	}
 	
 	public boolean areTasksPartOf(Collection<Task> task){
@@ -41,9 +40,8 @@ public class Scheduler {
 		List<Task> clone = cloneList(tasks);
 		int n = tasks.size();
 		for(int i = 1; i < n; i++){
-			int temp = clone.get(i).getPriority();
-			for(int j = i-1; j >= 0 && more(temp,clone.get(j).getPriority()); j--){
-				exch(j,j-1);
+			for(int j = i; j > 0 && more(clone.get(j).getPriority(),clone.get(j-1).getPriority()); j--){
+				exch(clone,j,j-1);
 			}
 		}
 		for (int i = 0; i < clone.size() ; i++) {
@@ -54,10 +52,10 @@ public class Scheduler {
 	
 	
 	
-	private void exch(int i, int j){
-		Task temp = tasks.get(i);
-		replaceTask(tasks.get(i), tasks.get(j));
-		replaceTask(tasks.get(j), temp);
+	private void exch(List<Task> list, int i, int j){
+		Task temp = list.get(i);
+		replaceTask(list,list.get(i), list.get(j));
+		replaceTask(list,list.get(j), temp);
 	}
 	
 	public List<Task> cloneList(List<Task> list) {
